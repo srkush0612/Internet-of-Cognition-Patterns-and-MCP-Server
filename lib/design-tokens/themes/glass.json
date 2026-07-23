@@ -1,0 +1,45 @@
+{
+  "spacing": {
+    "xs": 6,
+    "sm": 12,
+    "md": 20,
+    "lg": 32,
+    "xl": 52
+  },
+  "radius": {
+    "sm": 8,
+    "md": 14,
+    "lg": 24,
+    "pill": 999
+  },
+  "type": {
+    "scale": [13, 15, 17, 20, 24, 30, 38],
+    "weight": {
+      "regular": 400,
+      "medium": 500,
+      "bold": 600
+    }
+  },
+  "elevation": {
+    "0": "none",
+    "1": "0 4px 12px rgba(100,100,150,0.08)",
+    "2": "0 12px 32px rgba(100,100,150,0.14)"
+  },
+  "motion": {
+    "fast": "150ms",
+    "base": "240ms",
+    "slow": "360ms",
+    "easing": "cubic-bezier(0.16, 1, 0.3, 1)"
+  },
+  "color": {
+    "surface": "#F7F8FA",
+    "surfaceRaised": "rgba(255,255,255,0.7)",
+    "text": "#2B2D33",
+    "textMuted": "#8A8F98",
+    "accent": "#A78BFA",
+    "danger": "#F08080",
+    "success": "#86E3B8",
+    "warning": "#D97706",
+    "border": "#E6E8EE"
+  }
+}

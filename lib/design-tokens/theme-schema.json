@@ -1,0 +1,45 @@
+{
+  "spacing": {
+    "xs": null,
+    "sm": null,
+    "md": null,
+    "lg": null,
+    "xl": null
+  },
+  "radius": {
+    "sm": null,
+    "md": null,
+    "lg": null,
+    "pill": null
+  },
+  "type": {
+    "scale": null,
+    "weight": {
+      "regular": null,
+      "medium": null,
+      "bold": null
+    }
+  },
+  "elevation": {
+    "0": null,
+    "1": null,
+    "2": null
+  },
+  "motion": {
+    "fast": null,
+    "base": null,
+    "slow": null,
+    "easing": null
+  },
+  "color": {
+    "surface": null,
+    "surfaceRaised": null,
+    "text": null,
+    "textMuted": null,
+    "accent": null,
+    "danger": null,
+    "success": null,
+    "warning": null,
+    "border": null
+  }
+}

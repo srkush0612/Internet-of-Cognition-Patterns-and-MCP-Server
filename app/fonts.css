@@ -1,0 +1,47 @@
+@font-face {
+  font-family: "CiscoSansTT";
+  font-style: normal;
+  font-weight: 250;
+  font-display: swap;
+  src: url("/fonts/woff2/CiscoSansTTThin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CiscoSansTT";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/fonts/woff2/CiscoSansTTExtraLight.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CiscoSansTT";
+  font-style: normal;
+  font-weight: 350;
+  font-display: swap;
+  src: url("/fonts/woff2/CiscoSansTTLight.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CiscoSansTT";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/woff2/CiscoSansTTRegular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CiscoSansTT";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/woff2/CiscoSansTTBold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "CiscoSansTT";
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url("/fonts/woff2/CiscoSansTTHeavy.woff2") format("woff2");
+}
