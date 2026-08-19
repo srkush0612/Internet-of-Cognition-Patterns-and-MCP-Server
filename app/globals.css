@@ -1,3 +1,4 @@
+@import "./outshift-theme.css";
 @import "./pattern-components.css";
 
 @tailwind base;
@@ -8,15 +9,29 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 
   body {
     margin: 0;
-    background: #eef1f6;
-    color: #1e293b;
-    font-family: var(--font-body), system-ui, sans-serif;
-    font-size: 15px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
     line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3 {
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-family: inherit;
   }
 }
 
@@ -57,7 +72,7 @@
 
   .app-title {
     margin: 0.75rem 0 0;
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 2rem;
     font-weight: 600;
     letter-spacing: -0.02em;
@@ -72,7 +87,7 @@
 
   .page-heading {
     margin: 0;
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 2rem;
     font-weight: 600;
     letter-spacing: -0.02em;
@@ -122,7 +137,7 @@
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     color: #64748b;
-    font-family: var(--font-body), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 14px;
     font-weight: 500;
     text-decoration: none;
@@ -218,7 +233,7 @@
 
   .lane-column__label {
     margin: 0;
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 1rem;
     font-weight: 600;
     color: #0f172a;
@@ -253,6 +268,43 @@
   }
 
   /* Pattern grid */
+  .pattern-grid-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .pattern-grid-section__title {
+    margin: 0 0 0.875rem;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #16a34a;
+  }
+
+  .pattern-grid-section__title--pending {
+    color: #64748b;
+  }
+
+  .pattern-grid-section + .pattern-grid-divider {
+    margin-top: 0.25rem;
+  }
+
+  .pattern-grid-divider {
+    height: 1px;
+    margin: 2rem 0 1.75rem;
+    border: none;
+    background: linear-gradient(
+      to right,
+      transparent,
+      #cbd5e1 12%,
+      #cbd5e1 88%,
+      transparent
+    );
+  }
+
   .pattern-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -304,7 +356,7 @@
     border-radius: 999px;
     border: 1px solid #b7e4c7;
     background: #f0fbf4;
-    font-family: var(--font-body), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 12px;
     font-weight: 500;
     line-height: 1;
@@ -317,6 +369,21 @@
     height: 5px;
     border-radius: 50%;
     background: #16a34a;
+    flex-shrink: 0;
+  }
+
+  .token-card__pending-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    color: #64748b;
     flex-shrink: 0;
   }
 
@@ -338,7 +405,7 @@
 
   .token-card__title {
     margin: 0 0 0.5rem;
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 1.0625rem;
     font-weight: 600;
     line-height: 1.35;
@@ -434,7 +501,7 @@
     align-items: center;
     padding: 0.25rem 0.625rem;
     border-radius: 999px;
-    font-family: var(--font-body), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0;
@@ -493,7 +560,7 @@
 
   .detail-page-header__inner {
     margin-inline: auto;
-    max-width: 48rem;
+    max-width: 72rem;
     padding: 1.5rem 1.5rem 0;
   }
 
@@ -519,7 +586,7 @@
 
   .detail-page-header__title {
     margin: 0 0 0.5rem;
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 2rem;
     font-weight: 600;
     letter-spacing: -0.02em;
@@ -556,7 +623,7 @@
     border: none;
     background: none;
     color: #64748b;
-    font-family: var(--font-body), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 14px;
     font-weight: 500;
     line-height: 1.3;
@@ -634,7 +701,7 @@
     border-radius: 0.5rem;
     background: #fff;
     color: #1e293b;
-    font-family: var(--font-body), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 13px;
     font-weight: 500;
     line-height: 1.3;
@@ -670,7 +737,7 @@
     border-radius: 0.5rem;
     background: #eff6ff;
     color: #2563eb;
-    font-family: var(--font-body), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 13px;
     font-weight: 500;
     line-height: 1.3;
@@ -700,7 +767,7 @@
 
   .pattern-section {
     padding: 2rem 0 1rem;
-    scroll-margin-top: 3.5rem;
+    scroll-margin-top: 9.5rem;
   }
 
   .pattern-section:first-of-type {
@@ -744,14 +811,14 @@
     }
 
     .pattern-scroll-rail__dot[data-active="true"] {
-      background: #2563eb;
+      background: var(--color-accent);
       transform: scale(1.35);
     }
   }
 
   .pattern-section__heading {
     margin: 0 0 1.25rem;
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 1.25rem;
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -760,7 +827,7 @@
 
   .pattern-section__subheading {
     margin: 1.5rem 0 0.5rem;
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 0.9375rem;
     font-weight: 600;
     color: #334155;
@@ -782,6 +849,7 @@
   .pattern-section__centered {
     display: flex;
     justify-content: center;
+    width: 100%;
     padding: 0.5rem 0;
   }
 
@@ -794,13 +862,13 @@
 
   .fact-chip {
     padding: 0.3125rem 0.625rem;
-    border: 1px solid #bfdbfe;
+    border: 1px solid var(--color-tag-border);
     border-radius: 999px;
-    background: #eff6ff;
+    background: var(--color-tag-bg);
     font-family: var(--font-mono), ui-monospace, monospace;
     font-size: 11px;
     font-weight: 500;
-    color: #1d4ed8;
+    color: var(--color-tag-text);
   }
 
   .component-preview-card {
@@ -821,7 +889,7 @@
 
   .component-preview-card__title {
     margin: 0 0 0.5rem;
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 0.9375rem;
     font-weight: 600;
     color: #0f172a;
@@ -947,12 +1015,12 @@
   .callout {
     margin: 0 0 1rem;
     padding: 1rem 1rem 1rem 1.125rem;
-    border-left: 3px solid #2563eb;
+    border-left: 3px solid var(--color-accent);
     border-radius: 0 0.5rem 0.5rem 0;
-    background: #eff6ff;
+    background: var(--color-tag-bg);
     font-size: 15px;
     line-height: 1.6;
-    color: #1e3a5f;
+    color: var(--color-text);
   }
 
   .reference-slot {
@@ -987,7 +1055,7 @@
   .evidence-quote__cite {
     display: block;
     margin-top: 0.625rem;
-    font-family: var(--font-body), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 12px;
     font-style: normal;
     color: #64748b;
@@ -1017,7 +1085,7 @@
   }
 
   .backing-summary--moderate {
-    border-left-color: #2563eb;
+    border-left-color: var(--color-accent);
   }
 
   .backing-summary--thin {
@@ -1078,8 +1146,8 @@
   }
 
   .pairs-card:hover {
-    border-color: #2563eb;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+    border-color: var(--color-accent);
+    box-shadow: 0 4px 12px rgba(0, 188, 235, 0.12);
   }
 
   .pairs-card__label {
@@ -1088,8 +1156,8 @@
   }
 
   .pairs-card__name {
-    font-family: var(--font-heading), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-weight: 600;
-    color: #2563eb;
+    color: var(--color-accent-hover);
   }
 }

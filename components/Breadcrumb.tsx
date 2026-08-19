@@ -4,21 +4,24 @@ type Crumb = { label: string; href?: string };
 
 export function Breadcrumb({ items }: { items: Crumb[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="breadcrumb">
-      <ol className="flex flex-wrap items-center gap-1.5">
+    <nav aria-label="Breadcrumb">
+      <ol className="flex flex-wrap items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-subtle">
         {items.map((item, i) => (
           <li key={i} className="flex items-center gap-1.5">
             {i > 0 && (
-              <span className="breadcrumb__sep" aria-hidden>
+              <span className="text-line-md" aria-hidden>
                 /
               </span>
             )}
             {item.href ? (
-              <Link href={item.href} className="breadcrumb__link">
+              <Link
+                href={item.href}
+                className="transition hover:text-accent-h"
+              >
                 {item.label}
               </Link>
             ) : (
-              <span className="breadcrumb__current">{item.label}</span>
+              <span className="font-semibold text-ink">{item.label}</span>
             )}
           </li>
         ))}

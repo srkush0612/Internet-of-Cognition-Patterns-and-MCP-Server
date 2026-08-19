@@ -1,0 +1,181 @@
+/* Outshift design tokens — aligned with outshift-design-next-main */
+
+:root {
+  font-feature-settings: "liga" 1, "calt" 1;
+  --fancy-transition: 0.25s cubic-bezier(0.78, 0, 0.22, 1);
+
+  --color-bg: #fff;
+  --color-text: #293247;
+  --color-text-muted: #67707f;
+  --color-text-subtle: #59616b;
+  --color-border: rgba(41, 50, 71, 0.08);
+  --color-border-medium: rgba(41, 50, 71, 0.15);
+  --color-surface: rgba(255, 255, 255, 0.97);
+  --color-hover: rgba(41, 50, 71, 0.04);
+  --color-card-badge-bg: rgba(41, 50, 71, 0.7);
+  --color-blog-card-bg: linear-gradient(
+    to right,
+    rgba(210, 194, 255, 0.15),
+    rgba(255, 255, 255, 0)
+  );
+  --color-tag-bg: rgba(0, 188, 235, 0.1);
+  --color-tag-border: rgba(0, 188, 235, 0.2);
+  --color-tag-text: #187adc;
+  --color-accent: #00bceb;
+  --color-accent-hover: #187adc;
+  --color-shadow: rgba(41, 50, 71, 0.08);
+  --color-success: #16a34a;
+  --color-warning: #ea580c;
+
+  --font-sans: InterVariable, Inter, system-ui, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+  --radius-card: 16px;
+  --radius-pill: 40px;
+}
+
+.osh-container {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 87.5rem;
+    padding-inline: min(10%, max(1.5rem, calc((100% - 1400px) / 2)));
+  }
+
+  .osh-site-header {
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+  }
+
+  .osh-nav-link {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    transition: color 0.2s ease;
+  }
+
+  .osh-nav-link:hover,
+  .osh-nav-link[data-active="true"] {
+    color: var(--color-text);
+  }
+
+  .osh-nav-link[data-active="true"] {
+    font-weight: 600;
+  }
+
+  .osh-cta-solid {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.625rem 1.25rem;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .osh-cta-solid:hover {
+    background: var(--color-accent-hover);
+  }
+
+  .osh-cta-outline {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    z-index: 0;
+  }
+
+  .osh-cta-outline::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-pill);
+    padding: 1.5px;
+    background: linear-gradient(
+      294deg,
+      #9345e1,
+      #187adc,
+      #00bceb,
+      #74bf4b,
+      #f5b35c,
+      #f09256,
+      #eb7251
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .osh-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-blog-card-bg);
+    box-shadow: 0 1px 2px var(--color-shadow);
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .osh-card:hover {
+    border-color: var(--color-border-medium);
+    box-shadow: 0 8px 32px rgba(34, 104, 190, 0.08);
+  }
+
+  .osh-info-yellow {
+    border-radius: 12px;
+    border: 1px solid rgba(245, 179, 92, 0.35);
+    background: rgba(245, 179, 92, 0.12);
+  }
+
+  .osh-info-slate {
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    background: var(--color-hover);
+  }
+
+  .osh-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 20px;
+    border: 1px solid var(--color-tag-border);
+    background: var(--color-tag-bg);
+    color: var(--color-tag-text);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 0.2rem 0.65rem;
+    text-transform: uppercase;
+  }
+
+  .osh-code-block {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    background: var(--color-hover);
+    padding: 1rem 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--color-text);
+  }
+
+  .osh-overline {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+}

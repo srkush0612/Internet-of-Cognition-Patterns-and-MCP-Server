@@ -1,30 +1,18 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter, Space_Grotesk } from "next/font/google";
+import { IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-heading",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-body",
-  display: "swap",
-});
 
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
-  variable: "--font-mono",
+  variable: "--font-mono-code",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Agent UX Pattern Library",
+  title: "Human Agent IoC Patterns",
   description:
-    "Research-backed interaction patterns for human–agent collaboration",
+    "Discover research-grounded inversion-of-control patterns for human–agent collaboration",
 };
 
 export default function RootLayout({
@@ -33,11 +21,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable}`}
-    >
-      <body>{children}</body>
+    <html lang="en" className={ibmPlexMono.variable} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://rsms.me/" />
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+      </head>
+      <body className="flex min-h-screen flex-col bg-bg font-body text-ink antialiased">
+        {children}
+      </body>
     </html>
   );
 }

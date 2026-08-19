@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PatternPager } from "@/components/PatternPager";
-import { SiteNav } from "@/components/SiteNav";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import {
@@ -44,7 +43,7 @@ const DEFAULT_FACT_CHIPS = [
 ];
 
 function getFactChips(pattern: Pattern): string[] {
-  return FACT_CHIPS[pattern.slug] ?? DEFAULT_FACT_CHIPS;
+  return pattern.factChips ?? FACT_CHIPS[pattern.slug] ?? DEFAULT_FACT_CHIPS;
 }
 
 function ComponentPreview({
@@ -175,7 +174,7 @@ function PairsWithFooter({
   const paired = getPattern(pattern.pairsWith);
   if (!paired) return null;
 
-  const patternBase = themed ? "/gallery/patterns" : "/patterns";
+  const patternBase = themed ? "/design-system/patterns" : "/patterns";
 
   return (
     <Link href={`${patternBase}/${paired.slug}`} className="pairs-card">
@@ -210,8 +209,39 @@ export function PatternDetailShell({
 
     window.setTimeout(() => {
       isScrollingRef.current = false;
-    }, 700);
+    }, 900);
   }, []);
+
+  const stickyTop = themed ? "top-0" : "top-[4.5rem]";
+
+  const sectionNav = (
+    <nav
+      className="flex flex-wrap gap-x-6 gap-y-1 sm:gap-x-8"
+      aria-label="Section navigation"
+    >
+      {PATTERN_SECTIONS.map((section) => (
+        <button
+          key={section.id}
+          type="button"
+          className={`relative whitespace-nowrap pb-2.5 text-sm font-medium transition ${
+            activeSection === section.id
+              ? "text-ink"
+              : "text-muted hover:text-ink"
+          }`}
+          aria-current={activeSection === section.id ? "true" : undefined}
+          onClick={() => scrollToSection(section.id)}
+        >
+          {section.label}
+          {activeSection === section.id ? (
+            <span
+              className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-accent"
+              aria-hidden
+            />
+          ) : null}
+        </button>
+      ))}
+    </nav>
+  );
 
   useEffect(() => {
     const visibility = sectionVisibilityRef.current;
@@ -253,56 +283,48 @@ export function PatternDetailShell({
   const factChips = getFactChips(pattern);
 
   return (
-    <div className="app-shell app-shell--detail">
-      <header className="detail-page-header">
-        <div className="detail-page-header__inner">
-          <div className="detail-page-header__top">
-            <Breadcrumb
-              items={
-                themed
-                  ? [
-                      { label: "Pattern Library", href: "/" },
-                      { label: "Design system", href: "/gallery" },
-                      { label: pattern.title },
-                    ]
-                  : [
-                      { label: "Pattern Library", href: "/" },
-                      { label: pattern.title },
-                    ]
-              }
-            />
-            <div className="detail-page-header__toolbar">
-              {themed ? <ThemeSwitcher /> : null}
-              <SiteNav />
-            </div>
-          </div>
-
-          <div className="detail-page-header__badge">
-            <StatusBadge pattern={pattern} />
-          </div>
-
-          <h1 className="detail-page-header__title">{pattern.title}</h1>
-          <p className="detail-page-header__lead">{pattern.oneliner}</p>
-
-          <nav className="detail-page-nav" aria-label="Section navigation">
-            {PATTERN_SECTIONS.map((section) => (
-              <button
-                key={section.id}
-                type="button"
-                className="detail-page-nav__item"
-                data-active={activeSection === section.id ? "true" : undefined}
-                aria-current={activeSection === section.id ? "true" : undefined}
-                onClick={() => scrollToSection(section.id)}
-              >
-                {section.label}
-                <span className="detail-page-nav__underline" aria-hidden />
-              </button>
-            ))}
-          </nav>
+    <div className="min-h-screen bg-bg">
+      <div className="osh-container pt-8 sm:pt-10">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <Breadcrumb
+            items={
+              themed
+                ? [
+                    { label: "Patterns", href: "/design-system" },
+                    { label: "Design system", href: "/design-system" },
+                    { label: pattern.title },
+                  ]
+                : [
+                    { label: "Patterns", href: "/gallery" },
+                    { label: pattern.title },
+                  ]
+            }
+          />
+          {themed ? <ThemeSwitcher /> : null}
         </div>
-      </header>
 
-      <main className="app-main app-main--narrow detail-page-main">
+        <div className="mt-4">
+          <StatusBadge pattern={pattern} />
+        </div>
+
+        <h1 className="mt-4 font-heading text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+          {pattern.title}
+        </h1>
+        <p className="mt-2 max-w-3xl pb-6 text-lg text-muted">{pattern.oneliner}</p>
+      </div>
+
+      <div
+        className={`sticky ${stickyTop} z-40 border-b border-line bg-bg/95 backdrop-blur-md`}
+      >
+        <div className="osh-container flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+          <p className="truncate font-heading text-base font-semibold text-ink sm:max-w-[40%]">
+            {pattern.title}
+          </p>
+          {sectionNav}
+        </div>
+      </div>
+
+      <main className="osh-container py-10 sm:py-12">
         <div className="pattern-scroll">
           <aside className="pattern-scroll-rail" aria-label="Section shortcuts">
             {PATTERN_SECTIONS.map((section) => (
@@ -400,8 +422,22 @@ export function PatternDetailShell({
               </>
             ) : (
               <>
+                {pattern.whatItSolves ? (
+                  <>
+                    <h3 className="pattern-section__subheading">
+                      What it solves
+                    </h3>
+                    <p className="pattern-section__text">
+                      {pattern.whatItSolves}
+                    </p>
+                  </>
+                ) : null}
                 <h3 className="pattern-section__subheading">Interaction model</h3>
-                <p className="pattern-section__text">{pattern.example}</p>
+                <p className="pattern-section__text">
+                  {pattern.slug === "deferred-detail"
+                    ? "tbd"
+                    : (pattern.interactionModel ?? pattern.example)}
+                </p>
                 {pattern.note ? (
                   <p className="pattern-section__text pattern-section__text--note">
                     {pattern.note}
@@ -414,6 +450,16 @@ export function PatternDetailShell({
                     </span>
                   ))}
                 </div>
+                {pattern.whereItEmbeds ? (
+                  <>
+                    <h3 className="pattern-section__subheading">
+                      Where it embeds
+                    </h3>
+                    <p className="pattern-section__text">
+                      {pattern.whereItEmbeds}
+                    </p>
+                  </>
+                ) : null}
               </>
             )}
           </section>
@@ -426,8 +472,10 @@ export function PatternDetailShell({
           </section>
 
           <section id="inbox" className="pattern-section">
-            <h2 className="pattern-section__heading">In an agent inbox</h2>
-            <InboxDemo pattern={pattern} />
+            <h2 className="pattern-section__heading">In context</h2>
+            <div className="pattern-section__centered">
+              <InboxDemo pattern={pattern} />
+            </div>
           </section>
 
           <section id="evidence" className="pattern-section">
@@ -437,7 +485,7 @@ export function PatternDetailShell({
 
           <PairsWithFooter pattern={pattern} themed={themed} />
 
-          <div className="detail-page-footer">
+          <div className="mt-12 border-t border-line pt-8">
             <PatternPager slug={slug} themed={themed} />
           </div>
         </div>

@@ -1,7 +1,7 @@
 export const PATTERN_SECTIONS = [
   { id: "about", label: "About this component" },
   { id: "standalone", label: "Standalone" },
-  { id: "inbox", label: "In an agent inbox" },
+  { id: "inbox", label: "In context" },
   { id: "evidence", label: "Evidence" },
 ] as const;
 

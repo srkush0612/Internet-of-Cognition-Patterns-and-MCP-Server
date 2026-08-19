@@ -3,15 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "lsof -ti:3000,3006,3007 2>/dev/null | xargs kill -9 2>/dev/null; next dev",
     "dev:clean": "rm -rf .next && next dev",
-    "dev:restart": "pids=$(lsof -ti:3000,3001,3002 2>/dev/null); [ -n \"$pids\" ] && kill -9 $pids 2>/dev/null; rm -rf .next && next dev",
-    "build": "next build",
+    "dev:restart": "for port in 3000 3001 3002 3006 3007; do pids=$(lsof -ti:$port 2>/dev/null); [ -n \"$pids\" ] && kill -9 $pids 2>/dev/null; done; rm -rf .next && next dev",
+    "build": "next build && node scripts/fix-static-export-paths.mjs",
     "start": "next start",
     "lint": "next lint",
-    "verify:themes": "npx tsx scripts/verify-gallery-themes.ts"
+    "verify:themes": "npx tsx scripts/verify-gallery-themes.ts",
+    "mcp": "npx tsx server/mcp-server.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.117.1",
+    "lucide-react": "^1.32.0",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -7,7 +7,7 @@ Sixteen interaction patterns for designing trustworthy human–agent systems, gr
 | 01 | [Presence Boundary](#01--presence-boundary) | Modeled |
 | 02 | [Signal-to-Intent Handshake](#02--signal-to-intent-handshake) | Planned |
 | 03 | [Background Work Ledger](#03--background-work-ledger) | Planned |
-| 04 | [Context Shaping Panel](#04--context-shaping-panel) | Planned |
+| 04 | [Assumption Surface](#04--assumption-surface) | Planned |
 | 05 | [Memory Commitment Review](#05--memory-commitment-review) | Modeled |
 | 06 | [Concurrent Workspace Awareness](#06--concurrent-workspace-awareness) | Planned |
 | 07 | [Review as Dialogue](#07--review-as-dialogue) | Planned |
@@ -17,8 +17,8 @@ Sixteen interaction patterns for designing trustworthy human–agent systems, gr
 | 11 | [Credential Boundary](#11--credential-boundary) | Grounded |
 | 12 | [Disclosure Gradient](#12--disclosure-gradient) | Grounded |
 | 13 | [Decision Ledger](#13--decision-ledger) | Grounded |
-| 14 | [Incident Replay View](#14--incident-replay-view) | Grounded |
-| 15 | [Resolution Handshake](#15--resolution-handshake) | Hypothesis |
+| 14 | [Deferred Detail](#14--deferred-detail) | Grounded |
+| 15 | [Convergence Point](#15--convergence-point) | Hypothesis |
 | 16 | [Certainty Boundary](#16--certainty-boundary) | Hypothesis |
 
 ---
@@ -49,7 +49,7 @@ Surprise automation erodes control. This pattern forces a brief human-readable c
 
 **Example:** Alert fires → agent surfaces: “CPU spike on svc-payments. I interpret this as retry storm. Proposed next step: scale replicas. Proceed?”
 
-**Note:** Sibling pattern to Resolution Handshake: agent-to-human before acting; Resolution Handshake is agent-to-agent after converging.
+**Note:** Sibling pattern to Convergence Point: agent-to-human before acting; Convergence Point is agent-to-agent after converging.
 
 ---
 
@@ -65,15 +65,20 @@ Async agent work feels like a black box when users return. A ledger reconstructs
 
 ---
 
-### 04 · Context Shaping Panel
+### 04 · Assumption Surface
 
-**Status:** Planned · **Slug:** `context-shaping-panel`
+**Status:** Planned · **Slug:** `assumption-surface` · **Pairs with:** [15 · Convergence Point](#15--convergence-point)
 
-Manage what context the agent should use, ignore, remember, or discard.
+Show why agents reached different conclusions: what each could see, what it filled in, what it concluded.
 
-Wrong context drives wrong actions. This panel makes inclusion/exclusion explicit: what’s in scope for this task versus what must never leak in.
+Agents disagree because they hold different context and fill the gaps differently. This surfaces the filling in. Each agent is shown in three layers, context held, assumptions made, interpretation drawn, so a disagreement can be traced back to the specific assumption that caused it.
 
-**Example:** Checklist: ✓ incident thread · ✓ runbook v3 · ✗ customer PII export · remember: prefer staging cluster.
+**Example:** Refund agent assumed the dispute covers one charge. Subscriptions agent assumed the plan renewed on the old card. Same account, opposite conclusions.
+
+**Evidence:**
+
+- "Why do you want your main agent make all the decisions?" : Ali Nahvi, IoC concept sharing study
+- "The more consolidation you do, the less conflict." : Ali Nahvi, IoC concept sharing study
 
 ---
 
@@ -215,15 +220,15 @@ Regulators and internal risk teams ask “how did you get here?” The ledger ca
 
 ---
 
-### 14 · Incident Replay View
+### 14 · Deferred Detail
 
-**Status:** Grounded · **Slug:** `incident-replay-view` · **Pairs with:** [08 · Dependency and Lineage View](#08--dependency-and-lineage-view)
+**Status:** Grounded · **Slug:** `deferred-detail` · **Pairs with:** [12 · Disclosure Gradient](#12--disclosure-gradient)
 
-Detailed agent traces overload users mid-task but become valuable in postmortem and diagnostic review.
+The agent holds detail back while you are fixing things, then opens it up afterwards so you can see what keeps going wrong.
 
-Mid-incident, operators want abstraction and speed. Afterward, they want rich replay. The same data shouldn’t be forced into one mode.
+The same detail lands differently depending on when it appears. While the work is still in progress, the agent shows a short status and keeps the rest back, with a count of what it is holding so nothing looks missing. Once the work is done, the detail opens: the sequence of steps, the tool calls, and the points where the agent's reading of the situation changed. Nothing is discarded in either mode, only shown at different times.
 
-**Example:** Live mode: minimal steps + outcome. Replay mode: scrubbed timeline with agent handoffs, tool calls, and divergence points.
+**Example:** While it is running: one line, plus a count of 17 steps recorded and held. After: the steps open up, with the moment the agent's reading changed marked on the timeline.
 
 **Evidence:**
 
@@ -232,9 +237,9 @@ Mid-incident, operators want abstraction and speed. Afterward, they want rich re
 
 ---
 
-### 15 · Resolution Handshake
+### 15 · Convergence Point
 
-**Status:** Hypothesis · **Slug:** `resolution-handshake` · **Pairs with:** [02 · Signal-to-Intent Handshake](#02--signal-to-intent-handshake)
+**Status:** Hypothesis · **Slug:** `convergence-point` · **Pairs with:** [02 · Signal-to-Intent Handshake](#02--signal-to-intent-handshake)
 
 Practitioners expect clear explanation of how multiple agents converged on an adopted answer, not just what was decided.
 
@@ -250,7 +255,7 @@ When sub-agents disagree, users need to see convergence mechanics: what was adop
 
 ### 16 · Certainty Boundary
 
-**Status:** Hypothesis · **Slug:** `certainty-boundary` · **Pairs with:** [04 · Context Shaping Panel](#04--context-shaping-panel)
+**Status:** Hypothesis · **Slug:** `certainty-boundary`
 
 Practitioners separate deterministic/API-driven work from dynamic generation, tying the latter to hallucination risk.
 

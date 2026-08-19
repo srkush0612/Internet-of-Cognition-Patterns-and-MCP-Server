@@ -14,7 +14,7 @@ export function PatternCard({
 }) {
   const designReady = hasDesignReady(pattern.slug);
   const href = themed
-    ? `/gallery/patterns/${pattern.slug}`
+    ? `/design-system/patterns/${pattern.slug}`
     : `/patterns/${pattern.slug}`;
 
   return (
@@ -28,7 +28,11 @@ export function PatternCard({
             <span className="token-card__ready-dot" aria-hidden />
             Ready
           </span>
-        ) : null}
+        ) : (
+          <span className="token-card__pending-tag" aria-label="Coming soon">
+            Coming soon
+          </span>
+        )}
         <StatusBadge pattern={pattern} />
         {pattern.hasReferenceDesign ? <ReferenceDesignChip /> : null}
       </div>

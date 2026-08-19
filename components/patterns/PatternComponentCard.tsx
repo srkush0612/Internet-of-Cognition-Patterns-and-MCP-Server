@@ -9,8 +9,8 @@ export type PatternComponentCardProps = {
   title: string;
   contextLabel: string;
   icon: ReactNode;
-  footerLeft: ReactNode;
-  footerRight: string;
+  footerLeft?: ReactNode;
+  footerRight?: string;
   compact?: boolean;
   children: ReactNode;
 };
@@ -62,10 +62,16 @@ export function PatternComponentCard({
 
       <div className="pattern-component-card__body">{children}</div>
 
-      <footer className="pattern-component-card__footer">
-        <span className="pattern-component-card__footer-left">{footerLeft}</span>
-        <span className="pattern-component-card__timestamp">{footerRight}</span>
-      </footer>
+      {(footerLeft != null || footerRight != null) && (
+        <footer className="pattern-component-card__footer">
+          {footerLeft != null ? (
+            <span className="pattern-component-card__footer-left">{footerLeft}</span>
+          ) : null}
+          {footerRight != null ? (
+            <span className="pattern-component-card__timestamp">{footerRight}</span>
+          ) : null}
+        </footer>
+      )}
     </article>
   );
 }

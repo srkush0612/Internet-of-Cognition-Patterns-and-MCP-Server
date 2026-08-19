@@ -93,6 +93,14 @@
   background: var(--color-success);
 }
 
+.theme-root .token-card--themed .token-card__pending-tag {
+  background: color-mix(in srgb, var(--color-textMuted) 8%, var(--color-surfaceRaised));
+  border-color: var(--color-border);
+  color: var(--color-textMuted);
+  font-family: var(--font-family);
+  font-size: var(--type-scale-0);
+}
+
 .theme-root .pattern-component-card,
 .theme-root .pattern-inbox,
 .theme-root .presence-inbox {

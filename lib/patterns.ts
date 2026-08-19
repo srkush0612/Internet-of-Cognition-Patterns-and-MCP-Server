@@ -23,6 +23,12 @@ export type Pattern = {
   evidence?: EvidenceItem[];
   pairsWith?: string;
   note?: string;
+  // Structured detail-page copy. When present, the About tab renders these
+  // instead of the thin example-only fallback.
+  whatItSolves?: string;
+  interactionModel?: string;
+  whereItEmbeds?: string;
+  factChips?: string[];
   // Fields below are from the Combined Research + Design Synthesis workbook.
   backingStrength?: BackingStrength;
   participants?: string;
@@ -65,8 +71,19 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "signal-to-intent-handshake",
-    pairsWith: "resolution-handshake",
+    pairsWith: "convergence-point",
     title: "Signal-to-Intent Handshake",
+    whatItSolves:
+      "Surprise automation erodes control. When an agent acts first and explains later, people lose trust even when the action was right. The risk is highest for irreversible steps taken on a guess about what an alert means.",
+    interactionModel:
+      "Before acting, the agent posts a short checkpoint in three parts: what it noticed, what it thinks that means with a confidence level, and what it proposes to do next. You can confirm, correct the interpretation, or defer. Nothing irreversible happens until you respond.",
+    whereItEmbeds:
+      "Agent inbox (shown), an alert thread, or inline in chat as a generative-UI message the agent posts into the conversation. Pairs with Convergence Point, the agent-to-agent version after multiple agents converge.",
+    factChips: [
+      "Noticed · interpreted · proposed",
+      "Confidence shown",
+      "Confirm · correct · defer",
+    ],
     backingStrength: "Moderate",
     participants: "Minh, Sahil, Aman",
     researchNote:
@@ -84,12 +101,23 @@ export const patterns: Pattern[] = [
         attribution: "Minh Pham, AOP study",
       },
     ],
-    note: "Sibling pattern to Resolution Handshake: agent-to-human before acting; Resolution Handshake is agent-to-agent after converging.",
+    note: "Sibling pattern to Convergence Point: agent-to-human before acting; Convergence Point is agent-to-agent after converging.",
   },
   {
     slug: "background-work-ledger",
     evidenceStatus: "pending",
     title: "Background Work Ledger",
+    whatItSolves:
+      "Async agent work feels like a black box when you return. Without a narrative, the only way to check what an agent did while you were away is to replay raw logs, so people either rubber-stamp the work or redo it by hand.",
+    interactionModel:
+      "A single timeline reconstructs the session. Each step is tagged as something the agent queried, assumed, did, or produced, with the tool or artifact it touched. Assumptions are called out separately from actions, and anything unresolved surfaces as an open question. From the card you can approve everything, undo one step, or answer the question without opening the logs.",
+    whereItEmbeds:
+      "Agent inbox (shown), an incident timeline, or a returning-user banner in any surface where an agent runs work in the background. Pairs with Presence Boundary, which shows the live state, and feeds Decision Ledger when a step is committed.",
+    factChips: [
+      "Queried · assumed · acted · result",
+      "Assumptions flagged apart from actions",
+      "Approve · undo · answer",
+    ],
     backingStrength: "Strong",
     participants: "Everaldo, Alok",
     researchNote:
@@ -102,19 +130,31 @@ export const patterns: Pattern[] = [
       "Timeline card: 09:14 queried logs · 09:16 assumed cache miss · 09:18 opened PR draft · open question: confirm owner team?",
   },
   {
-    slug: "context-shaping-panel",
-    pairsWith: "certainty-boundary",
-    title: "Context Shaping Panel",
+    slug: "assumption-surface",
+    pairsWith: "convergence-point",
+    title: "Assumption Surface",
+    whatItSolves:
+      "Most tools display disagreement and leave the person to work out where it came from. Reading two conclusions side by side tells you they differ, not why. The cause is usually an assumption made where context ran out, and assumptions are invisible in almost every agent interface. They are also the cheapest thing for a person to fix. Correcting an agent's context is rarely possible. Correcting a wrong assumption takes one action, and everything built on it can be re-derived.",
+    interactionModel:
+      "Retrospective and read mostly. Agents are shown side by side, each with context held, assumptions made, and interpretation drawn. Assumptions are the only actionable layer: a person can correct one, and the interpretation resting on it is marked as stale rather than silently rewritten. No approve or reject. Approval belongs to Signal-to-Intent Handshake and Authority Gradient, and adding it here would collide with both.",
+    whereItEmbeds:
+      "Opens when agents have already reached different answers and someone needs to know why before deciding anything. Sits upstream of Convergence Point, which handles what gets adopted. Works inside a case or incident surface where the chrome already carries the account, the ticket, and who is working it.",
+    factChips: [
+      "Retrospective",
+      "Two agents",
+      "Assumptions correctable",
+      "No approve or reject",
+    ],
     backingStrength: "Thin",
-    participants: "Anshu",
+    participants: "Ali Nahvi",
     researchNote:
-      "Single participant, and framed as an engineering concern (session/memory/context management), not an end-user control. Reframe for end users or validate before building.",
+      "Single participant. The evidence supports the pattern as framed here, agents holding different vantage points rather than one agent deciding everything. The earlier framing as a context curation control was not supported and has been replaced. Sample size remains the limit, not fit.",
     oneliner:
-      "Manage what context the agent should use, ignore, remember, or discard.",
+      "Show why agents reached different conclusions: what each could see, what it filled in, what it concluded.",
     explanation:
-      "Wrong context drives wrong actions. This panel makes inclusion/exclusion explicit: what’s in scope for this task versus what must never leak in.",
+      "A record of how two agents reached different conclusions from the same case. Each agent is shown in three layers: the context it held, the assumptions it made where that context ran out, and the interpretation it drew. Read across them and the disagreement resolves to a specific assumption, which is the one layer a person can correct.",
     example:
-      "Checklist: ✓ incident thread · ✓ runbook v3 · ✗ customer PII export · remember: prefer staging cluster.",
+      "Refund agent assumed the dispute covers one charge. Subscriptions agent assumed the plan renewed on the old card. Same account, opposite conclusions.",
     evidence: [
       {
         quote: "Why do you want your main agent make all the decisions?",
@@ -186,6 +226,13 @@ export const patterns: Pattern[] = [
     slug: "dependency-and-lineage-view",
     evidenceStatus: "pending",
     title: "Dependency and Lineage View",
+    whatItSolves:
+      "Downstream decisions quietly stack on top of an agent's output. When that output turns out to be stale or disputed, no one can see how far the reliance reaches, so a wrong root-cause summary can ship to prod because three teams already built on it.",
+    interactionModel:
+      "The output sits at the root of a citation chain, and everything that depends on it is drawn downstream with the reason it cites the source. A disputed or stale root is flagged, and a blast-radius line counts how many teams still rely on it and how many decisions need rework if it changes.",
+    whereItEmbeds:
+      "Incident review, a change-approval flow, or a postmortem console. Pairs with Incident Replay View for the full trace and with Decision Ledger, which records the rationale each node was committed with.",
+    factChips: ["Citation graph", "Blast radius", "Disputed-root flag"],
     backingStrength: "Strong",
     participants: "Alok",
     researchNote:
@@ -200,6 +247,17 @@ export const patterns: Pattern[] = [
   {
     slug: "authority-gradient",
     title: "Authority Gradient",
+    whatItSolves:
+      "A single on/off autonomy switch is too blunt. Teams will happily let an agent act alone in low-stakes areas but want a hand on prod. Without per-area control, operators set the whole agent to its most cautious level and lose most of the value.",
+    interactionModel:
+      "Each workflow area gets its own autonomy level on a four-step scale from suggest to act-alone, colored by how much risk that area can absorb. The current level shows per row and can be tightened or loosened independently, without pausing the agent.",
+    whereItEmbeds:
+      "Agent settings, an orchestration console, or inline in the inbox when an agent reaches the edge of its authority. Pairs with Presence Boundary, which shows how far acting can go, and Review as Dialogue for the areas set to act-with-review.",
+    factChips: [
+      "Per-area autonomy",
+      "Suggest → act alone",
+      "Risk-appetite sizing",
+    ],
     backingStrength: "Moderate",
     participants: "Alok, Ali",
     researchNote:
@@ -306,18 +364,30 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "decision-ledger",
-    pairsWith: "memory-commitment-review",
+    pairsWith: "proposed-commits",
     title: "Decision Ledger",
-    backingStrength: "Strong",
+    whatItSolves:
+      "When a risk reviewer asks how a decision was reached, the inputs are still on file but the judgement is not. Systems capture what the agent did and what data it saw. They do not capture which alternatives it weighed, or why the operator let it proceed. That reasoning decays within days, and by the time the question arrives the people involved are inferring from artifacts rather than recalling.",
+    interactionModel:
+      "Before an action commits, the agent presents the action with its stated reason, the alternatives it considered, and the policy version in force. The operator can accept the reason as written or amend it. An amendment does not overwrite: the agent's reason and the operator's revision are both stored, which makes visible the cases where the operator proceeded for a different reason than the agent proposed. On commit the record seals. Later readers query it, they do not add to it.",
+    whereItEmbeds:
+      "The approval step of a change record, not a separate audit tool. The ledger is written where the decision is already being made, which is the only place the rationale exists. Compliance export reads the sealed records and reformats them. It never asks anyone to supply reasoning after the fact.",
+    factChips: [
+      "Captured at commit",
+      "Agent drafts, operator amends",
+      "Sealed once written",
+      "Export reads, never asks",
+    ],
+    backingStrength: "Moderate",
     participants: "Alok",
     researchNote:
       "Maps to Audit as First-Class Concern (U03): in regulated settings every autonomous decision creates documentation and explainability debt. Capture rationale at commit time; audit can't be retrofitted.",
     oneliner:
-      "In regulated environments, every agent decision comes with a documentation obligation. Auditability can't be retrofitted.",
+      "The agent states why it chose an action at the moment it commits, so the reasoning survives without anyone reconstructing it later.",
     explanation:
-      "Regulators and internal risk teams ask “how did you get here?” The ledger captures decision rationale at commit time, not after an incident.",
+      "Rationale becomes part of the commit rather than a record written about it. The agent drafts its own reason for the action it is proposing. The operator confirms it or corrects it, and the correction is kept alongside the original. Nothing commits without both.",
     example:
-      "Each automated decision logs: inputs · policy version · model · approver · exportable audit packet.",
+      "The agent proposes firmware 4.12 on edge-router-7 under CHG-2231, stating that 4.11 has an open memory leak affecting svc-payments. The operator amends the reason: the upgrade is going ahead now because the rollback window closes at month end. Commit stores the agent's reason, the operator's revision, and the policy version that permitted an unattended push.",
     evidence: [
       {
         quote:
@@ -332,19 +402,44 @@ export const patterns: Pattern[] = [
     ],
   },
   {
-    slug: "incident-replay-view",
-    pairsWith: "dependency-and-lineage-view",
-    title: "Incident Replay View",
+    slug: "proposed-commits",
+    pairsWith: "decision-ledger",
+    title: "Proposed Commits",
+    backingStrength: "None",
+    researchNote:
+      "Split from Decision Ledger: the open record where an agent drafts a reason and the operator commits, declines, or adds context. Not yet validated as a separate pattern name.",
+    oneliner:
+      "The action waiting to commit: agent reason, optional operator context, and the controls to seal or decline.",
+    explanation:
+      "Before anything enters the ledger, the agent presents what it proposes to do and why. The operator can commit with the agent reason as written, add context the agent could not know, or decline with a reason. Each exit writes a sealed record into Decision Ledger. Nothing in this surface is read-only history.",
+    example:
+      "Restart svc-payments, CHG-2231: agent reason cites memory at 91 percent of limit. Operator adds that the vendor engineer is on site today, then commits. The sealed record moves to Decision Ledger.",
+  },
+  {
+    slug: "deferred-detail",
+    pairsWith: "disclosure-gradient",
+    title: "Deferred Detail",
+    whatItSolves:
+      "The same person wants opposite things at different moments. Mid-task they want less to read so they can keep working. In review they want all of it, because the detail is the only thing that explains what happened. Most tools pick one level and keep it there.",
+    interactionModel:
+      "The interaction is the switch between the two modes. While the task is live, the agent shows a status line, the next step, and a count of what it has recorded but is not showing, so nothing looks hidden by accident. When the task closes, that count becomes the way in. The record opens to a timeline of what the agent did, which tools it called, and the points where its read of the situation changed. Both modes hold the same data. Only the amount shown moves.",
+    whereItEmbeds:
+      "The component belongs wherever the work is being watched while it happens, which is usually an incident console or an on-call inbox, and then again wherever that work is reviewed afterwards, usually the incident page or a weekly review. It pairs with Disclosure Gradient, which solves the same problem from the other side: that one holds detail back until someone asks, this one holds it back until the work is done.",
+    factChips: [
+      "Live: one line",
+      "After: the full picture",
+      "Nothing discarded",
+    ],
     backingStrength: "Strong",
     participants: "Everaldo",
     researchNote:
       "Maps to Retrospective Over Live (U02): full traces are valuable in postmortems but cause cognitive overload during live execution. Design two modes: minimal live, rich retrospective.",
     oneliner:
-      "Detailed agent traces overload users mid-task but become valuable in postmortem and diagnostic review.",
+      "The agent holds detail back while you are fixing things, then opens it up afterwards so you can see what keeps going wrong.",
     explanation:
-      "Mid-incident, operators want abstraction and speed. Afterward, they want rich replay. The same data shouldn’t be forced into one mode.",
+      "The record opens when the work changes phase, not when someone asks for it. While a task runs, the agent shows a status line and a count of what it has recorded and is holding. When the task closes, that same record opens in full. Nothing is filtered, only delayed.",
     example:
-      "Live mode: minimal steps + outcome. Replay mode: scrubbed timeline with agent handoffs, tool calls, and divergence points.",
+      "While it is running: one line, plus a count of 17 steps recorded and held. After: the steps open up, with the moment the agent's reading changed marked on the timeline.",
     evidence: [
       {
         quote:
@@ -359,9 +454,9 @@ export const patterns: Pattern[] = [
     ],
   },
   {
-    slug: "resolution-handshake",
+    slug: "convergence-point",
     pairsWith: "signal-to-intent-handshake",
-    title: "Resolution Handshake",
+    title: "Convergence Point",
     backingStrength: "Moderate",
     participants: "Aman, Sahil",
     researchNote:
@@ -383,7 +478,6 @@ export const patterns: Pattern[] = [
   {
     slug: "certainty-boundary",
     evidenceStatus: "pending",
-    pairsWith: "context-shaping-panel",
     title: "Certainty Boundary",
     backingStrength: "Thin",
     participants: "Anshu",

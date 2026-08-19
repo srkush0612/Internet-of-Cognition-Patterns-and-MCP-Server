@@ -4,11 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
-  { href: "/", label: "Patterns", match: (path: string) => !path.startsWith("/gallery") },
   {
     href: "/gallery",
+    label: "Patterns",
+    match: (path: string) =>
+      path === "/gallery" || path.startsWith("/patterns/"),
+  },
+  {
+    href: "/advisor",
+    label: "Chat with Agent",
+    match: (path: string) => path.startsWith("/advisor"),
+  },
+  {
+    href: "/design-system",
     label: "Design system",
-    match: (path: string) => path.startsWith("/gallery"),
+    match: (path: string) => path.startsWith("/design-system"),
   },
 ] as const;
 

@@ -4,9 +4,7 @@ import { getAdjacentPatterns } from "@/lib/patterns";
 function GridIcon() {
   return (
     <svg
-      className="pattern-pager__icon"
-      width="14"
-      height="14"
+      className="h-3.5 w-3.5"
       viewBox="0 0 14 14"
       fill="none"
       aria-hidden
@@ -19,6 +17,9 @@ function GridIcon() {
   );
 }
 
+const BTN =
+  "inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-2 text-sm font-medium text-muted transition hover:border-accent hover:text-accent-h";
+
 export function PatternPager({
   slug,
   themed = false,
@@ -27,36 +28,32 @@ export function PatternPager({
   themed?: boolean;
 }) {
   const { prev, next } = getAdjacentPatterns(slug);
-  const patternBase = themed ? "/gallery/patterns" : "/patterns";
-  const gridHref = themed ? "/gallery" : "/";
+  const patternBase = themed ? "/design-system/patterns" : "/patterns";
+  const gridHref = themed ? "/design-system" : "/gallery";
 
   return (
-    <nav className="pattern-pager" aria-label="Pattern navigation">
-      <div className="pattern-pager__adjacent">
+    <nav
+      className="flex flex-wrap items-center justify-between gap-4"
+      aria-label="Pattern navigation"
+    >
+      <div className="flex flex-wrap items-center gap-2">
         {prev ? (
-          <Link
-            href={`${patternBase}/${prev.slug}`}
-            className="pattern-pager__btn"
-          >
-            <span className="pattern-pager__arrow" aria-hidden>
-              ‹
-            </span>
+          <Link href={`${patternBase}/${prev.slug}`} className={BTN}>
+            <span aria-hidden>‹</span>
             {prev.title}
           </Link>
         ) : null}
         {next ? (
-          <Link
-            href={`${patternBase}/${next.slug}`}
-            className="pattern-pager__btn"
-          >
+          <Link href={`${patternBase}/${next.slug}`} className={BTN}>
             {next.title}
-            <span className="pattern-pager__arrow" aria-hidden>
-              ›
-            </span>
+            <span aria-hidden>›</span>
           </Link>
         ) : null}
       </div>
-      <Link href={gridHref} className="pattern-pager__all-btn">
+      <Link
+        href={gridHref}
+        className="inline-flex items-center gap-2 rounded-full border border-[var(--color-tag-border)] bg-[var(--color-tag-bg)] px-4 py-2 text-sm font-semibold text-accent-h transition hover:bg-accent hover:text-white"
+      >
         <GridIcon />
         All patterns
       </Link>
