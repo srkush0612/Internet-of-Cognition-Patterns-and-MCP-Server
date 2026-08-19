@@ -1,29 +1,140 @@
-# pattern-library
+# Human Agent IoC Patterns
 
-Next.js pattern library for agent UX research patterns.
+Next.js pattern library for human–agent collaboration UX research.
 
 ## Run locally
 
 ```bash
 npm install
-npm run dev
+npm run dev:restart   # kills stale servers, clears .next cache, starts dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Patterns reference
+## MCP server
 
-Numbered catalog (01–16) matching the site: [`patterns.md`](./patterns.md)
+The **pattern registry and instance engine** lives in [`server/mcp-server.ts`](./server/mcp-server.ts). It reads all patterns from [`lib/patterns.ts`](./lib/patterns.ts) at startup and exposes tools agents can use to discover patterns, spin up live instances, update state, and hand off between patterns.
+
+This is a **TypeScript module**, not a separate daemon. Next.js API routes import it in-process; you can also import it from your own agent, Express service, or stdio MCP wrapper.
+
+### Verify the registry
+
+```bash
+npm run mcp
+```
+
+Expect one registration line per pattern (17 total) and `Registry initialized with 17 patterns`.
+
+### What it can do
+
+| Capability | Function | Description |
+|------------|----------|-------------|
+| **Discover** | `discoverComponents(query)` | Keyword search over pattern names, triggers, and descriptions. Returns ranked metadata (backing strength, evidence count). Powers the `/advisor` chat recommendations. |
+| **Fetch** | `fetchComponent(slug)` | Full component definition: metadata, state schema, handlers, and UI text sections for one pattern. |
+| **Instantiate** | `instantiateComponent(slug, initialState, agentId?, persistent?)` | Creates a live instance with a unique ID and timestamped state. Tracks which agent installed which pattern. |
+| **Update** | `updateInstanceState(instanceId, updates)` | Merges new fields into instance state (e.g. workspace form data, evidence, decisions). |
+| **Get** | `getInstanceState(instanceId)` | Reads the current instance snapshot. |
+| **List** | `listInstallations(agentId?)` | Lists pattern installations and instance IDs for one agent, or all agents. |
+| **Handoff** | `brokerStateHandoff(fromId, toSlug, toAgentId, context?)` | Creates a new instance on a different pattern, inheriting context from the source (e.g. Decision Ledger → Convergence Point). |
+
+Each registered pattern includes:
+
+- **Triggers** — auto-generated from slug, title, and explanation for discovery
+- **State schema** — `title`, `description`, `evidence`, `backingStrength`, `context`, `workspace`, etc.
+- **Handlers** — `instantiate`, `updateState`, `handoffTo`
+- **UI sections** — structured copy for chat previews and pattern cards
+
+### HTTP API (used by the web app)
+
+When `npm run dev` is running, the MCP layer is reachable over HTTP:
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/patterns/discover` | POST | `{ "query": "record decisions" }` → ranked pattern matches |
+| `/api/patterns/[slug]` | GET | Full component definition for one slug |
+| `/api/instances` | POST | Instance lifecycle — see actions below |
+| `/api/chat` | POST | `{ "message": "..." }` → AI-style recommendations (uses discover + fetch internally) |
+
+**`/api/instances` actions:**
+
+```json
+{ "action": "instantiate", "slug": "decision-ledger", "initial_state": { "workspace": {} }, "agent_id": "my-agent", "persistent": true }
+{ "action": "update", "instance_id": "...", "updates": { "workspace": { "decision": "Ship OAuth" } } }
+{ "action": "get", "instance_id": "..." }
+{ "action": "list", "agent_id": "my-agent" }
+{ "action": "handoff", "from_instance_id": "...", "to_component_slug": "convergence-point", "to_agent_id": "facilitator", "context_data": {} }
+```
+
+The `/advisor` UI uses **instantiate** and **update** when you click "Try this" and save a workspace form.
+
+### Architecture
+
+```
+lib/patterns.ts          ← single source of truth (17 patterns)
+       ↓
+server/mcp-server.ts     ← registry + in-memory instances
+       ↓
+app/api/*                ← HTTP layer for the Next.js app
+       ↓
+/advisor, /gallery       ← UI
+```
+
+### Notes
+
+- **In-memory storage** — instances reset when the dev server restarts. For production, swap the `instances` / `installations` maps in `mcp-server.ts` for a database adapter.
+- **No Anthropic dependency** — the registry itself is pure TypeScript; `/api/chat` uses keyword discovery today (LLM integration can wrap the same tools).
+- **Full setup walkthrough** — see [/setup](http://localhost:3000/setup) or run the app and open `/setup`.
+
+## Deploy
+
+**GitHub:** push from this folder (remote: `IoC-patterns-and-server`).
+
+**Reviewa** (static prototype — advisor chat needs local dev):
+
+```bash
+npm run deploy:reviewa
+```
+
+Updates https://epbhm84q.reviewa.work/
+
+## Project layout
+
+```
+app/
+  (site)/          Main site — homepage, gallery, advisor, pattern pages, setup
+  (themed)/        Theme-switcher gallery at /design-system (internal reference)
+  api/             Chat + instance APIs (dev only; excluded from Reviewa export)
+components/
+  patterns/        Reference design components per pattern
+  workspaces/      Interactive advisor forms (middle column)
+  gallery/         Legacy token gallery primitives (design-system route)
+lib/               Pattern catalog, advisor logic, workspace state defaults
+scripts/           Reviewa export, static path fixes, theme verification
+server/            MCP server
+```
 
 ## Routes
 
-- `/` : maturity lanes index (Hypothesis / Grounded / Modeled)
-- `/patterns/[slug]` : pattern detail with Explanation, Example, and Evidence tabs
-- `/gallery` : token-driven component gallery
+| Route | Purpose |
+|-------|---------|
+| `/` | Homepage |
+| `/gallery` | Pattern gallery (Outshift UI) |
+| `/patterns/[slug]` | Pattern detail pages |
+| `/advisor` | Chat + interactive workspaces |
+| `/setup` | Setup guide |
+| `/design-system` | Themed component gallery (5 themes) |
+
+## Docs
+
+- [`patterns.md`](./patterns.md) — numbered catalog (01–16)
+
+## What stays private
+
+This repo is **only** the Next.js pattern library. Research tooling (Dovetail export scripts, transcript CSVs, `agent.py`, interview sync state) lives **outside** this folder and is listed in `.gitignore` so it cannot be pushed by mistake.
 
 ## Themes
 
-Five themes from the design-tokens MCP: midnight, slate, signal, glass, mono.
+Five themes for `/design-system`: midnight, slate, signal, glass, mono.
 
 ```bash
 npm run verify:themes
