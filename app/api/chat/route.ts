@@ -1,6 +1,7 @@
 import {
   recommendPatterns,
   toChatRecommendation,
+  buildAiResponse,
   type ChatRecommendation,
 } from "@/lib/pattern-advisor";
 import { NextRequest, NextResponse } from "next/server";
@@ -8,15 +9,6 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export type { ChatRecommendation };
-
-function buildAiResponse(recommendations: ChatRecommendation[]): string {
-  if (recommendations.length === 0) {
-    return "I couldn't find a strong pattern match for that yet. Try describing the problem in more detail — for example, tracking decisions, surfacing assumptions, or resolving agent disagreement.";
-  }
-
-  const top = recommendations[0];
-  return `I recommend ${top.pattern.name}. ${top.explanation} Below you can see the full pattern details and try it out.`;
-}
 
 export async function POST(request: NextRequest) {
   try {

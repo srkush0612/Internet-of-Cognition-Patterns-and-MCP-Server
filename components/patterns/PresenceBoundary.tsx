@@ -1,17 +1,36 @@
 import { PatternComponentCard } from "./PatternComponentCard";
 import { PresenceBoundaryBody } from "./PresenceBoundaryBody";
 import { StarIcon } from "./icons";
+import {
+  asPresence,
+  hasUserScenario,
+  presenceStateFromWorkspace,
+  type PatternLivePreviewInput,
+} from "@/lib/pattern-live-preview";
 
 const HAX_GREEN = "#16a34a";
 
 export function PresenceBoundary({
   compact = false,
   variant = "standalone",
+  live,
 }: {
   compact?: boolean;
   variant?: "standalone" | "inbox";
+  live?: PatternLivePreviewInput;
 }) {
   const isInbox = variant === "inbox";
+  const workspace = live ? asPresence(live.workspace) : null;
+  const useLive = live ? hasUserScenario("presence-boundary", live.workspace) : false;
+  const contextLabel = useLive
+    ? [workspace?.initial_state, workspace?.information_progression]
+        .filter(Boolean)
+        .join(" · ") ||
+      live?.title?.trim() ||
+      "Your scenario"
+    : isInbox
+      ? "edge-router-7 rollback"
+      : "Rollback agent";
 
   return (
     <PatternComponentCard
@@ -20,18 +39,32 @@ export function PresenceBoundary({
       dotColor={HAX_GREEN}
       showLabelBar={!isInbox}
       title={isInbox ? "Agent presence" : "Presence Boundary"}
-      contextLabel={isInbox ? "edge-router-7 rollback" : "Rollback agent"}
+      contextLabel={contextLabel}
       icon={<StarIcon size={compact ? 15 : 18} />}
       footerLeft={
-        <>
-          Boundary set by you · acting needs{" "}
-          <span className="presence-boundary__footer-link">review</span>
-        </>
+        useLive && workspace?.escalation_triggers?.trim()
+          ? workspace.escalation_triggers.trim()
+          : (
+            <>
+              Boundary set by you · acting needs{" "}
+              <span className="presence-boundary__footer-link">review</span>
+            </>
+          )
       }
       footerRight="changed just now"
       compact={compact}
     >
-      <PresenceBoundaryBody compact={compact} />
+      <PresenceBoundaryBody
+        compact={compact}
+        state={useLive ? presenceStateFromWorkspace(workspace!) : undefined}
+        description={
+          useLive
+            ? workspace?.initial_state?.trim() || "Your agent presence scenario"
+            : undefined
+        }
+        watching={useLive ? workspace?.initial_state?.trim() : undefined}
+        canActOn={useLive ? workspace?.information_progression?.trim() : undefined}
+      />
     </PatternComponentCard>
   );
 }

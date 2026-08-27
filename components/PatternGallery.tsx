@@ -16,6 +16,7 @@ import {
   type Pattern,
 } from "@/lib/patterns";
 import {
+  getPatternReadyCompanionTags,
   partitionPatternsByReady,
   PATTERN_READY_SLUGS,
 } from "@/lib/pattern-ready";
@@ -65,6 +66,9 @@ const READY_TAG =
 const COMING_SOON_TAG =
   "inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted ring-1 ring-slate-200";
 
+const COMPANION_TAG =
+  "inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700 ring-1 ring-indigo-200";
+
 function sortPatterns(list: Pattern[], sort: SortOption): Pattern[] {
   return [...list].sort((a, b) => {
     if (sort === "backing") {
@@ -89,6 +93,7 @@ function PatternCard({
   ready: boolean;
 }) {
   const sourceCount = pattern.evidence?.length ?? 0;
+  const companionTags = ready ? getPatternReadyCompanionTags(pattern.slug) : [];
 
   return (
     <Link
@@ -97,10 +102,15 @@ function PatternCard({
         ready ? "" : "opacity-95"
       }`}
     >
-      <div className="mb-2">
+      <div className="mb-2 flex flex-wrap items-center gap-1.5">
         <span className={ready ? READY_TAG : COMING_SOON_TAG}>
           {ready ? "Ready" : "Coming soon"}
         </span>
+        {companionTags.map((tag) => (
+          <span key={tag} className={COMPANION_TAG}>
+            {tag}
+          </span>
+        ))}
       </div>
 
       <div className="flex items-start justify-between gap-3">

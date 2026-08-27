@@ -178,4 +178,34 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-text-subtle);
-}
+  }
+
+  /* Edit Panel — uses Outshift cyan accent + success green for saved state */
+  .edit-panel {
+    --edit-accent: var(--color-accent);
+    --edit-accent-hover: var(--color-accent-hover);
+    --edit-success: var(--color-success);
+    --edit-error-bg: #fef2f2;
+    --edit-error-border: #fecaca;
+    --edit-error-text: #991b1b;
+  }
+
+  .edit-panel-btn-primary {
+    background: var(--edit-accent);
+    color: #fff;
+  }
+
+  .edit-panel-btn-primary:hover:not(:disabled) {
+    background: var(--edit-accent-hover);
+  }
+
+  .edit-panel-error {
+    background: var(--edit-error-bg);
+    border-color: var(--edit-error-border);
+    color: var(--edit-error-text);
+  }
+
+  .edit-panel .bg-accent,
+  .edit-panel [class*="TAB_ACTIVE"] {
+    background: var(--edit-accent);
+  }

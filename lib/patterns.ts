@@ -170,15 +170,28 @@ export const patterns: Pattern[] = [
     slug: "memory-commitment-review",
     hasReferenceDesign: true,
     title: "Memory Commitment Review",
+    whatItSolves:
+      "In a multi-agent session, beliefs accumulate and shift as new evidence arrives. When an agent updates its reasoning, prior positions don't disappear—they linger in the record as operative assumptions, even though they've been superseded. This leaves two gaps: (1) nobody explicitly marks which beliefs are stale and what displaced them, and (2) when the session's reasoning gets committed to long-term memory, there's no moment for a person to review what's being kept. The pattern surfaces both.",
+    interactionModel:
+      "Staleness shows inline as beliefs are displaced. A superseded belief appears with its superseding belief and a note on what caused the shift. Attribution is preserved: a person sees which agent held which belief and which agent changed it. At the commitment boundary (when session reasoning becomes durable memory), a person reviews each belief and chooses: acknowledge it, restore it (if the update was wrong), or revoke it (exclude from long-term memory). Their choice is logged as part of the commitment record.",
+    whereItEmbeds:
+      "At two points: (1) in real-time reasoning, when agents update positions and prior beliefs become stale, and (2) at the memory boundary, when a person gates what gets committed to long-term memory. Both are load-bearing moments in multi-agent handoff.",
+    factChips: [
+      "Attribution on stale beliefs (which agent held it, which agent displaced it)",
+      "Three options per belief at commitment (acknowledge, restore, revoke)",
+      "Reasoning for each choice logged as part of the record",
+      "Boundaries preserved: staleness surfaces belief shifts; commitment gates memory promotion",
+    ],
     backingStrength: "Thin",
     participants: "Alok (indirect), Anshu",
     researchNote:
       "The saw-vs-believes distinction is a compelling design invention but not voiced by participants. High-value if validated; test the mental model first.",
-    oneliner: 'Separates "the agent saw this" from "the system now believes this."',
+    oneliner:
+      "When an agent updates its belief mid-session, prior reasoning becomes stale. A person chooses whether to accept the change, restore the old belief, or exclude it from long-term memory.",
     explanation:
-      "Ephemeral observations shouldn’t silently become durable beliefs. Review gates what gets committed to long-term memory or policy stores.",
+      "Finance Agent opens with an 8% discount off a 12% baseline from recent renewals. When Customer Success validates a 3.4x correlation across the full book, the 12% baseline becomes stale—it was operative, now it's not. The pattern marks it: shows the old belief (dashed, muted) and the new reasoning (solid, full). At the end of the session, when learning goes into Cognitive Fabric, a person reviews: the validated correlation, the recomputed margin, the expansion exposure Salesforce surfaced. Each one: keep it, revert it, or forget it. Their call is recorded, so the next renewal starts with a record of not just what was decided, but what was considered stale and why.",
     example:
-      "Side-by-side: “Observed: latency spike Tuesday” vs “Commit to memory: payments always slow Tuesdays?” [Accept] [Edit] [Discard]",
+      "Scenario: pricing negotiation with a mid-size customer. Finance Agent: \"Baseline churn = 12%, justifies 8% off\". Customer Success: \"Actually, we have 3.4x correlation across 1,200 accounts. Baseline should be 41% churn\". Pattern surfaces: 12% baseline now marked stale; 41% is the operative belief. Later, at commit: Person reviews the stale belief, the new math, and the expansion risk. Acknowledges all three to memory. Next renewal: new agent sees not just the 41% number, but the 12% that was replaced and why.",
     evidence: [
       {
         quote:
@@ -246,32 +259,34 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "authority-gradient",
+    hasReferenceDesign: true,
     title: "Authority Gradient",
     whatItSolves:
-      "A single on/off autonomy switch is too blunt. Teams will happily let an agent act alone in low-stakes areas but want a hand on prod. Without per-area control, operators set the whole agent to its most cautious level and lose most of the value.",
+      "A single on/off autonomy switch is too blunt. Teams will happily let an agent act alone in low-stakes areas but want a human in the loop on production or sensitive workflows. Without per-area control, operators end up setting the whole agent to its most cautious level and lose most of the value.",
     interactionModel:
-      "Each workflow area gets its own autonomy level on a four-step scale from suggest to act-alone, colored by how much risk that area can absorb. The current level shows per row and can be tightened or loosened independently, without pausing the agent.",
+      "Each workflow area gets its own autonomy level on a four-step scale: Suggest, Ask first, Act + review, Act alone. Each level is sized to how much risk that area can absorb, shown as a risk tone (Low, Mid, or High). Levels can be tightened or loosened independently without pausing the agent. Operators see the current level per row and can adjust it in place.",
     whereItEmbeds:
-      "Agent settings, an orchestration console, or inline in the inbox when an agent reaches the edge of its authority. Pairs with Presence Boundary, which shows how far acting can go, and Review as Dialogue for the areas set to act-with-review.",
+      "Primary: Agent settings or an orchestration console, a governance surface where levels are set before work starts. Secondary: Inline in the inbox when an agent reaches the edge of its authority mid-task and needs immediate clarification. Pairs with Presence Boundary, which shows how far acting can go, and Review as Dialogue for areas set to act-with-review.",
     factChips: [
       "Per-area autonomy",
-      "Suggest → act alone",
+      "Suggest to act alone",
       "Risk-appetite sizing",
     ],
     backingStrength: "Moderate",
     participants: "Alok, Ali",
     researchNote:
-      "\"Mistakes within my appetite\" maps cleanly to per-area adjustable autonomy. Strong conceptual fit across two participants.",
-    oneliner: "Makes autonomy level visible and adjustable by workflow area.",
+      "Mistakes within my appetite maps cleanly to per-area adjustable autonomy. Strong conceptual fit across two participants.",
+    oneliner:
+      "Makes autonomy level visible and adjustable by workflow area.",
     explanation:
-      "Supervisor/subordinate structures help when intents collide and context must roll up. Authority Gradient exposes who can decide what, and lets operators tighten or loosen autonomy by domain.",
+      "Supervisor and subordinate structures work when intents collide and context must roll up. Authority Gradient exposes who can decide what and lets operators tighten or loosen autonomy by domain without a global pause. Origin attribution per row shows who set the level, making the authority negotiation visible. Grouping by agent clarifies which workflows each agent owns.",
     example:
-      "Slider per domain: “Deploy to staging: autonomous · Deploy to prod: human confirm · Data access: read-only.”",
+      "Acme Renewal: Finance Agent — approve discount (act + review), escalate to Director (ask first). Customer Success — validate churn signals (act + review). Each row shows risk tone and who set the level.",
     evidence: [
       {
-        quote:
-          "I think Supervisor probably is the one I would go to as the first one.",
-        attribution: "Dongxue Zhou, AOP study",
+        quote: "Mistakes within my appetite",
+        attribution:
+          "Alok Gupta, AI Leader, global bank — accepting mistakes within acceptable bounds while keeping a human in the loop for high-stakes decisions.",
       },
     ],
   },

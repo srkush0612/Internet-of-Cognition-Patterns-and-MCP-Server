@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import { PatternComponentCard } from "./PatternComponentCard";
 import { PatternIncidentShell } from "./PatternIncidentShell";
 import { EyeIcon } from "./icons";
-
-/* ── Mock data (swap for real props in production) ── */
+import {
+  asDeferredDetail,
+  hasUserScenario,
+  type PatternLivePreviewInput,
+} from "@/lib/pattern-live-preview";
 
 export type LiveCounts = {
   steps: number;
@@ -237,18 +240,37 @@ function LiveBlock({
   schedule,
   forceStatus,
   fixedCounts,
+  live,
 }: {
   animate: boolean;
   schedule: LiveCountScheduleEvent[];
   forceStatus?: LiveStatus;
   fixedCounts?: LiveCounts;
+  live?: PatternLivePreviewInput;
 }) {
-  const live = useLiveCounts(schedule, animate && !forceStatus);
-  const counts = fixedCounts ?? live.counts;
-  const status = forceStatus ?? live.status;
-  const stallReason = forceStatus ? null : live.stallReason;
-  const stallSeconds = forceStatus ? 0 : live.stallSeconds;
-  const pulse = forceStatus ? false : live.pulse;
+  const workspace = live ? asDeferredDetail(live.workspace) : null;
+  const useLive = live ? hasUserScenario("deferred-detail", live.workspace) : false;
+  const situation =
+    (useLive && workspace?.overall_goal?.trim()) ||
+    "Investigating a double charge reported by a customer";
+  const reading =
+    (useLive &&
+      Array.isArray(workspace?.deferred_details) &&
+      workspace.deferred_details.filter((field) => field.trim()).join(", ")) ||
+    "duplicate charge";
+  const revealWhen = useLive ? workspace?.handoff_points?.trim() : undefined;
+  const detailLevel = useLive ? workspace?.phase_learnings?.trim() : undefined;
+  const agentRole =
+    (useLive &&
+      Array.isArray(workspace?.phases) &&
+      String(workspace.phases[0] ?? "").trim()) ||
+    "Billing agent";
+  const liveCounts = useLiveCounts(schedule, animate && !forceStatus);
+  const counts = fixedCounts ?? liveCounts.counts;
+  const status = forceStatus ?? liveCounts.status;
+  const stallReason = forceStatus ? null : liveCounts.stallReason;
+  const stallSeconds = forceStatus ? 0 : liveCounts.stallSeconds;
+  const pulse = forceStatus ? false : liveCounts.pulse;
   const isWaiting = status === "waiting";
   const needsYou = status === "needs-you";
   const tag = needsYou ? "NEEDS YOU" : "LIVE";
@@ -273,16 +295,19 @@ function LiveBlock({
           </span>
           <span className="deferred__elapsed">23m</span>
         </div>
-        <p className="deferred__agent-role">Billing agent</p>
-        <p className="deferred__situation">
-          Investigating a double charge reported by a customer
-        </p>
-        <p className="deferred__reading">
-          Reading: duplicate charge
-        </p>
-        <p className="deferred__contributors">
-          held by the billing agent, 4 other agents contributing
-        </p>
+        <p className="deferred__agent-role">{agentRole}</p>
+        <p className="deferred__situation">{situation}</p>
+        <p className="deferred__reading">Reading: {reading}</p>
+        {revealWhen ? (
+          <p className="deferred__contributors">Reveal when: {revealWhen}</p>
+        ) : (
+          <p className="deferred__contributors">
+            held by the billing agent, 4 other agents contributing
+          </p>
+        )}
+        {detailLevel ? (
+          <p className="deferred__strip-sub">Detail level: {detailLevel}</p>
+        ) : null}
       </div>
 
       <div className="deferred__strip deferred__strip--recording">
@@ -542,7 +567,13 @@ function DeferredDetailSeam() {
   );
 }
 
-function StandaloneSpecimenPanel({ activeTab }: { activeTab: SpecimenTab }) {
+function StandaloneSpecimenPanel({
+  activeTab,
+  live,
+}: {
+  activeTab: SpecimenTab;
+  live?: PatternLivePreviewInput;
+}) {
   if (activeTab === "live") {
     return (
       <div
@@ -551,7 +582,7 @@ function StandaloneSpecimenPanel({ activeTab }: { activeTab: SpecimenTab }) {
         aria-labelledby="deferred-specimen-tab-live"
         className="deferred deferred--standalone"
       >
-        <LiveBlock animate schedule={DEFAULT_LIVE_COUNT_SCHEDULE} />
+        <LiveBlock animate schedule={DEFAULT_LIVE_COUNT_SCHEDULE} live={live} />
       </div>
     );
   }
@@ -569,6 +600,7 @@ function StandaloneSpecimenPanel({ activeTab }: { activeTab: SpecimenTab }) {
           schedule={[]}
           forceStatus="needs-you"
           fixedCounts={NEEDS_YOU_COUNTS}
+          live={live}
         />
       </div>
     );
@@ -589,18 +621,32 @@ function StandaloneSpecimenPanel({ activeTab }: { activeTab: SpecimenTab }) {
 
 function DeferredDetailContent({
   schedule = DEFAULT_LIVE_COUNT_SCHEDULE,
+  live,
 }: {
   schedule?: LiveCountScheduleEvent[];
+  live?: PatternLivePreviewInput;
 }) {
   return (
     <div className="deferred deferred--in-context">
-      <LiveBlock animate={false} schedule={schedule} />
+      <LiveBlock animate={false} schedule={schedule} live={live} />
     </div>
   );
 }
 
 /** Standalone specimen: no compact variant by design (see pattern brief). */
-export function DeferredDetail(_props?: { compact?: boolean }) {
+export function DeferredDetail({
+  compact: _compact,
+  live,
+}: {
+  compact?: boolean;
+  live?: PatternLivePreviewInput;
+}) {
+  const workspace = live ? asDeferredDetail(live.workspace) : null;
+  const incidentId =
+    (typeof workspace?.incidentId === "string" && workspace.incidentId.trim()) ||
+    "BIL-2231";
+  const domain =
+    (typeof workspace?.domain === "string" && workspace.domain.trim()) || "Billing";
   const [activeTab, setActiveTab] = useState<SpecimenTab>("live");
 
   return (
@@ -610,11 +656,11 @@ export function DeferredDetail(_props?: { compact?: boolean }) {
         patternKey="DeferredDetail"
         dotColor="#3b5ec6"
         title="Agent activity record"
-        contextLabel="Billing · BIL-2231"
+        contextLabel={`${domain} · ${incidentId}`}
         icon={<EyeIcon size={18} />}
         compact={false}
       >
-        <StandaloneSpecimenPanel activeTab={activeTab} />
+        <StandaloneSpecimenPanel activeTab={activeTab} live={live} />
       </PatternComponentCard>
     </div>
   );
@@ -635,18 +681,31 @@ const INCIDENT_TIMELINE = [
   { time: "09:41", label: "Reading corrected to plan change" },
 ];
 
-export function DeferredDetailInContext() {
+export function DeferredDetailInContext({
+  live,
+}: {
+  live?: PatternLivePreviewInput;
+}) {
+  const workspace = live ? asDeferredDetail(live.workspace) : null;
+  const ticketId =
+    (typeof workspace?.incidentId === "string" && workspace.incidentId.trim()) ||
+    "BIL-2231";
+  const queueLabel =
+    (typeof workspace?.domain === "string" && workspace.domain.trim()) || "Billing";
+  const ticketTitle =
+    workspace?.overall_goal?.trim() || "Double charge reported by a customer";
+
   return (
     <PatternIncidentShell
-      queueLabel="Billing"
-      ticketId="BIL-2231"
-      ticketTitle="Double charge reported by a customer"
+      queueLabel={queueLabel}
+      ticketId={ticketId}
+      ticketTitle={ticketTitle}
       elapsed="23m open"
       cardEnds="card ends when you close the ticket"
       participants={INCIDENT_PARTICIPANTS}
       timeline={INCIDENT_TIMELINE}
     >
-      <DeferredDetailContent schedule={[]} />
+      <DeferredDetailContent schedule={[]} live={live} />
     </PatternIncidentShell>
   );
 }

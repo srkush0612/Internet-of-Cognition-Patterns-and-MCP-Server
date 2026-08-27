@@ -12,6 +12,10 @@ import {
   type Pattern,
 } from "@/lib/patterns";
 import {
+  anonymizeAttribution,
+  anonymizeParticipants,
+} from "@/lib/evidence-privacy";
+import {
   PATTERN_SECTIONS,
   type PatternSectionId,
 } from "@/lib/pattern-sections";
@@ -32,7 +36,11 @@ const FACT_CHIPS: Record<string, string[]> = {
     "Parallel reasoning",
     "Converged outcome",
   ],
-  "memory-commitment-review": ["Observed", "Commit", "Discard"],
+  "memory-commitment-review": [
+    "Attribution on stale beliefs",
+    "Acknowledge · restore · revoke",
+    "Commitment record",
+  ],
   "shared-cognitive-state": ["Goals", "Assumptions", "Conflicts"],
 };
 
@@ -122,7 +130,7 @@ function BackingSummary({ pattern }: { pattern: Pattern }) {
         </span>
         {pattern.participants ? (
           <span className="backing-summary__participants">
-            {pattern.participants}
+            {anonymizeParticipants(pattern.participants)}
           </span>
         ) : null}
       </div>
@@ -152,7 +160,9 @@ function EvidenceSection({ pattern }: { pattern: Pattern }) {
                 <p className="evidence-quote__text">
                   &ldquo;{item.quote}&rdquo;
                 </p>
-                <cite className="evidence-quote__cite">{item.attribution}</cite>
+                <cite className="evidence-quote__cite">
+                  {anonymizeAttribution(item.attribution)}
+                </cite>
               </blockquote>
             </li>
           ))}

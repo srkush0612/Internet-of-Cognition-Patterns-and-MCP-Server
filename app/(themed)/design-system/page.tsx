@@ -1,7 +1,7 @@
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { GalleryShowcase } from "@/components/gallery/GalleryShowcase";
 import { GalleryPatternPages } from "@/components/gallery/GalleryPatternPages";
-import { GalleryThemeSwitcher } from "@/components/GalleryThemeSwitcher";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { PatternGrid } from "@/components/PatternGrid";
 import { SiteNav } from "@/components/SiteNav";
 import "./gallery.css";
@@ -24,7 +24,7 @@ export default function GalleryPage() {
               ]}
             />
             <div className="gallery-toolbar">
-              <GalleryThemeSwitcher />
+              <ThemeSwitcher />
               <SiteNav />
             </div>
           </div>

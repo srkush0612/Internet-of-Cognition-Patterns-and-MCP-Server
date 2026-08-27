@@ -8,7 +8,7 @@ Sixteen interaction patterns for designing trustworthy human–agent systems, gr
 | 02 | [Signal-to-Intent Handshake](#02--signal-to-intent-handshake) | Planned |
 | 03 | [Background Work Ledger](#03--background-work-ledger) | Planned |
 | 04 | [Assumption Surface](#04--assumption-surface) | Planned |
-| 05 | [Memory Commitment Review](#05--memory-commitment-review) | Modeled |
+| 05 | [Memory Commitment Review](#05--memory-commitment-review) | Ready |
 | 06 | [Concurrent Workspace Awareness](#06--concurrent-workspace-awareness) | Planned |
 | 07 | [Review as Dialogue](#07--review-as-dialogue) | Planned |
 | 08 | [Dependency and Lineage View](#08--dependency-and-lineage-view) | Planned |
@@ -84,13 +84,13 @@ Agents disagree because they hold different context and fill the gaps differentl
 
 ### 05 · Memory Commitment Review
 
-**Status:** Modeled · **Slug:** `memory-commitment-review`
+**Status:** Ready · **Slug:** `memory-commitment-review`
 
-Separates "the agent saw this" from "the system now believes this."
+When an agent updates its belief mid-session, prior reasoning becomes stale. A person chooses whether to accept the change, restore the old belief, or exclude it from long-term memory.
 
-Ephemeral observations shouldn’t silently become durable beliefs. Review gates what gets committed to long-term memory or policy stores.
+Finance Agent opens with an 8% discount off a 12% baseline from recent renewals. When Customer Success validates a 3.4x correlation across the full book, the 12% baseline becomes stale—it was operative, now it's not. The pattern marks it: shows the old belief (dashed, muted) and the new reasoning (solid, full). At the end of the session, when learning goes into Cognitive Fabric, a person reviews: the validated correlation, the recomputed margin, the expansion exposure Salesforce surfaced. Each one: keep it, revert it, or forget it. Their call is recorded, so the next renewal starts with a record of not just what was decided, but what was considered stale and why.
 
-**Example:** Side-by-side: “Observed: latency spike Tuesday” vs “Commit to memory: payments always slow Tuesdays?” [Accept] [Edit] [Discard]
+**Example:** Scenario: pricing negotiation with a mid-size customer. Finance Agent: "Baseline churn = 12%, justifies 8% off". Customer Success: "Actually, we have 3.4x correlation across 1,200 accounts. Baseline should be 41% churn". Pattern surfaces: 12% baseline now marked stale; 41% is the operative belief. Later, at commit: Person reviews the stale belief, the new math, and the expansion risk. Acknowledges all three to memory. Next renewal: new agent sees not just the 41% number, but the 12% that was replaced and why.
 
 **Evidence:**
 

@@ -9,6 +9,12 @@ import {
   type LedgerAttribution,
   type SealedLedgerRecord,
 } from "@/lib/decision-ledger-data";
+import {
+  asDecisionLedger,
+  decisionLedgerLiveRecord,
+  hasUserScenario,
+  type PatternLivePreviewInput,
+} from "@/lib/pattern-live-preview";
 import { PatternChangeShell } from "./PatternChangeShell";
 import { PatternComponentCard } from "./PatternComponentCard";
 import { LockIcon } from "./icons";
@@ -195,14 +201,29 @@ function ExportFooter() {
   );
 }
 
-function DecisionLedgerSpine({ showExport = true }: { showExport?: boolean }) {
-  const sealedRecords = SEEDED_SEALED_RECORDS;
+function DecisionLedgerSpine({
+  showExport = true,
+  live,
+}: {
+  showExport?: boolean;
+  live?: PatternLivePreviewInput;
+}) {
+  const workspace = live ? asDecisionLedger(live.workspace) : null;
+  const liveRecord = workspace ? decisionLedgerLiveRecord(workspace) : null;
+  const useLive = live ? hasUserScenario("decision-ledger", live.workspace) : false;
+  const sealedRecords = useLive && liveRecord ? [liveRecord] : SEEDED_SEALED_RECORDS;
 
   return (
     <div className="decision-ledger">
       <div className="decision-ledger__spine" aria-hidden />
       <div className="decision-ledger__stack">
-        <SealThreshold />
+        {useLive && liveRecord ? (
+          <div className="decision-ledger__threshold" role="separator">
+            <span className="decision-ledger__threshold-label">Your scenario</span>
+          </div>
+        ) : (
+          <SealThreshold />
+        )}
         {sealedRecords.map((record, index) => (
           <SealedRecordCard
             key={record.id}
@@ -217,35 +238,57 @@ function DecisionLedgerSpine({ showExport = true }: { showExport?: boolean }) {
   );
 }
 
-export function DecisionLedger() {
+export function DecisionLedger({
+  compact: _compact,
+  live,
+}: {
+  compact?: boolean;
+  live?: PatternLivePreviewInput;
+}) {
+  const contextLabel =
+    live?.title?.trim() ||
+    live?.context?.affectedServices?.trim() ||
+    "Network ops · svc-payments";
+
   return (
     <div className="decision-ledger-wide">
       <PatternComponentCard
         patternKey="DecisionLedger"
         dotColor="#3b5ec6"
         title="Sealed decision records"
-        contextLabel="Network ops · svc-payments"
+        contextLabel={contextLabel}
         icon={<LockIcon size={18} />}
         showLabelBar
-        footerLeft="Read only · commits done"
-        footerRight={`${SEEDED_SEALED_RECORDS.length} sealed`}
+        footerLeft={
+          live && hasUserScenario("decision-ledger", live.workspace)
+            ? "Your parameters · reference layout"
+            : "Read only · commits done"
+        }
+        footerRight={`${live && hasUserScenario("decision-ledger", live.workspace) ? 1 : SEEDED_SEALED_RECORDS.length} sealed`}
       >
-        <DecisionLedgerSpine showExport />
+        <DecisionLedgerSpine showExport live={live} />
       </PatternComponentCard>
     </div>
   );
 }
 
-export function DecisionLedgerInContext() {
+export function DecisionLedgerInContext({
+  live,
+}: {
+  live?: PatternLivePreviewInput;
+}) {
+  const workspace = live ? asDecisionLedger(live.workspace) : null;
+  const title = workspace?.decision?.trim() || "Restart svc-payments";
+
   return (
     <PatternChangeShell
-      changeRef="CHG-2231"
+      changeRef="YOUR-CASE"
       service={SERVICE_NAME}
-      title="Restart svc-payments"
+      title={title}
       status="Awaiting approval"
       stepLabel="Decision history"
     >
-      <DecisionLedgerSpine showExport={false} />
+      <DecisionLedgerSpine showExport={false} live={live} />
     </PatternChangeShell>
   );
 }

@@ -1,20 +1,16 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { PatternAdvisor } from "@/components/PatternAdvisor";
 
-function AdvisorContent() {
-  const searchParams = useSearchParams();
-  const initialPrompt = searchParams.get("prompt") ?? undefined;
+export function AdvisorLauncher() {
+  const [initialPrompt, setInitialPrompt] = useState<string | undefined>();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const prompt = params.get("prompt")?.trim();
+    if (prompt) setInitialPrompt(prompt);
+  }, []);
 
   return <PatternAdvisor initialPrompt={initialPrompt} />;
-}
-
-export function AdvisorLauncher() {
-  return (
-    <Suspense fallback={<div className="h-full bg-white" />}>
-      <AdvisorContent />
-    </Suspense>
-  );
 }

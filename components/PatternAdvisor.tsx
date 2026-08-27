@@ -1,26 +1,74 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  InstanceSidebar,
-  type InstanceSidebarData,
-} from "@/components/InstanceSidebar";
 import { PatternDesignPreview } from "@/components/PatternDesignPreview";
-import { PatternPreview } from "@/components/PatternPreview";
-import type { ChatRecommendation, ComponentDefinition } from "@/lib/pattern-advisor";
-import { defaultWorkspaceForSlug } from "@/lib/workspace-defaults";
+import { InstanceEditDrawer } from "@/components/edit/InstanceEditDrawer";
+import { PatternRecommendationCard } from "@/components/chat/PatternRecommendationCard";
+import { PatternSuggestionsCard } from "@/components/chat/PatternSuggestionsCard";
+import { AgentThresholdAlternatives } from "@/components/chat/AgentThresholdAlternatives";
+import { PatternGuidanceCard } from "@/components/chat/ConvergenceGuidanceCard";
+import { ChatLoadingMessage } from "@/components/chat/ChatLoadingMessage";
+import { ChatMessage } from "@/components/chat/ChatMessage";
+import { ScenarioQuestionPills } from "@/components/chat/ScenarioQuestionPills";
+import { HeroBackground } from "@/components/HeroBackground";
+import { SaveProcessingOverlay } from "@/components/shared/SaveProcessingOverlay";
+import "@/components/chat/advisor-landing.css";
+import "@/components/chat/chat-message.css";
+import { Toast } from "@/components/shared/Toast";
+import type { ChatRecommendation } from "@/lib/pattern-advisor";
+import {
+  detectApplicablePatterns,
+  type PatternSuggestion,
+} from "@/lib/detect-applicable-patterns";
+import { workspaceFromInstanceState } from "@/lib/preview-state";
+import { mergeWorkspaceForSlug, defaultWorkspaceForSlug } from "@/lib/workspace-defaults";
+import {
+  buildAiResponse,
+  recommendPatterns,
+  instantiatePattern,
+  toChatRecommendation,
+  updatePatternInstance,
+} from "@/lib/pattern-advisor";
+import { emptyContextFromPresets } from "@/lib/context-field-config";
+import { getPattern } from "@/lib/patterns";
+import type { InstanceSidebarData } from "@/lib/instance-types";
+import { getUniqueAgentCount } from "@/lib/convergence-timeline-from-workspace";
+import { hasUserScenario } from "@/lib/pattern-live-preview";
+import {
+  CONVERGENCE_AGENT_THRESHOLD,
+  CONVERGENCE_SAVE_PROCESSING_MS,
+  INITIAL_CONVERGENCE_SAVE_REVEAL,
+  type ConvergenceSaveRevealState,
+} from "@/lib/convergence-save-reveal";
+import type { ConflictVisibilityViewId } from "@/lib/conflict-visibility-views";
+import type { ConvergencePointWorkspaceState } from "@/lib/workspace-defaults";
+import {
+  buildExtractionFollowUp,
+  buildExtractionIntroMessage,
+  getNextExtractionQuestion,
+  getPatternGuidanceMessages,
+  hasExtractionFlow,
+  isExtractionInProgress,
+  mergeExtractionIntoWorkspace,
+} from "@/lib/patterns/extraction-flow";
+import { stripExtractionMeta } from "@/lib/patterns/extraction-state";
+import { PATTERN_INSTRUCTION_SLUGS } from "@/lib/patterns/loader";
 
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   recommendations?: ChatRecommendation[];
   topRecommendation?: ChatRecommendation | null;
+  /** User prompt that led to this assistant reply (for recommendation cards). */
+  userInput?: string;
+  suggestions?: PatternSuggestion[];
+  messageKind?: "default" | "save-suggestions";
 };
 
 type ActiveInstance = InstanceSidebarData;
 
 const WELCOME_MESSAGE =
-  "Hi! I help you discover Human Agent IoC Patterns. Describe a problem you're facing, and I'll recommend patterns that might help. For example: 'We need to track decisions we make', 'Multiple teams disagree on approach', 'We need to audit what agents did'";
+  "Hi! I help you document multi-agent decisions. What's your scenario?";
 
 function findPatternContext(
   messages: ChatMessage[],
@@ -59,61 +107,98 @@ export function PatternAdvisor({ initialPrompt }: { initialPrompt?: string }) {
   const [activeInstance, setActiveInstance] = useState<ActiveInstance | null>(
     null,
   );
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [convergenceSaveReveal, setConvergenceSaveReveal] =
+    useState<ConvergenceSaveRevealState>(INITIAL_CONVERGENCE_SAVE_REVEAL);
+  const [showDesignPreview, setShowDesignPreview] = useState(false);
+  const [isSavingInstance, setIsSavingInstance] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [toastVariant, setToastVariant] = useState<"success" | "error">(
+    "success",
+  );
+  const [drawerGuidance, setDrawerGuidance] = useState<string[] | null>(null);
   const sentInitialPrompt = useRef(false);
+  const loadingRef = useRef(false);
+  const previewPanelRef = useRef<HTMLElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const showToast = useCallback((text: string) => {
-    setToast(text);
-    window.setTimeout(() => setToast(null), 3000);
+  const scrollChatToBottom = useCallback(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, []);
 
-  const sendMessage = useCallback(
-    async (text: string) => {
-      const trimmed = text.trim();
-      if (!trimmed || loading) return;
+  useEffect(() => {
+    scrollChatToBottom();
+    const shortDelay = window.setTimeout(scrollChatToBottom, 200);
+    const longDelay = window.setTimeout(scrollChatToBottom, 500);
+    return () => {
+      window.clearTimeout(shortDelay);
+      window.clearTimeout(longDelay);
+    };
+  }, [
+    messages,
+    loading,
+    isSavingInstance,
+    convergenceSaveReveal.revealToken,
+    convergenceSaveReveal.showAlternatives,
+    convergenceSaveReveal.isProcessing,
+    scrollChatToBottom,
+  ]);
 
-      setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
-      setInput("");
-      setLoading(true);
+  useEffect(() => {
+    if (!isEditDrawerOpen) {
+      setDrawerGuidance(null);
+    }
+  }, [isEditDrawerOpen]);
 
-      try {
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: trimmed, sessionId }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error ?? "Chat request failed");
-        }
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: data.aiResponse,
-            recommendations: data.recommendations,
-            topRecommendation: data.topRecommendation,
-          },
-        ]);
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Something went wrong";
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: `Sorry, I ran into an issue: ${message}. Please try again.`,
-          },
-        ]);
-      } finally {
-        setLoading(false);
-      }
+  const showToast = useCallback(
+    (text: string, variant: "success" | "error" = "success") => {
+      setToastVariant(variant);
+      setToast(text);
+      window.setTimeout(() => setToast(null), 4000);
     },
-    [loading, sessionId],
+    [],
   );
+
+  const sendMessage = useCallback(async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || loadingRef.current) return;
+
+    loadingRef.current = true;
+    setLoading(true);
+    setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
+    setInput("");
+
+    try {
+      const recommendations = (await recommendPatterns(trimmed)).map(
+        toChatRecommendation,
+      );
+      const topRecommendation = recommendations[0] ?? null;
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: buildAiResponse(recommendations),
+          recommendations,
+          topRecommendation,
+          userInput: trimmed,
+        },
+      ]);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Something went wrong";
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Sorry, I ran into an issue: ${message}. Please try again.`,
+        },
+      ]);
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!initialPrompt?.trim() || sentInitialPrompt.current) {
@@ -125,108 +210,378 @@ export function PatternAdvisor({ initialPrompt }: { initialPrompt?: string }) {
   }, [initialPrompt, sendMessage]);
 
   const handleSendMessage = useCallback(async () => {
-    await sendMessage(input);
-  }, [input, sendMessage]);
+    const trimmed = input.trim();
+    if (!trimmed || loadingRef.current) return;
+
+    if (activeInstance && hasExtractionFlow(activeInstance.slug)) {
+      const workspace = workspaceFromInstanceState(activeInstance.state, activeInstance.slug);
+      const currentStep = getNextExtractionQuestion(activeInstance.slug, workspace);
+      if (currentStep) {
+        loadingRef.current = true;
+        setLoading(true);
+        setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
+        setInput("");
+
+        const { nextWorkspace } = mergeExtractionIntoWorkspace(
+          activeInstance.slug,
+          workspace,
+          trimmed,
+        );
+
+        const mergedWorkspace = mergeWorkspaceForSlug(activeInstance.slug, nextWorkspace);
+
+        setActiveInstance((current) =>
+          current
+            ? {
+                ...current,
+                state: {
+                  ...current.state,
+                  workspace: mergedWorkspace,
+                  updatedAt: new Date().toISOString(),
+                },
+              }
+            : null,
+        );
+
+        const followUp = buildExtractionFollowUp(
+          activeInstance.slug,
+          mergedWorkspace,
+          currentStep.field,
+        );
+        if (followUp) {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: followUp },
+          ]);
+        }
+
+        loadingRef.current = false;
+        setLoading(false);
+        return;
+      }
+    }
+
+    await sendMessage(trimmed);
+  }, [activeInstance, input, sendMessage]);
 
   const handleInstantiatePattern = useCallback(
-    async (slug: string) => {
+    async (
+      slug: string,
+      options?: {
+        carryState?: Record<string, unknown> | null;
+        quiet?: boolean;
+      },
+    ) => {
       const { name: patternName, explanation } = findPatternContext(messages, slug);
+      const carried = options?.carryState;
+      const carriedWorkspace =
+        carried?.workspace &&
+        typeof carried.workspace === "object" &&
+        !Array.isArray(carried.workspace)
+          ? (carried.workspace as Record<string, unknown>)
+          : undefined;
 
       try {
-        const [instanceResponse, componentResponse] = await Promise.all([
-          fetch("/api/instances", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "instantiate",
-              slug,
-              initial_state: {
-                title: patternName,
-                workspace: defaultWorkspaceForSlug(slug),
-              },
-              agent_id: agentId,
-              persistent: true,
-            }),
-          }),
-          fetch(`/api/patterns/${slug}`),
-        ]);
-
-        const instanceData = await instanceResponse.json();
-        const componentData = (await componentResponse.json()) as {
-          success?: boolean;
-          component?: ComponentDefinition;
-          error?: string;
-        };
-
-        if (!instanceResponse.ok || !instanceData.success) {
-          throw new Error(instanceData.error ?? "Failed to instantiate pattern");
-        }
-
-        if (!componentResponse.ok || !componentData.component) {
-          throw new Error(
-            componentData.error ?? "Failed to fetch pattern definition",
-          );
-        }
-
-        const instance = instanceData.instance;
-        setActiveInstance({
-          instanceId: instance.instanceId,
+        const { instanceId, instance, component } = await instantiatePattern(
           slug,
-          component: componentData.component,
-          state: (instance.state as Record<string, unknown>) ?? {},
+          agentId,
+          {
+            title:
+              typeof carried?.title === "string" ? carried.title : patternName,
+            workspace: {
+              ...defaultWorkspaceForSlug(slug),
+              ...(carriedWorkspace ?? {}),
+            },
+            context:
+              carried?.context &&
+              typeof carried.context === "object" &&
+              !Array.isArray(carried.context)
+                ? (carried.context as Record<string, string>)
+                : emptyContextFromPresets(),
+            createdAt: new Date().toISOString(),
+          },
+        );
+
+        setActiveInstance({
+          instanceId,
+          slug,
+          component,
+          state: instance,
           explanation,
         });
+        setShowDesignPreview(true);
         setInput("");
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: `I've created an instance of ${patternName}. Use the workspace in the middle column to fill it in — the reference design is on the right.`,
-          },
-        ]);
-        showToast(`${patternName} instantiated`);
+        if (!options?.quiet) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: hasExtractionFlow(slug)
+                ? buildExtractionIntroMessage(slug)
+                : `I've created an instance of ${patternName}. Review the preview, then click Customise when you're ready to fill in your scenario.`,
+            },
+          ]);
+          showToast(`${patternName} instantiated`);
+        }
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Instantiation failed";
-        showToast(message);
+        showToast(message, "error");
       }
     },
     [agentId, messages, showToast],
   );
 
-  const handleEditState = useCallback(
+  const handleSwitchPattern = useCallback(
+    async (slug: string) => {
+      const carryState = activeInstance?.state ?? null;
+      await handleInstantiatePattern(slug, { carryState, quiet: true });
+      const patternName = getPattern(slug)?.title ?? slug.replace(/-/g, " ");
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Switched to ${patternName}. Your scenario data carries over where fields match — click Customise to update the rest.`,
+        },
+      ]);
+      showToast(`Switched to ${patternName}`);
+    },
+    [
+      activeInstance?.state,
+      handleInstantiatePattern,
+      showToast,
+    ],
+  );
+
+  /** Persist instance edits from drawer → API, then reveal 5+ visualizations on save. */
+  const handleInstanceUpdate = useCallback(
     async (updates: Record<string, unknown>) => {
       if (!activeInstance) {
-        return;
+        throw new Error("No active instance to update");
       }
 
-      const response = await fetch("/api/instances", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update",
-          instance_id: activeInstance.instanceId,
-          updates,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error ?? "Failed to update instance state");
-      }
-
-      setActiveInstance((current) =>
-        current
-          ? {
-              ...current,
-              state: (data.instance.state as Record<string, unknown>) ?? updates,
-            }
-          : null,
+      const isConvergence = activeInstance.slug === "convergence-point";
+      const pendingWorkspace = workspaceFromInstanceState(
+        { ...activeInstance.state, ...updates },
+        activeInstance.slug,
       );
-      showToast("Instance state updated");
+      const pendingAgentCount =
+        isConvergence
+          ? getUniqueAgentCount(
+              pendingWorkspace as ConvergencePointWorkspaceState &
+                Record<string, unknown>,
+            )
+          : 0;
+      const pendingHasUser =
+        isConvergence &&
+        hasUserScenario("convergence-point", pendingWorkspace);
+      const willRevealAlternatives =
+        pendingHasUser && pendingAgentCount >= CONVERGENCE_AGENT_THRESHOLD;
+
+      setIsSavingInstance(true);
+
+      if (isConvergence) {
+        setConvergenceSaveReveal((current) => ({
+          ...current,
+          isProcessing: true,
+          processingAlternatives: willRevealAlternatives,
+          activeView: null,
+        }));
+      }
+
+      const startedAt = Date.now();
+
+      try {
+        const mergedUpdates = { ...updates };
+        const rawWorkspace =
+          mergedUpdates.workspace ??
+          workspaceFromInstanceState(
+            { ...activeInstance.state, ...updates },
+            activeInstance.slug,
+          );
+        if (rawWorkspace && typeof rawWorkspace === "object" && !Array.isArray(rawWorkspace)) {
+          mergedUpdates.workspace = stripExtractionMeta(
+            rawWorkspace as Record<string, unknown>,
+          );
+        }
+
+        const nextState = await updatePatternInstance(
+          activeInstance.instanceId,
+          activeInstance.state,
+          mergedUpdates,
+        );
+
+        setActiveInstance((current) =>
+          current ? { ...current, state: nextState } : null,
+        );
+
+        const workspace = workspaceFromInstanceState(nextState, activeInstance.slug);
+        const savedAgentCount = isConvergence
+          ? getUniqueAgentCount(
+              workspace as ConvergencePointWorkspaceState &
+                Record<string, unknown>,
+            )
+          : 0;
+        const savedHasUser =
+          isConvergence && hasUserScenario("convergence-point", workspace);
+        const showAfterSave =
+          savedHasUser && savedAgentCount >= CONVERGENCE_AGENT_THRESHOLD;
+
+        const elapsed = Date.now() - startedAt;
+        await new Promise((resolve) =>
+          window.setTimeout(
+            resolve,
+            Math.max(0, CONVERGENCE_SAVE_PROCESSING_MS - elapsed),
+          ),
+        );
+
+        if (isConvergence) {
+          setConvergenceSaveReveal((current) => ({
+            ...current,
+            isProcessing: false,
+            processingAlternatives: false,
+            activeView: null,
+            revealToken: showAfterSave ? current.revealToken + 1 : current.revealToken,
+            showStackedVisuals: showAfterSave,
+            showAlternatives: showAfterSave,
+            savedAgentCount,
+          }));
+        }
+
+        const suggestions = detectApplicablePatterns(
+          workspace,
+          activeInstance.slug,
+        );
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: showAfterSave
+              ? "Your instance is saved. With 5+ agents, pick a view below — the diagram opens in the preview panel on the right."
+              : suggestions.length > 0
+                ? "Your instance is saved. Here are other patterns that might fit this scenario."
+                : "✓ Instance saved. Your changes are reflected in the preview.",
+            messageKind:
+              !showAfterSave && suggestions.length > 0
+                ? "save-suggestions"
+                : "default",
+            suggestions: !showAfterSave ? suggestions : undefined,
+          },
+        ]);
+
+        showToast("Instance saved");
+        return nextState;
+      } catch (error) {
+        if (isConvergence) {
+          setConvergenceSaveReveal((current) => ({
+            ...current,
+            isProcessing: false,
+            processingAlternatives: false,
+          }));
+        }
+        throw error;
+      } finally {
+        setIsSavingInstance(false);
+      }
     },
     [activeInstance, showToast],
+  );
+
+  const handleCloseDesignPreview = useCallback(() => {
+    setShowDesignPreview(false);
+    setIsEditDrawerOpen(false);
+  }, []);
+
+  const handleCloseEditDrawer = useCallback(() => {
+    setIsEditDrawerOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (activeInstance && !showDesignPreview) {
+      setActiveInstance(null);
+      setIsEditDrawerOpen(false);
+    }
+  }, [activeInstance, showDesignPreview]);
+
+  useEffect(() => {
+    if (!activeInstance) {
+      setIsEditDrawerOpen(false);
+      setConvergenceSaveReveal(INITIAL_CONVERGENCE_SAVE_REVEAL);
+    }
+  }, [activeInstance]);
+
+  const hasUserMessages = messages.some((message) => message.role === "user");
+  const isLanding = activeInstance === null;
+  const showChatAvatars = !isLanding;
+  const showScenarioPills =
+    isLanding && !hasUserMessages && !loading && !isSavingInstance;
+  const hasPreview = activeInstance !== null && showDesignPreview;
+  /** Split-view chat uses the same Outshift chrome as landing (hero, pills, input). */
+  const useSessionChrome = hasPreview;
+
+  const previewWorkspace = useMemo(() => {
+    if (!activeInstance) return {};
+    return workspaceFromInstanceState(activeInstance.state, activeInstance.slug);
+  }, [activeInstance]);
+
+  const showAgentThresholdAlternatives = useMemo(() => {
+    if (!activeInstance || activeInstance.slug !== "convergence-point") {
+      return false;
+    }
+    return hasUserScenario("convergence-point", previewWorkspace);
+  }, [activeInstance, previewWorkspace]);
+
+  const extractionInProgress = useMemo(() => {
+    if (!activeInstance?.slug) return false;
+    return isExtractionInProgress(activeInstance.slug, previewWorkspace);
+  }, [activeInstance?.slug, previewWorkspace]);
+
+  const patternGuidance = useMemo(() => {
+    const slug = activeInstance?.slug;
+    if (!slug || !PATTERN_INSTRUCTION_SLUGS.includes(slug as typeof PATTERN_INSTRUCTION_SLUGS[number])) {
+      return [];
+    }
+    if (extractionInProgress) {
+      return [];
+    }
+    if (drawerGuidance !== null) {
+      return drawerGuidance;
+    }
+    return getPatternGuidanceMessages(slug, previewWorkspace);
+  }, [activeInstance?.slug, drawerGuidance, extractionInProgress, previewWorkspace]);
+
+  const handlePatternGuidanceChange = useCallback((messages: string[]) => {
+    setDrawerGuidance(messages);
+  }, []);
+
+  useEffect(() => {
+    scrollChatToBottom();
+  }, [patternGuidance, scrollChatToBottom]);
+
+  const handleSelectConflictView = useCallback(
+    (viewId: ConflictVisibilityViewId) => {
+      setShowDesignPreview(true);
+      setConvergenceSaveReveal((current) => ({
+        ...current,
+        activeView: viewId,
+        activeViewToken: current.activeViewToken + 1,
+        showStackedVisuals: true,
+        showAlternatives: true,
+        savedAgentCount: Math.max(
+          current.savedAgentCount,
+          CONVERGENCE_AGENT_THRESHOLD,
+        ),
+      }));
+
+      window.setTimeout(() => {
+        previewPanelRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }, 120);
+    },
+    [],
   );
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -237,144 +592,280 @@ export function PatternAdvisor({ initialPrompt }: { initialPrompt?: string }) {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-white">
+    <div className="flex h-full min-h-0 flex-col bg-bg font-body text-ink">
       {toast ? (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-accent px-4 py-2 text-sm text-white shadow-lg">
-          {toast}
-        </div>
+        <Toast
+          message={toast}
+          variant={toastVariant}
+          onDismiss={() => setToast(null)}
+        />
       ) : null}
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
-        <div className="flex w-full max-w-[640px] shrink-0 flex-col border-line bg-white lg:border-r">
-          <div className="flex-1 space-y-6 overflow-y-auto bg-white p-4">
-            {messages.map((message, index) => {
-              const hasRecommendations =
-                message.role === "assistant" &&
-                message.recommendations &&
-                message.recommendations.length > 0;
+      <div
+        className={`flex min-h-0 flex-1 overflow-hidden ${
+          hasPreview ? "flex-col lg:flex-row" : "flex-col"
+        }`}
+      >
+        <div
+          className={
+            hasPreview
+              ? "advisor-chat-shell advisor-chat-shell--session relative flex w-full max-w-[640px] shrink-0 flex-col overflow-hidden border-line lg:border-r"
+              : "advisor-chat-shell advisor-chat-shell--landing relative flex min-h-0 flex-1 flex-col overflow-hidden"
+          }
+        >
+          {isLanding || useSessionChrome ? <HeroBackground /> : null}
 
-              return (
-                <div
-                  key={`${message.role}-${index}`}
-                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={
-                      hasRecommendations
-                        ? "w-full"
-                        : "max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-relaxed " +
-                          (message.role === "user"
-                            ? "bg-[var(--pattern-accent,#7c3aed)] text-white"
-                            : "bg-white text-[var(--pattern-text,#111)] shadow-sm ring-1 ring-[var(--pattern-border,#e2e5ea)]")
-                    }
+          <div
+            className={
+              isLanding || useSessionChrome
+                ? "relative z-10 flex min-h-0 flex-1 flex-col"
+                : "flex min-h-0 flex-1 flex-col"
+            }
+          >
+          {isLanding ? (
+            <header className="advisor-page-header advisor-chat-inner shrink-0 pt-8">
+              <h1 className="advisor-page-header__title font-heading">
+                Human Agent IoC patterns
+              </h1>
+            </header>
+          ) : null}
+
+          <div
+            className={
+              isLanding
+                ? "advisor-chat-scroll relative min-h-0 flex-1"
+                : useSessionChrome
+                  ? "advisor-chat-scroll advisor-chat-scroll--session relative min-h-0 flex-1"
+                  : "relative min-h-0 flex-1 overflow-y-auto p-4"
+            }
+          >
+            {isSavingInstance ? (
+              <SaveProcessingOverlay label="Processing…" />
+            ) : null}
+            <div className={isLanding ? "advisor-chat-inner" : "space-y-6"}>
+              {messages.map((message, index) => {
+                const hasRecommendations =
+                  message.role === "assistant" &&
+                  message.recommendations &&
+                  message.recommendations.length > 0;
+                const hasSuggestions =
+                  message.role === "assistant" &&
+                  message.messageKind === "save-suggestions" &&
+                  message.suggestions &&
+                  message.suggestions.length > 0;
+                const isProminentCard = hasRecommendations || hasSuggestions;
+
+                return (
+                  <ChatMessage
+                    key={`${message.role}-${index}`}
+                    role={message.role}
+                    showAvatar={showChatAvatars}
+                    className={index > 0 || !isLanding ? "mt-6" : ""}
                   >
-                    <div
-                      className={
-                        hasRecommendations
-                          ? "rounded-2xl bg-white px-4 py-3 text-sm leading-relaxed text-[var(--pattern-text,#111)] shadow-sm ring-1 ring-[var(--pattern-border,#e2e5ea)]"
-                          : undefined
-                      }
-                    >
-                      <p>{message.content}</p>
-                    </div>
+                    <div className={isProminentCard ? "w-full" : undefined}>
+                      <div
+                        className={
+                          isProminentCard
+                            ? "advisor-bubble advisor-bubble--assistant w-full"
+                            : `advisor-bubble ${
+                                message.role === "user"
+                                  ? "advisor-bubble--user"
+                                  : "advisor-bubble--assistant"
+                              }`
+                        }
+                      >
+                        <p className="m-0 whitespace-pre-wrap">{message.content}</p>
 
-                    {hasRecommendations ? (
-                      <div className="mt-4 space-y-4">
-                        {message.recommendations!.map((recommendation) => {
-                          const isTop =
-                            message.topRecommendation?.pattern.slug ===
-                            recommendation.pattern.slug;
+                        {hasRecommendations ? (
+                          <div className="mt-4 space-y-4">
+                            {message.recommendations!.map((recommendation, recIndex) => {
+                              const isTop =
+                                message.topRecommendation?.pattern.slug ===
+                                recommendation.pattern.slug;
 
-                          return (
-                            <PatternPreview
-                              key={recommendation.pattern.slug}
-                              component={recommendation.fullComponent}
-                              explanation={recommendation.explanation}
-                              isTopRecommendation={
-                                isTop && message.recommendations!.length > 1
-                              }
-                              onInstantiate={() =>
-                                void handleInstantiatePattern(
-                                  recommendation.pattern.slug,
-                                )
+                              return (
+                                <PatternRecommendationCard
+                                  key={recommendation.pattern.slug}
+                                  recommendation={recommendation}
+                                  userInput={message.userInput ?? ""}
+                                  isTopRecommendation={
+                                    isTop && message.recommendations!.length > 1
+                                  }
+                                  animationDelay={recIndex * 80}
+                                  onTryThis={() =>
+                                    void handleInstantiatePattern(
+                                      recommendation.pattern.slug,
+                                    )
+                                  }
+                                />
+                              );
+                            })}
+                            <p className="px-1 text-xs leading-relaxed text-muted">
+                              Click &ldquo;Try this&rdquo; to create a live instance
+                              and start using it.
+                            </p>
+                          </div>
+                        ) : null}
+
+                        {hasSuggestions ? (
+                          <div className="mt-4">
+                            <PatternSuggestionsCard
+                              suggestions={message.suggestions!}
+                              onSwitchPattern={(slug) =>
+                                void handleSwitchPattern(slug)
                               }
                             />
-                          );
-                        })}
-                        <p className="px-1 text-xs leading-relaxed text-[var(--pattern-text-muted,#666)]">
-                          Click &ldquo;Try this&rdquo; to create a live instance
-                          and start using it.
-                        </p>
+                          </div>
+                        ) : null}
                       </div>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
+                    </div>
+                  </ChatMessage>
+                );
+              })}
 
-            {loading ? (
-              <div className="flex justify-start">
-                <div className="rounded-2xl bg-white px-4 py-3 text-sm text-[var(--pattern-text-muted,#666)] shadow-sm ring-1 ring-[var(--pattern-border,#e2e5ea)]">
-                  Thinking…
-                </div>
-              </div>
-            ) : null}
+              {showScenarioPills ? (
+                <ScenarioQuestionPills
+                  disabled={loading || isSavingInstance}
+                  onSelect={(slug) => void handleInstantiatePattern(slug)}
+                />
+              ) : null}
+
+              {loading ? (
+                <ChatLoadingMessage
+                  showAvatar={showChatAvatars}
+                  label={
+                    activeInstance && hasExtractionFlow(activeInstance.slug)
+                      ? "Building your scenario"
+                      : "Analyzing your scenario"
+                  }
+                />
+              ) : null}
+
+              {patternGuidance.length > 0 ? (
+                <ChatMessage role="assistant" showAvatar={showChatAvatars}>
+                  <PatternGuidanceCard messages={patternGuidance} />
+                </ChatMessage>
+              ) : null}
+
+              {activeInstance?.slug === "convergence-point" ? (
+                <ChatMessage role="assistant" showAvatar={showChatAvatars}>
+                  <AgentThresholdAlternatives
+                    saveReveal={convergenceSaveReveal}
+                    enabled={showAgentThresholdAlternatives}
+                    isSaving={isSavingInstance}
+                    onSelectView={handleSelectConflictView}
+                  />
+                </ChatMessage>
+              ) : null}
+              <div ref={chatEndRef} aria-hidden className="h-0 shrink-0" />
+            </div>
           </div>
 
-          <div className="border-t border-line bg-white p-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="What patterns do you need? E.g., 'Record our decisions'"
-                disabled={loading}
-                className="flex-1 rounded-xl border border-[var(--pattern-border,#e2e5ea)] px-4 py-3 text-sm outline-none transition focus:border-[var(--pattern-accent,#7c3aed)] focus:ring-2 focus:ring-[var(--pattern-accent-soft,#ede9fe)] disabled:opacity-60"
-              />
-              <button
-                type="button"
-                onClick={() => void handleSendMessage()}
-                disabled={loading || !input.trim()}
-                className="rounded-xl bg-[var(--pattern-accent,#7c3aed)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Send
-              </button>
+          <div
+            className={
+              isLanding || useSessionChrome
+                ? "advisor-chat-input-bar shrink-0"
+                : "shrink-0 border-t border-line bg-bg p-4"
+            }
+          >
+            <div
+              className={
+                isLanding
+                  ? "advisor-chat-input-wrap"
+                  : useSessionChrome
+                    ? "advisor-chat-input-row advisor-chat-input-row--session"
+                    : "flex gap-2"
+              }
+            >
+              {isLanding ? (
+                <p className="advisor-chat-input-label">Or type your scenario:</p>
+              ) : null}
+              {isLanding ? (
+                <div className="advisor-chat-input-row">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(event) => setInput(event.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Describe what happened…"
+                    disabled={loading || isSavingInstance}
+                    className="advisor-chat-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleSendMessage()}
+                    disabled={loading || isSavingInstance || !input.trim()}
+                    className="osh-cta-solid advisor-chat-send disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Send
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(event) => setInput(event.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type your scenario..."
+                    disabled={loading || isSavingInstance}
+                    className={
+                      useSessionChrome
+                        ? "advisor-chat-input"
+                        : "flex-1 rounded-xl border border-line px-4 py-3 text-sm text-ink outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[rgba(0,188,235,0.15)] disabled:opacity-60"
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleSendMessage()}
+                    disabled={loading || isSavingInstance || !input.trim()}
+                    className={
+                      useSessionChrome
+                        ? "osh-cta-solid advisor-chat-send disabled:cursor-not-allowed disabled:opacity-50"
+                        : "osh-cta-solid rounded-xl px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                    }
+                  >
+                    Send
+                  </button>
+                </>
+              )}
             </div>
+          </div>
           </div>
         </div>
 
-        <aside className="flex min-h-0 w-full flex-1 flex-col border-t border-line bg-hover/50 lg:min-w-0 lg:flex-row lg:border-t-0 lg:border-l">
-          {activeInstance ? (
-            <>
-              <div className="flex min-h-0 w-full flex-col border-b border-line lg:w-[22rem] lg:max-w-[24rem] lg:shrink-0 lg:border-b-0 lg:border-r">
-                <InstanceSidebar
-                  instance={activeInstance}
-                  onClose={() => setActiveInstance(null)}
-                  onEditState={handleEditState}
-                />
-              </div>
-              <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                <PatternDesignPreview
-                  slug={activeInstance.slug}
-                  patternName={activeInstance.component.metadata.name}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="flex h-full flex-col justify-center bg-white p-6 lg:flex-1">
-              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-subtle">
-                Active instance
-              </h2>
-              <p className="max-w-sm text-sm leading-relaxed text-muted">
-                No active instance yet. Ask for a recommendation, then click
-                &ldquo;Try this&rdquo; on a preview. Your interactive workspace
-                will appear here; the reference design shows on the right.
-              </p>
+        {hasPreview && activeInstance ? (
+          <aside
+            ref={previewPanelRef}
+            className="advisor-preview-panel flex min-h-0 w-full flex-1 flex-col border-t border-line lg:min-w-0 lg:border-t-0 lg:border-l"
+          >
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+              <PatternDesignPreview
+                slug={activeInstance.slug}
+                patternName={activeInstance.component.metadata.name}
+                component={activeInstance.component}
+                instanceState={activeInstance.state}
+                isSaving={isSavingInstance}
+                onClose={handleCloseDesignPreview}
+                onCustomise={() => setIsEditDrawerOpen(true)}
+                convergenceSaveReveal={
+                  activeInstance.slug === "convergence-point"
+                    ? convergenceSaveReveal
+                    : undefined
+                }
+              />
             </div>
-          )}
-        </aside>
+          </aside>
+        ) : null}
       </div>
+
+      <InstanceEditDrawer
+        isOpen={isEditDrawerOpen && activeInstance !== null}
+        instance={activeInstance}
+        onClose={handleCloseEditDrawer}
+        onInstanceUpdate={handleInstanceUpdate}
+        onPatternGuidanceChange={handlePatternGuidanceChange}
+      />
     </div>
   );
 }

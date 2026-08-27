@@ -101,6 +101,14 @@
   font-size: var(--type-scale-0);
 }
 
+.theme-root .token-card--themed .token-card__companion-tag {
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surfaceRaised));
+  border-color: color-mix(in srgb, var(--color-accent) 30%, var(--color-border));
+  color: var(--color-accent);
+  font-family: var(--font-family);
+  font-size: var(--type-scale-0);
+}
+
 .theme-root .pattern-component-card,
 .theme-root .pattern-inbox,
 .theme-root .presence-inbox {

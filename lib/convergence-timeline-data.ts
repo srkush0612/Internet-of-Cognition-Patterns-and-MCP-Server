@@ -1,4 +1,10 @@
-export type AgentKey = "Prometheus" | "Themis" | "Athena" | "Hermes";
+export type AgentKey = string;
+
+export type TimelineAgentMeta = {
+  key: string;
+  color: string;
+  phase: number;
+};
 
 export type TimelineEvent =
   | {
@@ -250,14 +256,29 @@ export function ampAt(x: number): number {
 }
 
 export function strandY(agentIndex: number, x: number): number {
-  const phase = AGENT_META[agentIndex].phase;
-  return TIMELINE_AXIS + ampAt(x) * Math.sin((2 * Math.PI * x) / TIMELINE_OPTS.wl + phase);
+  return strandYForAgents(AGENT_META, agentIndex, x);
 }
 
 export function strandPath(agentIndex: number): string {
+  return strandPathForAgents(AGENT_META, agentIndex);
+}
+
+export function strandYForAgents(
+  agents: TimelineAgentMeta[],
+  agentIndex: number,
+  x: number,
+): number {
+  const phase = agents[agentIndex]?.phase ?? 0;
+  return TIMELINE_AXIS + ampAt(x) * Math.sin((2 * Math.PI * x) / TIMELINE_OPTS.wl + phase);
+}
+
+export function strandPathForAgents(
+  agents: TimelineAgentMeta[],
+  agentIndex: number,
+): string {
   const pts: string[] = [];
   for (let x = 118; x <= 920; x += 2.5) {
-    pts.push(`${x.toFixed(1)} ${strandY(agentIndex, x).toFixed(1)}`);
+    pts.push(`${x.toFixed(1)} ${strandYForAgents(agents, agentIndex, x).toFixed(1)}`);
   }
   return `M${pts.join(" L")}`;
 }

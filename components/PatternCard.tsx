@@ -4,6 +4,7 @@ import { ReferenceDesignChip } from "./ReferenceDesignChip";
 import { StatusBadge } from "./StatusBadge";
 import { hasDesignReady } from "@/components/patterns/pattern-registry";
 import type { Pattern } from "@/lib/patterns";
+import { getPatternReadyCompanionTags } from "@/lib/pattern-ready";
 
 export function PatternCard({
   pattern,
@@ -13,6 +14,9 @@ export function PatternCard({
   themed?: boolean;
 }) {
   const designReady = hasDesignReady(pattern.slug);
+  const companionTags = designReady
+    ? getPatternReadyCompanionTags(pattern.slug)
+    : [];
   const href = themed
     ? `/design-system/patterns/${pattern.slug}`
     : `/patterns/${pattern.slug}`;
@@ -33,6 +37,11 @@ export function PatternCard({
             Coming soon
           </span>
         )}
+        {companionTags.map((tag) => (
+          <span key={tag} className="token-card__companion-tag">
+            {tag}
+          </span>
+        ))}
         <StatusBadge pattern={pattern} />
         {pattern.hasReferenceDesign ? <ReferenceDesignChip /> : null}
       </div>

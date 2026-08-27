@@ -7,10 +7,12 @@ export function CredentialBoundaryCanvas({
   data,
   compact = false,
   showCardChrome = true,
+  contextLabel,
 }: {
   data: BoundarySplitData;
   compact?: boolean;
   showCardChrome?: boolean;
+  contextLabel?: string;
 }) {
   const body = <BoundarySplitCard data={data} compact={compact} />;
 
@@ -23,7 +25,7 @@ export function CredentialBoundaryCanvas({
       patternKey="CredentialBoundary"
       researchDot
       title="Credential Boundary"
-      contextLabel="Loan review"
+      contextLabel={contextLabel?.trim() || "Loan review"}
       icon={<LockIcon size={compact ? 15 : 18} />}
       footerLeft="Boundary set by compliance"
       footerRight="flagged 2m ago"

@@ -10,24 +10,24 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import {
-  AGENT_COLORS,
-  AGENT_META,
+  STATUS_COLORS,
   TIMELINE_AXIS,
-  TIMELINE_EVENTS,
   TIMELINE_OPTS,
   TIMELINE_TICKS,
-  CONVERGED_SIDEBAR,
-  DIVERGED_SIDEBAR,
-  ORIGIN_DETAIL,
   OVERSIGHT_DETAIL,
-  STATUS_COLORS,
   eventToDetail,
-  strandPath,
-  strandY,
-  type AgentKey,
+  strandPathForAgents,
+  strandYForAgents,
+  type TimelineAgentMeta,
   type TimelineEvent,
   type TimelineNodeDetail,
 } from "@/lib/convergence-timeline-data";
+import {
+  buildTimelineModel,
+  demoTimelineModel,
+} from "@/lib/convergence-timeline-from-workspace";
+import { hasUserScenario } from "@/lib/pattern-live-preview";
+import type { ConvergencePointWorkspaceState } from "@/lib/workspace-defaults";
 
 function PersonIcon({
   cx,
@@ -54,21 +54,30 @@ function PersonIcon({
 function AgentDots({
   x,
   agreed,
+  agents,
 }: {
   x: number;
-  agreed: AgentKey[];
+  agreed: string[];
+  agents: TimelineAgentMeta[];
 }) {
-  const xs = [x - 12, x - 4, x + 4, x + 12];
+  if (agents.length === 0) return null;
+
+  const spread = agents.length === 1 ? 0 : Math.min(24, (agents.length - 1) * 8);
+  const xs = agents.map((_, index) =>
+    agents.length === 1 ? x : x - spread / 2 + (spread * index) / (agents.length - 1),
+  );
+
   return (
     <g>
-      {AGENT_META.map((agent, j) => {
+      {agents.map((agent, index) => {
         const on = agreed.includes(agent.key);
+        const dotKey = `dot-${index}-${agent.key}`;
         return on ? (
-          <circle key={agent.key} cx={xs[j]} cy={178} r={2.5} fill={agent.color} />
+          <circle key={dotKey} cx={xs[index]} cy={178} r={2.5} fill={agent.color} />
         ) : (
           <circle
-            key={agent.key}
-            cx={xs[j]}
+            key={dotKey}
+            cx={xs[index]}
             cy={178}
             r={2.2}
             fill="#FFFFFF"
@@ -87,11 +96,13 @@ function MergeNode({
   resolved,
   onSelect,
   highlighted,
+  agents,
 }: {
   ev: Extract<TimelineEvent, { kind: "merge" }>;
   resolved?: boolean;
   onSelect: (detail: TimelineNodeDetail, el: SVGGElement) => void;
   highlighted: boolean;
+  agents: TimelineAgentMeta[];
 }) {
   const r = ev.size === "lg" ? 11 : 8;
   const nodeId = ev.id ?? `merge-${ev.x}`;
@@ -156,7 +167,7 @@ function MergeNode({
           <PersonIcon cx={ev.x} cy={TIMELINE_AXIS - 25} scale={1.5} fill="#FFFFFF" />
         </>
       ) : null}
-      <AgentDots x={ev.x} agreed={ev.agreed} />
+      <AgentDots x={ev.x} agreed={ev.agreed} agents={agents} />
     </g>
   );
 }
@@ -166,11 +177,13 @@ function PinchNode({
   resolved,
   onSelect,
   highlighted,
+  agents,
 }: {
   ev: Extract<TimelineEvent, { kind: "pinch" }>;
   resolved: boolean;
   onSelect: (detail: TimelineNodeDetail, el: SVGGElement) => void;
   highlighted: boolean;
+  agents: TimelineAgentMeta[];
 }) {
   const nodeId = ev.id ?? `pinch-${ev.x}`;
   const detail = eventToDetail(ev, nodeId);
@@ -266,7 +279,7 @@ function PinchNode({
         strokeDasharray="2,2.5"
         opacity={0.55}
       />
-      <AgentDots x={ev.x} agreed={ev.agreed} />
+      <AgentDots x={ev.x} agreed={ev.agreed} agents={agents} />
     </g>
   );
 }
@@ -276,14 +289,16 @@ function LaneNode({
   agentIndex,
   onSelect,
   highlighted,
+  agents,
 }: {
   ev: Extract<TimelineEvent, { kind: "lane" }>;
   agentIndex: number;
   onSelect: (detail: TimelineNodeDetail, el: SVGGElement) => void;
   highlighted: boolean;
+  agents: TimelineAgentMeta[];
 }) {
-  const y = strandY(agentIndex, ev.x);
-  const col = AGENT_META[agentIndex].color;
+  const y = strandYForAgents(agents, agentIndex, ev.x);
+  const col = agents[agentIndex]?.color ?? "#5B57E0";
   const nodeId = ev.id ?? `lane-${ev.x}-${ev.agent}`;
   const detail = eventToDetail(ev, nodeId);
 
@@ -323,11 +338,13 @@ function TimelineDetailPanel({
   position,
   onClose,
   onResolve,
+  agentColors,
 }: {
   detail: TimelineNodeDetail;
   position: { left: number; top: number };
   onClose: () => void;
   onResolve: (dNum: number) => void;
+  agentColors: Record<string, string>;
 }) {
   const statusColor = STATUS_COLORS[detail.status] ?? "#9AA0B5";
 
@@ -368,9 +385,9 @@ function TimelineDetailPanel({
           <p className="convergence__panel-agents">
             <span className="convergence__panel-agents-label">Converged:</span>{" "}
             {detail.agreed.map((name, i) => (
-              <span key={name}>
+              <span key={`agreed-${i}-${name}`}>
                 {i > 0 ? ", " : ""}
-                <span style={{ color: AGENT_COLORS[name], fontWeight: 600 }}>
+                <span style={{ color: agentColors[name] ?? "#5B57E0", fontWeight: 600 }}>
                   {name}
                 </span>
               </span>
@@ -383,9 +400,9 @@ function TimelineDetailPanel({
                   {detail.dissentLabel ?? "Diverged"}:
                 </span>{" "}
                 {detail.dissent.map((name, i) => (
-                  <span key={name}>
+                  <span key={`dissent-${i}-${name}`}>
                     {i > 0 ? ", " : ""}
-                    <span style={{ color: AGENT_COLORS[name], fontWeight: 600 }}>
+                    <span style={{ color: agentColors[name] ?? "#5B57E0", fontWeight: 600 }}>
                       {name}
                     </span>
                   </span>
@@ -443,7 +460,13 @@ function TimelineDetailPanel({
   );
 }
 
-export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) {
+export function ConvergenceTimeline({
+  compact = false,
+  workspace,
+}: {
+  compact?: boolean;
+  workspace?: ConvergencePointWorkspaceState & Record<string, unknown>;
+}) {
   const fadeId = useId().replace(/:/g, "");
   const svgRef = useRef<SVGSVGElement>(null);
   const [selected, setSelected] = useState<TimelineNodeDetail | null>(null);
@@ -453,14 +476,27 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
     () => new Set(),
   );
 
+  const model = useMemo(() => {
+    if (workspace && hasUserScenario("convergence-point", workspace)) {
+      const built = buildTimelineModel(workspace);
+      if (built.agents.length > 0) {
+        return built;
+      }
+    }
+    return demoTimelineModel();
+  }, [workspace]);
+
+  const { agents, events, convergedSidebar, divergedSidebar, originDetail, agentColors } =
+    model;
+
   const paths = useMemo(
-    () => AGENT_META.map((_, i) => strandPath(i)),
-    [],
+    () => agents.map((_, index) => strandPathForAgents(agents, index)),
+    [agents],
   );
 
   const divergedCount =
-    DIVERGED_SIDEBAR.length -
-    DIVERGED_SIDEBAR.filter((item) => resolvedPinches.has(item.dNum)).length;
+    divergedSidebar.length -
+    divergedSidebar.filter((item) => resolvedPinches.has(item.dNum)).length;
 
   const closePanel = useCallback(() => {
     setSelected(null);
@@ -547,7 +583,7 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
             <g
               className={`convergence__node${highlightId === "origin" ? " convergence__node--highlight" : ""}`}
               data-node-id="origin"
-              onClick={(e) => openPanel(ORIGIN_DETAIL, e.currentTarget)}
+              onClick={(e) => openPanel(originDetail, e.currentTarget)}
               role="button"
               tabIndex={0}
             >
@@ -568,10 +604,10 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
               </text>
             </g>
 
-            {AGENT_META.map((agent, i) => (
-              <g key={agent.key}>
+            {agents.map((agent, index) => (
+              <g key={`strand-${index}-${agent.key}`}>
                 <path
-                  d={paths[i]}
+                  d={paths[index]}
                   fill="none"
                   stroke="#FFFFFF"
                   strokeWidth={TIMELINE_OPTS.w + 3.2}
@@ -579,7 +615,7 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
                   pointerEvents="none"
                 />
                 <path
-                  d={paths[i]}
+                  d={paths[index]}
                   fill="none"
                   stroke={agent.color}
                   strokeWidth={TIMELINE_OPTS.w}
@@ -599,26 +635,29 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
               pointerEvents="none"
             />
 
-            {TIMELINE_EVENTS.map((ev) => {
+            {events.map((ev) => {
               if (ev.kind === "lane") {
-                const idx = AGENT_META.findIndex((a) => a.key === ev.agent);
+                const idx = agents.findIndex((agent) => agent.key === ev.agent);
+                if (idx < 0) return null;
                 return (
                   <LaneNode
-                    key={`lane-${ev.x}`}
+                    key={ev.id ?? `lane-${ev.x}-${ev.agent}`}
                     ev={ev}
                     agentIndex={idx}
                     onSelect={openPanel}
-                    highlighted={highlightId === `lane-${ev.x}-${ev.agent}`}
+                    highlighted={highlightId === (ev.id ?? `lane-${ev.x}-${ev.agent}`)}
+                    agents={agents}
                   />
                 );
               }
               if (ev.kind === "merge") {
                 return (
                   <MergeNode
-                    key={`merge-${ev.x}`}
+                    key={ev.id ?? `merge-${ev.x}`}
                     ev={ev}
                     onSelect={openPanel}
                     highlighted={highlightId === (ev.id ?? `merge-${ev.x}`)}
+                    agents={agents}
                   />
                 );
               }
@@ -633,6 +672,7 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
                   highlighted={
                     highlightId === (ev.id ?? `pinch-${ev.x}`)
                   }
+                  agents={agents}
                 />
               );
             })}
@@ -654,7 +694,7 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
                 strokeDasharray="2,4"
                 opacity={0.3}
               />
-              {TIMELINE_EVENTS.filter((ev) => ev.kind !== "lane").map((ev) => (
+              {events.filter((ev) => ev.kind !== "lane").map((ev) => (
                 <circle
                   key={`dot-${ev.x}`}
                   cx={ev.x}
@@ -674,8 +714,8 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
           </svg>
 
           <div className="convergence__legend">
-            {AGENT_META.map((agent) => (
-              <span key={agent.key} className="convergence__legend-item">
+            {agents.map((agent, index) => (
+              <span key={`legend-${index}-${agent.key}`} className="convergence__legend-item">
                 <svg width={20} height={6} aria-hidden>
                   <line
                     x1={1}
@@ -709,11 +749,11 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
           <aside className="convergence__sidebar" aria-label="Decision summary">
             <div>
               <div className="convergence__sidebar-heading convergence__sidebar-heading--converged">
-                CONVERGED · {CONVERGED_SIDEBAR.length}
+                CONVERGED · {convergedSidebar.length}
               </div>
               <ul className="convergence__sidebar-list">
-                {CONVERGED_SIDEBAR.map((item) => (
-                  <li key={item}>
+                {convergedSidebar.map((item, index) => (
+                  <li key={`converged-${index}-${item}`}>
                     <span className="convergence__sidebar-bullet convergence__sidebar-bullet--converged">
                       ●
                     </span>
@@ -727,7 +767,7 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
                 DIVERGED · {divergedCount}
               </div>
               <ul className="convergence__sidebar-list">
-                {DIVERGED_SIDEBAR.filter(
+                {divergedSidebar.filter(
                   (item) => !resolvedPinches.has(item.dNum),
                 ).map((item) => (
                   <li key={item.id}>
@@ -749,6 +789,7 @@ export function ConvergenceTimeline({ compact = false }: { compact?: boolean }) 
           position={panelPos}
           onClose={closePanel}
           onResolve={handleResolve}
+          agentColors={agentColors}
         />
       ) : null}
     </div>

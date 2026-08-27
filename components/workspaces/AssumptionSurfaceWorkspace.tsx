@@ -7,9 +7,7 @@ import {
 import {
   FieldLabel,
   Section,
-  SelectInput,
   TextArea,
-  TextInput,
   WorkspaceShell,
   type WorkspaceBaseProps,
 } from "./shared";
@@ -24,74 +22,40 @@ export function AssumptionSurfaceWorkspace(props: Props) {
     <WorkspaceShell {...props} defaults={DEFAULT_ASSUMPTION}>
       {({ draft, updateField }) => (
         <>
-          <Section title="Assumption">
-            <FieldLabel htmlFor="assumption">What assumption are we testing?</FieldLabel>
-            <TextInput
-              id="assumption"
-              value={draft.assumption}
-              onChange={(value) => updateField("assumption", value)}
-              placeholder="e.g. Users prefer OAuth over API keys"
-            />
-          </Section>
-
-          <Section title="Hypothesis">
-            <FieldLabel htmlFor="why">Why we believe it</FieldLabel>
+          <Section title="Required">
+            <FieldLabel htmlFor="agents-assumptions">What did each agent assume?</FieldLabel>
             <TextArea
-              id="why"
-              value={draft.whyWeBelieve}
-              onChange={(value) => updateField("whyWeBelieve", value)}
-              placeholder="User feedback, surveys, prior data…"
-              rows={3}
+              id="agents-assumptions"
+              value={draft.agents_and_assumptions}
+              onChange={(value) => updateField("agents_and_assumptions", value)}
+              placeholder="Link each agent to their assumption…"
+              rows={4}
             />
-            <FieldLabel htmlFor="if-wrong">If wrong, what breaks?</FieldLabel>
+            <FieldLabel htmlFor="disagreement">What positions did those assumptions create?</FieldLabel>
             <TextArea
-              id="if-wrong"
-              value={draft.ifWrong}
-              onChange={(value) => updateField("ifWrong", value)}
-              placeholder="Auth flow, SSO integration, onboarding…"
-              rows={3}
-            />
-            <FieldLabel htmlFor="how-test">How to test it</FieldLabel>
-            <TextArea
-              id="how-test"
-              value={draft.howToTest}
-              onChange={(value) => updateField("howToTest", value)}
-              placeholder="A/B test, metrics to watch…"
+              id="disagreement"
+              value={draft.disagreement}
+              onChange={(value) => updateField("disagreement", value)}
+              placeholder="Conflicting positions from different beliefs…"
               rows={3}
             />
           </Section>
 
-          <Section title="Status">
-            <FieldLabel>Test status</FieldLabel>
-            <SelectInput
-              value={draft.testStatus}
-              onChange={(value) => updateField("testStatus", value)}
-              options={["Not started", "Running", "Complete"]}
+          <Section title="Recommended">
+            <FieldLabel htmlFor="assumption-evidence">What evidence backed each assumption?</FieldLabel>
+            <TextArea
+              id="assumption-evidence"
+              value={draft.assumption_evidence}
+              onChange={(value) => updateField("assumption_evidence", value)}
+              rows={3}
             />
-            <FieldLabel>Result</FieldLabel>
-            <div className="flex flex-wrap gap-4 pt-1">
-              {(
-                [
-                  ["confirmed", "Confirmed"],
-                  ["refuted", "Refuted"],
-                  ["tbd", "TBD"],
-                ] as const
-              ).map(([value, label]) => (
-                <label
-                  key={value}
-                  className="flex cursor-pointer items-center gap-2 text-sm text-ink"
-                >
-                  <input
-                    type="radio"
-                    name="assumption-result"
-                    checked={draft.result === value}
-                    onChange={() => updateField("result", value)}
-                    className="accent-accent"
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
+            <FieldLabel htmlFor="validated">Were assumptions validated or proved wrong?</FieldLabel>
+            <TextArea
+              id="validated"
+              value={draft.validated_assumptions}
+              onChange={(value) => updateField("validated_assumptions", value)}
+              rows={3}
+            />
           </Section>
         </>
       )}

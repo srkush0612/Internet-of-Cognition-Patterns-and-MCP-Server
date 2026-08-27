@@ -1,4 +1,11 @@
-import type { ComponentDefinition } from "@/server/mcp-server";
+import {
+  createLocalInstance,
+  discoverComponents,
+  fetchComponent,
+  mergeLocalInstanceState,
+  postJson,
+  type ComponentDefinition,
+} from "@/lib/pattern-registry-core";
 
 export type { ComponentDefinition };
 
@@ -40,6 +47,15 @@ export function toChatRecommendation(
     fullComponent: recommendation.fullComponent,
     uiSections: recommendation.fullComponent.ui.text.sections,
   };
+}
+
+export function buildAiResponse(recommendations: ChatRecommendation[]): string {
+  if (recommendations.length === 0) {
+    return "I couldn't find a strong pattern match for that yet. Try describing the problem in more detail — for example, tracking decisions, surfacing assumptions, or resolving agent disagreement.";
+  }
+
+  const top = recommendations[0];
+  return `I recommend ${top.pattern.name}. ${top.explanation} Below you can see the full pattern details and try it out.`;
 }
 
 type DiscoverResult = {
@@ -125,48 +141,13 @@ function buildExplanation(
 async function discoverPatternMetadata(
   userInput: string,
 ): Promise<DiscoverResult[]> {
-  if (typeof window === "undefined") {
-    const { discoverComponents } = await import("@/server/mcp-server");
-    return discoverComponents(userInput);
-  }
-
-  const response = await fetch("/api/patterns/discover", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: userInput }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to discover patterns");
-  }
-
-  const data = (await response.json()) as { results: DiscoverResult[] };
-  return data.results ?? [];
+  return discoverComponents(userInput);
 }
 
 async function fetchFullComponent(
   slug: string,
 ): Promise<ComponentDefinition | null> {
-  try {
-    if (typeof window === "undefined") {
-      const { fetchComponent } = await import("@/server/mcp-server");
-      return fetchComponent(slug);
-    }
-
-    const response = await fetch(`/api/patterns/${slug}`);
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = (await response.json()) as {
-      success?: boolean;
-      component?: ComponentDefinition;
-    };
-
-    return data.component ?? null;
-  } catch {
-    return null;
-  }
+  return fetchComponent(slug);
 }
 
 async function buildRecommendation(
@@ -176,7 +157,6 @@ async function buildRecommendation(
 ): Promise<PatternRecommendation | null> {
   const fullComponent = await fetchFullComponent(result.slug);
   if (!fullComponent) {
-    console.warn(`Human Agent IoC Patterns: failed to fetch full component for ${result.slug}`);
     return null;
   }
 
@@ -201,57 +181,78 @@ async function buildRecommendation(
 export async function recommendPatterns(
   userInput: string,
 ): Promise<PatternRecommendation[]> {
-  try {
-    const results = await discoverPatternMetadata(userInput);
+  const results = await discoverPatternMetadata(userInput);
 
-    const recommendations = await Promise.all(
-      results.map((result, index) =>
-        buildRecommendation(userInput, result, index),
-      ),
-    );
+  const recommendations = await Promise.all(
+    results.map((result, index) =>
+      buildRecommendation(userInput, result, index),
+    ),
+  );
 
-    return recommendations.filter(
-      (recommendation): recommendation is PatternRecommendation =>
-        recommendation !== null,
-    );
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to recommend patterns";
-    throw new Error(message);
-  }
+  return recommendations.filter(
+    (recommendation): recommendation is PatternRecommendation =>
+      recommendation !== null,
+  );
 }
 
-export async function instantiateAndTrack(
+export async function instantiatePattern(
   slug: string,
   agentId: string,
   initialState: Record<string, unknown>,
-): Promise<{ instanceId: string; instance: Record<string, unknown> }> {
-  const response = await fetch("/api/instances", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+): Promise<{ instanceId: string; instance: Record<string, unknown>; component: ComponentDefinition }> {
+  const component = await fetchFullComponent(slug);
+  if (!component) {
+    throw new Error(`Pattern not found: ${slug}`);
+  }
+
+  if (typeof window !== "undefined") {
+    const api = await postJson<{
+      success?: boolean;
+      instance?: { instanceId: string; state?: Record<string, unknown> };
+    }>("/api/instances", {
       action: "instantiate",
       slug,
       initial_state: initialState,
       agent_id: agentId,
       persistent: true,
-    }),
-  });
+    });
 
-  const data = (await response.json()) as {
-    success?: boolean;
-    instance?: { instanceId: string; state?: Record<string, unknown> };
-    error?: string;
-  };
-
-  if (!response.ok || !data.success || !data.instance) {
-    throw new Error(data.error ?? "Failed to instantiate pattern");
+    if (api.ok && api.data.success && api.data.instance) {
+      return {
+        instanceId: api.data.instance.instanceId,
+        instance:
+          (api.data.instance.state as Record<string, unknown>) ??
+          (api.data.instance as unknown as Record<string, unknown>),
+        component,
+      };
+    }
   }
 
-  return {
-    instanceId: data.instance.instanceId,
-    instance: data.instance as Record<string, unknown>,
-  };
+  const local = createLocalInstance(slug, initialState);
+  return { instanceId: local.instanceId, instance: local.state, component };
+}
+
+export async function updatePatternInstance(
+  instanceId: string,
+  currentState: Record<string, unknown>,
+  updates: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  if (typeof window !== "undefined") {
+    const api = await postJson<{
+      success?: boolean;
+      instance?: { state?: Record<string, unknown> };
+    }>("/api/instances", {
+      action: "update",
+      instance_id: instanceId,
+      updates,
+    });
+
+    if (api.ok && api.data.success && api.data.instance?.state) {
+      return api.data.instance.state;
+    }
+  }
+
+  return mergeLocalInstanceState(currentState, updates);
 }
 
 export function suggestFollowUpQuestions(pattern: {

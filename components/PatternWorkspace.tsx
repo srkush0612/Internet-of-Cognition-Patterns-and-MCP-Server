@@ -24,6 +24,8 @@ export type PatternWorkspaceProps = {
   state: Record<string, unknown>;
   onSaveState: (updates: Record<string, unknown>) => Promise<void>;
   isLoading?: boolean;
+  embedded?: boolean;
+  onDraftChange?: (workspace: Record<string, unknown>) => void;
 };
 
 type GenericNotes = { notes: string };
@@ -64,11 +66,15 @@ export function PatternWorkspace({
   patternName,
   state,
   onSaveState,
+  embedded,
+  onDraftChange,
 }: PatternWorkspaceProps) {
   const shared = {
     state,
     patternName,
     onSaveState,
+    embedded,
+    onDraftChange,
   };
 
   switch (slug) {

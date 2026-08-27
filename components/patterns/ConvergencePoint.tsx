@@ -1,23 +1,45 @@
 import { PatternComponentCard } from "./PatternComponentCard";
-import { ConvergenceTimeline } from "./ConvergenceTimeline";
+import { ConvergencePointVisualizationSelector } from "./ConvergencePointVisualizationSelector";
 import { PatternInboxShell } from "./PatternInboxShell";
-import { PresenceIcon } from "./icons";
+import {
+  asConvergence,
+  convergenceAgentsFromPositions,
+  convergenceInboxMessage,
+  hasUserScenario,
+  resolveLivePreview,
+  type PatternLivePreviewInput,
+} from "@/lib/pattern-live-preview";
+import { convergenceFormToWorkspace } from "@/components/patterns/edit/convergence-point-extractor";
+import type { ConvergenceSaveRevealState } from "@/lib/convergence-save-reveal";
 
-export function ConvergencePoint({ compact = false }: { compact?: boolean }) {
+export function ConvergencePoint({
+  compact = false,
+  live,
+  saveReveal,
+}: {
+  compact?: boolean;
+  live?: PatternLivePreviewInput;
+  saveReveal?: ConvergenceSaveRevealState;
+}) {
+  const workspace = live ? asConvergence(live.workspace) : null;
+  const isDemoData =
+    (!live || !hasUserScenario("convergence-point", live.workspace)) &&
+    !saveReveal?.showAlternatives;
+  const contextLabel =
+    workspace?.disagreement?.trim() ||
+    (typeof workspace?.scenario === "string" && workspace.scenario.trim()) ||
+    live?.title?.trim() ||
+    "Mission room · Mythos Corp routing";
+
   return (
     <div className="convergence-point-wide">
-      <PatternComponentCard
-        patternKey="ConvergencePoint"
-        dotColor="#23A06B"
-        title="Agent convergence timeline"
-        contextLabel="Mission room · Mythos Corp routing"
-        icon={<PresenceIcon size={compact ? 15 : 18} />}
-        footerLeft="Four streams · merge and pinch points"
-        footerRight="live"
+      <ConvergencePointVisualizationSelector
         compact={compact}
-      >
-        <ConvergenceTimeline compact={compact} />
-      </PatternComponentCard>
+        workspace={workspace ?? undefined}
+        isDemoData={isDemoData}
+        contextLabel={contextLabel}
+        saveReveal={saveReveal}
+      />
     </div>
   );
 }
@@ -46,14 +68,50 @@ const CONVERGENCE_INBOX_AGENTS = [
 const CONVERGENCE_INBOX_MESSAGE =
   "Two decisions are still open on the timeline. Prometheus and Hermes lean Osaka for failover; Themis and Athena want in-region redundancy. Vendor scope is split the other way. The view shows where agents converged and where they are still negotiating.";
 
-export function ConvergencePointInContext() {
+export function ConvergencePointInContext({
+  live,
+  data,
+  saveReveal,
+}: {
+  live?: PatternLivePreviewInput;
+  data?: {
+    agentRoster?: string[];
+    disagreementDimension?: string;
+    resolutionMechanism?: string;
+    outcome?: string;
+  };
+  saveReveal?: ConvergenceSaveRevealState;
+}) {
+  const resolvedLive =
+    live ??
+    (data
+      ? resolveLivePreview("convergence-point", {
+          workspace: convergenceFormToWorkspace(data),
+        })
+      : undefined);
+
+  const workspace = resolvedLive ? asConvergence(resolvedLive.workspace) : null;
+  const useLive = resolvedLive
+    ? hasUserScenario("convergence-point", resolvedLive.workspace)
+    : false;
+  const agents = useLive
+    ? convergenceAgentsFromPositions(workspace?.positions ?? [])
+    : CONVERGENCE_INBOX_AGENTS;
+  const message =
+    (useLive && workspace && convergenceInboxMessage(workspace)) ||
+    CONVERGENCE_INBOX_MESSAGE;
+  const activeAgent =
+    agents.find((agent) => agent.status === "alert")?.name ??
+    agents[0]?.name ??
+    "Themis";
+
   return (
     <PatternInboxShell
-      agents={CONVERGENCE_INBOX_AGENTS}
-      activeAgentName="Themis"
-      message={CONVERGENCE_INBOX_MESSAGE}
+      agents={agents.length > 0 ? agents : CONVERGENCE_INBOX_AGENTS}
+      activeAgentName={activeAgent}
+      message={message}
     >
-      <ConvergencePoint />
+      <ConvergencePoint live={resolvedLive} saveReveal={saveReveal} />
     </PatternInboxShell>
   );
 }

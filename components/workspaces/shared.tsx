@@ -8,6 +8,9 @@ export type WorkspaceBaseProps<T extends Record<string, unknown>> = {
   patternName: string;
   onSaveState: (updates: Record<string, unknown>) => Promise<void>;
   defaults: T;
+  /** When true, hide Save/Clear and stream draft changes instead. */
+  embedded?: boolean;
+  onDraftChange?: (draft: T) => void;
   children: (ctx: {
     draft: T;
     setDraft: React.Dispatch<React.SetStateAction<T>>;
@@ -21,6 +24,11 @@ const INPUT =
 const TEXTAREA = `${INPUT} min-h-[88px] resize-y`;
 
 const LABEL = "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink";
+
+export const workspaceFieldInputClass = INPUT;
+export const workspaceFieldTextareaClass = TEXTAREA;
+export const workspaceFieldLabelClass = LABEL;
+export const workspaceFieldSelectClass = INPUT;
 
 const SECTION = "space-y-3 rounded-xl border border-line bg-white p-4";
 
@@ -138,6 +146,8 @@ export function WorkspaceShell<T extends Record<string, unknown>>({
   patternName,
   onSaveState,
   defaults,
+  embedded = false,
+  onDraftChange,
   children,
 }: WorkspaceBaseProps<T>) {
   const [draft, setDraft] = useState<T>(() =>
@@ -150,8 +160,12 @@ export function WorkspaceShell<T extends Record<string, unknown>>({
   }, [state, defaults]);
 
   const updateField = useCallback(<K extends keyof T>(key: K, value: T[K]) => {
-    setDraft((current) => ({ ...current, [key]: value }));
-  }, []);
+    setDraft((current) => {
+      const next = { ...current, [key]: value };
+      onDraftChange?.(next);
+      return next;
+    });
+  }, [onDraftChange]);
 
   const save = async () => {
     setIsSaving(true);
@@ -164,6 +178,7 @@ export function WorkspaceShell<T extends Record<string, unknown>>({
 
   const clear = async () => {
     setDraft(defaults);
+    onDraftChange?.(defaults);
     setIsSaving(true);
     try {
       await onSaveState(workspacePatch(defaults));
@@ -175,27 +190,31 @@ export function WorkspaceShell<T extends Record<string, unknown>>({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pb-4">
-        <p className="text-sm font-medium text-muted">{patternName}</p>
+        {!embedded ? (
+          <p className="text-sm font-medium text-muted">{patternName}</p>
+        ) : null}
         {children({ draft, setDraft, updateField })}
       </div>
-      <footer className="sticky bottom-0 flex shrink-0 gap-2 border-t border-line bg-white/95 py-3 backdrop-blur-sm">
-        <button
-          type="button"
-          onClick={() => void save()}
-          disabled={isSaving}
-          className={BTN_PRIMARY}
-        >
-          {isSaving ? "Saving…" : "Save"}
-        </button>
-        <button
-          type="button"
-          onClick={() => void clear()}
-          disabled={isSaving}
-          className={BTN_SECONDARY}
-        >
-          Clear
-        </button>
-      </footer>
+      {!embedded ? (
+        <footer className="sticky bottom-0 flex shrink-0 gap-2 border-t border-line bg-white/95 py-3 backdrop-blur-sm">
+          <button
+            type="button"
+            onClick={() => void save()}
+            disabled={isSaving}
+            className={BTN_PRIMARY}
+          >
+            {isSaving ? "Saving…" : "Save"}
+          </button>
+          <button
+            type="button"
+            onClick={() => void clear()}
+            disabled={isSaving}
+            className={BTN_SECONDARY}
+          >
+            Clear
+          </button>
+        </footer>
+      ) : null}
     </div>
   );
 }

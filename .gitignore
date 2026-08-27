@@ -21,7 +21,24 @@
 npm-debug.log*
 
 # env
+.env
 .env*.local
+
+# Private research / Dovetail pipeline — never commit (lives outside this repo)
+analyze_transcripts.py
+agent.py
+__init__.py
+*.csv
+dovetail*.json
+dovetail_sync_state.json
+known_patterns.json
+patterns_output.md
+CURSOR_BRIEFING.md
+adk-env/
+__pycache__/
+
+# Internal dev notes (not for public repo)
+CONTEXT-pattern-library.md
 
 # typescript
 next-env.d.ts

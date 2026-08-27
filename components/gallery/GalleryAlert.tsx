@@ -5,7 +5,7 @@ import { useState } from "react";
 type Variant = "info" | "warning" | "danger" | "success";
 
 const MESSAGES: Record<Variant, string> = {
-  info: "Pattern evidence synced from research transcripts.",
+  info: "Pattern evidence from practitioner research.",
   warning: "Three patterns still have pending validation.",
   danger: "Quote attribution mismatch detected in one source.",
   success: "All modeled patterns passed review.",

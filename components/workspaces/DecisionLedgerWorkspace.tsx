@@ -1,16 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import {
   DEFAULT_DECISION_LEDGER,
   type DecisionLedgerWorkspaceState,
 } from "@/lib/workspace-defaults";
 import {
-  AddButton,
   FieldLabel,
-  RemoveChip,
   Section,
-  SelectInput,
   TextArea,
   TextInput,
   WorkspaceShell,
@@ -22,95 +18,56 @@ type Props = Omit<
   "defaults" | "children"
 >;
 
-function EvidenceField({
-  evidence,
-  onChange,
-}: {
-  evidence: string[];
-  onChange: (evidence: string[]) => void;
-}) {
-  const [draft, setDraft] = useState("");
-
-  return (
-    <div>
-      <FieldLabel>Supporting evidence</FieldLabel>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {evidence.map((item, index) => (
-          <RemoveChip
-            key={`${item}-${index}`}
-            label={item || "Untitled"}
-            onRemove={() => onChange(evidence.filter((_, i) => i !== index))}
-          />
-        ))}
-      </div>
-      <div className="mt-2 flex gap-2">
-        <TextInput
-          value={draft}
-          onChange={setDraft}
-          placeholder="Add evidence source…"
-        />
-      </div>
-      <div className="mt-2">
-        <AddButton
-          label="Add evidence"
-          onClick={() => {
-            const next = draft.trim();
-            if (!next) return;
-            onChange([...evidence, next]);
-            setDraft("");
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
 export function DecisionLedgerWorkspace(props: Props) {
   return (
     <WorkspaceShell {...props} defaults={DEFAULT_DECISION_LEDGER}>
       {({ draft, updateField }) => (
         <>
-          <Section title="Decision">
-            <FieldLabel htmlFor="decision">What decision are you making?</FieldLabel>
+          <Section title="Required">
+            <FieldLabel htmlFor="decision">What decision needed to be made?</FieldLabel>
             <TextInput
               id="decision"
               value={draft.decision}
               onChange={(value) => updateField("decision", value)}
-              placeholder="e.g. Firmware upgrade path"
+              placeholder="e.g. Choose deployment timing"
+            />
+            <FieldLabel htmlFor="chosen">Which option was chosen?</FieldLabel>
+            <TextInput
+              id="chosen"
+              value={draft.chosen}
+              onChange={(value) => updateField("chosen", value)}
+              placeholder="e.g. Delayed rollout with QA"
+            />
+            <FieldLabel htmlFor="reasoning">Why was this option chosen?</FieldLabel>
+            <TextArea
+              id="reasoning"
+              value={draft.reasoning}
+              onChange={(value) => updateField("reasoning", value)}
+              placeholder="Constraints, trade-offs, evidence…"
             />
           </Section>
 
-          <Section title="Reasoning">
-            <FieldLabel htmlFor="agent-reasoning">Agent&apos;s reasoning</FieldLabel>
+          <Section title="Recommended">
+            <FieldLabel htmlFor="alternatives">What other options were considered?</FieldLabel>
             <TextArea
-              id="agent-reasoning"
-              value={draft.agentReasoning}
-              onChange={(value) => updateField("agentReasoning", value)}
-              placeholder="Why the agent recommends this…"
-            />
-            <FieldLabel htmlFor="operator-context">Operator&apos;s context (optional)</FieldLabel>
-            <TextArea
-              id="operator-context"
-              value={draft.operatorContext}
-              onChange={(value) => updateField("operatorContext", value)}
-              placeholder="Constraints, rollback window, policy…"
+              id="alternatives"
+              value={draft.alternatives}
+              onChange={(value) => updateField("alternatives", value)}
               rows={3}
             />
-          </Section>
-
-          <Section title="Backing">
-            <FieldLabel>Backing strength</FieldLabel>
-            <SelectInput
-              value={draft.backingStrength}
-              onChange={(value) => updateField("backingStrength", value)}
-              options={["Strong", "Moderate", "Thin", "None"]}
+            <FieldLabel htmlFor="decided-by">Who made this decision?</FieldLabel>
+            <TextInput
+              id="decided-by"
+              value={draft.decided_by}
+              onChange={(value) => updateField("decided_by", value)}
             />
-            <div className="mt-3">
-              <EvidenceField
-                evidence={draft.evidence}
-                onChange={(value) => updateField("evidence", value)}
-              />
-            </div>
+            <FieldLabel htmlFor="constraints">What constraints shaped this choice?</FieldLabel>
+            <TextArea
+              id="constraints"
+              value={draft.constraints}
+              onChange={(value) => updateField("constraints", value)}
+              rows={3}
+            />
           </Section>
         </>
       )}

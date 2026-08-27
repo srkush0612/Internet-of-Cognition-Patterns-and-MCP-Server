@@ -1,6 +1,11 @@
 import { PatternComponentCard } from "./PatternComponentCard";
 import { PatternInboxShell } from "./PatternInboxShell";
 import { EyeIcon } from "./icons";
+import {
+  asBackgroundWork,
+  hasUserScenario,
+  type PatternLivePreviewInput,
+} from "@/lib/pattern-live-preview";
 
 type LedgerKind = "queried" | "assumed" | "acted" | "result";
 
@@ -43,40 +48,115 @@ const KIND_LABEL: Record<LedgerKind, string> = {
   result: "Result",
 };
 
-function LedgerBody({ compact = false }: { compact?: boolean }) {
+function formatPreviewDate(value: string | undefined): string | null {
+  if (!value?.trim()) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function LedgerBody({
+  compact = false,
+  live,
+}: {
+  compact?: boolean;
+  live?: PatternLivePreviewInput;
+}) {
+  const workspace = live ? asBackgroundWork(live.workspace) : null;
+  const useLive = live ? hasUserScenario("background-work-ledger", live.workspace) : false;
+  const summaryText = useLive
+    ? workspace?.workDescription?.trim() || "Your background work scenario"
+    : null;
+  const openQuestion = useLive ? workspace?.blockers?.trim() : null;
+  const startedLabel = formatPreviewDate(workspace?.startedAt);
+  const targetLabel = formatPreviewDate(workspace?.targetCompletion);
+  const scheduleMeta =
+    startedLabel || targetLabel
+      ? [startedLabel ? `Started ${startedLabel}` : null, targetLabel ? `Target ${targetLabel}` : null]
+          .filter(Boolean)
+          .join(" · ")
+      : null;
+  const statusEntries =
+    workspace?.statusUpdates?.filter((entry) => entry.text?.trim()) ?? [];
+  const contextNote =
+    live?.context?.notes?.trim() ||
+    live?.context?.affectedServices?.trim() ||
+    live?.context?.risks?.trim() ||
+    null;
+
   return (
     <div className={`work-ledger${compact ? " work-ledger--compact" : ""}`}>
       <div className="work-ledger__summary">
-        <span className="work-ledger__summary-strong">4 steps</span> while you
-        were away · 7 min · 1 open question
+        {useLive ? (
+          <>
+            <span className="work-ledger__summary-strong">{summaryText}</span>
+            {scheduleMeta ? (
+              <span className="mt-1 block text-sm font-normal text-muted">{scheduleMeta}</span>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <span className="work-ledger__summary-strong">4 steps</span> while you
+            were away · 7 min · 1 open question
+          </>
+        )}
       </div>
 
-      <ol className="work-ledger__timeline">
-        {LEDGER_ENTRIES.map((entry) => (
-          <li key={entry.time} className="work-ledger__entry">
-            <span className="work-ledger__time">{entry.time}</span>
-            <span
-              className={`work-ledger__kind work-ledger__kind--${entry.kind}`}
-            >
-              {KIND_LABEL[entry.kind]}
-            </span>
-            <div className="work-ledger__entry-body">
-              <p className="work-ledger__text">{entry.text}</p>
-              {entry.meta ? (
-                <span className="work-ledger__meta">{entry.meta}</span>
-              ) : null}
-            </div>
-          </li>
-        ))}
-      </ol>
+      {useLive && statusEntries.length > 0 ? (
+        <ol className="work-ledger__timeline">
+          {statusEntries.map((entry, index) => (
+            <li key={`${entry.timestamp}-${index}`} className="work-ledger__entry">
+              <span className="work-ledger__time">
+                {formatPreviewDate(entry.timestamp) ?? entry.timestamp ?? "—"}
+              </span>
+              <span className="work-ledger__kind work-ledger__kind--acted">Update</span>
+              <div className="work-ledger__entry-body">
+                <p className="work-ledger__text">{entry.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+
+      {!useLive ? (
+        <ol className="work-ledger__timeline">
+          {LEDGER_ENTRIES.map((entry) => (
+            <li key={entry.time} className="work-ledger__entry">
+              <span className="work-ledger__time">{entry.time}</span>
+              <span
+                className={`work-ledger__kind work-ledger__kind--${entry.kind}`}
+              >
+                {KIND_LABEL[entry.kind]}
+              </span>
+              <div className="work-ledger__entry-body">
+                <p className="work-ledger__text">{entry.text}</p>
+                {entry.meta ? (
+                  <span className="work-ledger__meta">{entry.meta}</span>
+                ) : null}
+              </div>
+            </li>
+          ))}
+        </ol>
+      ) : null}
 
       <div className="work-ledger__open">
         <span className="work-ledger__open-label">Open question</span>
         <p className="work-ledger__open-text">
-          Confirm the owning team for edge-router-7 before this rollback merges
-          to prod?
+          {openQuestion ||
+            (useLive
+              ? "Add blockers or open questions in the edit panel."
+              : "Confirm the owning team for edge-router-7 before this rollback merges to prod?")}
         </p>
       </div>
+
+      {useLive && contextNote ? (
+        <p className="mt-3 text-xs text-muted">{contextNote}</p>
+      ) : null}
 
       <div className="work-ledger__actions">
         <button type="button" className="work-ledger__btn work-ledger__btn--primary">
@@ -93,19 +173,41 @@ function LedgerBody({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export function BackgroundWorkLedger({ compact = false }: { compact?: boolean }) {
+export function BackgroundWorkLedger({
+  compact = false,
+  live,
+}: {
+  compact?: boolean;
+  live?: PatternLivePreviewInput;
+}) {
+  const workspace = live ? asBackgroundWork(live.workspace) : null;
+  const useLive = live ? hasUserScenario("background-work-ledger", live.workspace) : false;
+  const contextLabel =
+    live?.context?.affectedServices?.trim() ||
+    live?.title?.trim() ||
+    (workspace?.workDescription?.trim()
+      ? workspace.workDescription.trim().slice(0, 48)
+      : "Rollback agent");
+
+  const footerLeft = useLive
+    ? [
+        workspace?.blockers?.trim() ? "Blockers noted" : "Nothing merged to prod yet",
+        "your review needed",
+      ].join(" · ")
+    : "Nothing merged to prod yet · your review needed";
+
   return (
     <PatternComponentCard
       patternKey="BackgroundWorkLedger"
       dotColor="#3b5ec6"
       title="What happened while you were away"
-      contextLabel="Rollback agent"
+      contextLabel={contextLabel}
       icon={<EyeIcon size={compact ? 15 : 18} />}
-      footerLeft="Nothing merged to prod yet · your review needed"
+      footerLeft={footerLeft}
       footerRight="synced 1m ago"
       compact={compact}
     >
-      <LedgerBody compact={compact} />
+      <LedgerBody compact={compact} live={live} />
     </PatternComponentCard>
   );
 }
@@ -134,14 +236,25 @@ const LEDGER_INBOX_AGENTS = [
 const LEDGER_INBOX_MESSAGE =
   "You were away for 7 minutes. Here is everything I did on the edge-router-7 incident, including one assumption I made and the one question I still need you to answer. Nothing has merged to prod.";
 
-export function BackgroundWorkLedgerInbox() {
+export function BackgroundWorkLedgerInbox({
+  live,
+}: {
+  live?: PatternLivePreviewInput;
+}) {
+  const workspace = live ? asBackgroundWork(live.workspace) : null;
+  const message =
+    (live &&
+      hasUserScenario("background-work-ledger", live.workspace) &&
+      workspace?.workDescription?.trim()) ||
+    LEDGER_INBOX_MESSAGE;
+
   return (
     <PatternInboxShell
       agents={LEDGER_INBOX_AGENTS}
       activeAgentName="Rollback agent"
-      message={LEDGER_INBOX_MESSAGE}
+      message={message}
     >
-      <BackgroundWorkLedger compact />
+      <BackgroundWorkLedger compact live={live} />
     </PatternInboxShell>
   );
 }

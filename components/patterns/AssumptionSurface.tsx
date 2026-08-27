@@ -22,6 +22,11 @@ import {
   type AssumptionSeed,
   type ContextItem,
 } from "@/lib/assumption-surface-data";
+import {
+  asAssumption,
+  hasUserScenario,
+  type PatternLivePreviewInput,
+} from "@/lib/pattern-live-preview";
 
 type CorrectedAssumption = {
   claim: string;
@@ -731,7 +736,52 @@ function AssumptionSurfaceBody({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export function AssumptionSurface({ compact: compactProp = false }: { compact?: boolean }) {
+function AssumptionLiveScenario({
+  live,
+}: {
+  live: PatternLivePreviewInput;
+}) {
+  const workspace = asAssumption(live.workspace);
+  if (!hasUserScenario("assumption-surface", live.workspace)) return null;
+
+  return (
+    <section className="assumption-surface__live-scenario mb-4 rounded-xl border border-line bg-white p-4">
+      <p className="assumption-surface__preview-label mb-2 text-xs font-bold uppercase tracking-wide text-subtle">
+        Your assumption
+      </p>
+      <p className="text-sm font-semibold text-ink">
+        {workspace.agents_and_assumptions?.trim() ||
+          "Add agent assumptions in the edit panel."}
+      </p>
+      {workspace.disagreement?.trim() ? (
+        <p className="mt-2 text-sm text-muted">
+          <span className="font-semibold text-ink">Positions: </span>
+          {workspace.disagreement}
+        </p>
+      ) : null}
+      {workspace.assumption_evidence?.trim() ? (
+        <p className="mt-2 text-sm text-muted">
+          <span className="font-semibold text-ink">Evidence: </span>
+          {workspace.assumption_evidence}
+        </p>
+      ) : null}
+      {workspace.validated_assumptions?.trim() ? (
+        <p className="mt-2 text-sm text-muted">
+          <span className="font-semibold text-ink">Validated: </span>
+          {workspace.validated_assumptions}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+export function AssumptionSurface({
+  compact: compactProp = false,
+  live,
+}: {
+  compact?: boolean;
+  live?: PatternLivePreviewInput;
+}) {
   const [compactLocal, setCompactLocal] = useState(compactProp);
   const compact = compactProp || compactLocal;
 
@@ -752,6 +802,7 @@ export function AssumptionSurface({ compact: compactProp = false }: { compact?: 
           compact ? " assumption-surface-panel--compact" : ""
         }`}
       >
+        {live ? <AssumptionLiveScenario live={live} /> : null}
         <AssumptionSurfaceBody compact={compact} />
       </div>
     </div>

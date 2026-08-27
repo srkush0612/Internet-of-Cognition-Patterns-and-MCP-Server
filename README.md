@@ -40,7 +40,7 @@ Expect one registration line per pattern (17 total) and `Registry initialized wi
 Each registered pattern includes:
 
 - **Triggers** — auto-generated from slug, title, and explanation for discovery
-- **State schema** — `title`, `description`, `evidence`, `backingStrength`, `context`, `workspace`, etc.
+- **State schema** — `title`, `description`, `evidence`, `context`, `workspace`, etc. (backing strength is pattern metadata only, not instance state)
 - **Handlers** — `instantiate`, `updateState`, `handoffTo`
 - **UI sections** — structured copy for chat previews and pattern cards
 
@@ -89,7 +89,7 @@ app/api/*                ← HTTP layer for the Next.js app
 
 **GitHub:** push from this folder (remote: `IoC-patterns-and-server`).
 
-**Reviewa** (static prototype — advisor chat needs local dev):
+**Reviewa** (static prototype — advisor runs in-browser; instances are session-local):
 
 ```bash
 npm run deploy:reviewa

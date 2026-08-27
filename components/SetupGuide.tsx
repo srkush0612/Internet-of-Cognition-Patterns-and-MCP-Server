@@ -18,7 +18,7 @@ import { patterns } from "@/lib/patterns";
 import { PATTERN_READY_SLUGS } from "@/lib/pattern-ready";
 
 const PATTERN_COUNT = patterns.length;
-const PROJECT_PATH = "dovetail transcript/pattern-library";
+const PROJECT_PATH = "IoC-patterns-and-server";
 
 const REQUIREMENTS = [
   { label: "Node.js v18 or higher", required: true },
