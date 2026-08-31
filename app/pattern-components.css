@@ -51,6 +51,16 @@
   --text-muted: var(--pattern-text-subtle);
   --radius: var(--pattern-radius-card-compact);
   --on-accent: var(--pattern-surface);
+
+  /* Memory commitment review tokens */
+  --border-subtle: var(--pattern-border);
+  --space-lg: 1.125rem;
+  --space-md: 0.875rem;
+  --space-sm: 0.625rem;
+  --button-primary: var(--pattern-success);
+  --button-primary-text: #fff;
+  --status-success: var(--pattern-success);
+  --status-warning: var(--pattern-warning);
 }
 
 /* ── Pattern component card chrome (shared by Presence + Credential Boundary) ── */
@@ -1870,6 +1880,20 @@
 .authority__panel-level:hover {
   border-color: rgba(59, 94, 198, 0.35);
   background: #fff;
+}
+
+.authority--readonly .authority__panel-card:not(.authority__panel-card--editing):hover {
+  border-color: var(--pattern-border);
+  background: var(--pattern-surface);
+}
+
+.authority__panel-level--readonly {
+  cursor: default;
+}
+
+.authority__panel-level--readonly:hover {
+  border-color: var(--pattern-border);
+  background: var(--pattern-surface-muted);
 }
 
 .authority__panel-strip {
@@ -4866,4 +4890,528 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--pattern-text-muted);
+}
+
+/* ── Memory Commitment Review (belief-by-belief) ── */
+
+.memory-commitment-review-shell {
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+  background: var(--pattern-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: var(--space-lg);
+  box-shadow: var(--pattern-shadow);
+}
+
+.memory-commitment-review {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.memory-commitment-review--panel {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.memory-commitment-review--panel .memory-commitment-review__list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.125rem;
+}
+
+.memory-commitment-review__header {
+  margin-bottom: var(--space-lg);
+}
+
+.memory-commitment-review__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.5rem;
+}
+
+.memory-commitment-review__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.memory-commitment-review__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0.25rem 0.5625rem;
+  border-radius: 999px;
+  border: 1px solid rgba(59, 94, 198, 0.18);
+  background: rgba(59, 94, 198, 0.08);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #3b5ec6;
+}
+
+.memory-commitment-review__intro {
+  margin: 0 0 var(--space-md);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--pattern-text-muted);
+}
+
+.memory-commitment-review__intro strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.memory-commitment-review__progression {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0;
+}
+
+.memory-commitment-review__progression-step {
+  display: flex;
+  align-items: center;
+}
+
+.memory-commitment-review__progression-arrow {
+  width: 1.125rem;
+  height: 1px;
+  margin: 0 0.125rem;
+  background: var(--border-subtle);
+  position: relative;
+}
+
+.memory-commitment-review__progression-arrow::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: -3px;
+  border: 4px solid transparent;
+  border-left-color: var(--border-subtle);
+}
+
+.memory-commitment-review__progression-arrow--reached {
+  background: #94a3b8;
+}
+
+.memory-commitment-review__progression-arrow--reached::after {
+  border-left-color: #94a3b8;
+}
+
+.memory-commitment-review__progression-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3125rem 0.625rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--pattern-surface-muted);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.memory-commitment-review__progression-dot {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 50%;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.memory-commitment-review__progression-pill--reached.memory-commitment-review__progression-pill--muted {
+  color: var(--pattern-text-muted);
+}
+
+.memory-commitment-review__progression-pill--reached.memory-commitment-review__progression-pill--muted
+  .memory-commitment-review__progression-dot {
+  background: #94a3b8;
+}
+
+.memory-commitment-review__progression-pill--current.memory-commitment-review__progression-pill--active {
+  border-color: rgba(59, 94, 198, 0.28);
+  background: rgba(59, 94, 198, 0.08);
+  color: #3b5ec6;
+  font-weight: 600;
+}
+
+.memory-commitment-review__progression-pill--current.memory-commitment-review__progression-pill--active
+  .memory-commitment-review__progression-dot {
+  background: #3b5ec6;
+}
+
+.memory-commitment-review__progression-pill--reached.memory-commitment-review__progression-pill--success {
+  border-color: rgba(22, 163, 74, 0.22);
+  background: var(--pattern-success-soft);
+  color: var(--status-success);
+}
+
+.memory-commitment-review__progression-pill--reached.memory-commitment-review__progression-pill--success
+  .memory-commitment-review__progression-dot {
+  background: var(--status-success);
+}
+
+.memory-commitment-review__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.memory-commitment-review__item {
+  margin: 0;
+}
+
+.memory-commitment-review__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--pattern-surface-muted);
+  border-radius: 0 0 12px 12px;
+}
+
+.memory-commitment-review__summary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.25rem;
+}
+
+.memory-commitment-review__summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+  min-width: 3.5rem;
+}
+
+.memory-commitment-review__summary-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.memory-commitment-review__summary-value--committed {
+  color: var(--status-success);
+}
+
+.memory-commitment-review__summary-value--expiring {
+  color: var(--status-warning);
+}
+
+.memory-commitment-review__summary-value--rejected {
+  color: var(--pattern-boundary);
+}
+
+.memory-commitment-review__summary-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.memory-commitment-review__commit-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5625rem 0.875rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--button-primary);
+  color: var(--button-primary-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.memory-commitment-review__commit-all:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.memory-commitment-review__commit-all:focus-visible {
+  outline: 2px solid var(--pattern-accent-soft);
+  outline-offset: 2px;
+}
+
+.belief-card {
+  width: 100%;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
+  background: var(--pattern-surface);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.belief-card--committed {
+  border-color: rgba(22, 163, 74, 0.35);
+  background: var(--pattern-success-soft);
+}
+
+.belief-card--rejected {
+  opacity: 0.68;
+}
+
+.belief-card__title-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.625rem;
+  margin-bottom: var(--space-sm);
+}
+
+.belief-card__status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.4375rem;
+  border-radius: 50%;
+  background: #3b5ec6;
+  flex-shrink: 0;
+}
+
+.belief-card__statement {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+.belief-card__confidence {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1875rem;
+  flex-shrink: 0;
+}
+
+.belief-card__confidence-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.125rem;
+  height: 0.875rem;
+}
+
+.belief-card__confidence-bar {
+  display: block;
+  width: 0.3125rem;
+  border-radius: 1px;
+  background: #e2e8f0;
+}
+
+.belief-card__confidence-bar:nth-child(1) {
+  height: 0.375rem;
+}
+
+.belief-card__confidence-bar:nth-child(2) {
+  height: 0.5625rem;
+}
+
+.belief-card__confidence-bar:nth-child(3) {
+  height: 0.875rem;
+}
+
+.belief-card__confidence-bar--filled.belief-card__confidence-bar--success {
+  background: var(--status-success);
+}
+
+.belief-card__confidence-bar--filled.belief-card__confidence-bar--warning {
+  background: var(--status-warning);
+}
+
+.belief-card__confidence-text {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.belief-card__quote {
+  margin: 0 0 var(--space-sm);
+  padding: 0.4375rem 0 0.4375rem 0.75rem;
+  border-left: 2px solid #e2e8f0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--pattern-text-muted);
+  font-style: italic;
+}
+
+.belief-card__meta {
+  margin: 0 0 var(--space-md);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.belief-card__meta strong {
+  color: var(--pattern-text-muted);
+  font-weight: 600;
+}
+
+.belief-card__config {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-bottom: var(--space-md);
+}
+
+.belief-card__config-row {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.belief-card__config-label {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.belief-card__config-keep {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.belief-card__segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3125rem;
+}
+
+.belief-card__segment {
+  padding: 0.3125rem 0.5625rem;
+  border-radius: 7px;
+  border: 1px solid var(--border-subtle);
+  background: var(--pattern-surface);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--pattern-text-muted);
+  cursor: pointer;
+}
+
+.belief-card__segment--active {
+  border-color: rgba(59, 94, 198, 0.35);
+  background: rgba(59, 94, 198, 0.08);
+  color: #3b5ec6;
+  font-weight: 600;
+}
+
+.belief-card__segment:focus-visible {
+  outline: 2px solid var(--pattern-accent-soft);
+}
+
+.belief-card__flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.belief-card__flag--conflict {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid rgba(220, 38, 38, 0.18);
+}
+
+.belief-card__flag--sensitive {
+  color: #7c3aed;
+  background: #f5f3ff;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+}
+
+.belief-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4375rem;
+}
+
+.belief-card__actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4375rem;
+}
+
+.belief-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3125rem;
+  padding: 0.5rem 0.6875rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--pattern-surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.belief-card__btn:focus-visible {
+  outline: 2px solid var(--pattern-accent-soft);
+  outline-offset: 1px;
+}
+
+.belief-card__btn--commit {
+  border-color: var(--button-primary);
+  background: var(--button-primary);
+  color: var(--button-primary-text);
+}
+
+.belief-card__btn--commit.belief-card__btn--active {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.belief-card__btn--outline.belief-card__btn--touched {
+  border-color: var(--pattern-accent);
+  background: var(--pattern-accent-soft);
+  color: var(--pattern-accent);
+}
+
+.belief-card__btn--reject {
+  width: 100%;
+  color: var(--pattern-text-muted);
+}
+
+.belief-card__btn--reject.belief-card__btn--active {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.memory-commitment-review--panel .belief-card {
+  padding: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+.memory-commitment-review--panel .belief-card__statement {
+  font-size: 0.875rem;
+}
+
+.memory-commitment-review--panel .belief-card__btn {
+  font-size: 0.6875rem;
+  padding: 0.4375rem 0.5625rem;
+}
+
+.pattern-section__centered .platform-runbook {
+  width: 100%;
+  max-width: none;
 }

@@ -34,7 +34,7 @@ function restoreApi() {
 moveApiAside();
 
 try {
-  execSync("next build", {
+  execSync("npx next build", {
     cwd: root,
     stdio: "inherit",
     env: { ...process.env, REVIEWA_BUILD: "1" },

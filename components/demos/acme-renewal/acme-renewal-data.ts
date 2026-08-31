@@ -41,18 +41,6 @@ export const SHARED_REASONING = [
 export const COGNITION_ENGINES = ["Semantic", "Cost"];
 export const GUARDRAILS = ["Policy", "Risk"];
 
-export const BEATS = [
-  { id: 1, label: "Human Kickoff" },
-  { id: 2, label: "Mission Triggered" },
-  { id: 3, label: "Positions Forming" },
-  { id: 4, label: "Estimate Disputed" },
-  { id: 5, label: "Shared Evidence" },
-  { id: 6, label: "Approval Gate" },
-  { id: 7, label: "Emergent Outcome" },
-];
-
-export const ACTIVE_BEAT = 7;
-
 export type ChatAgentTone = "fin" | "sf";
 
 export type ChatMessage =

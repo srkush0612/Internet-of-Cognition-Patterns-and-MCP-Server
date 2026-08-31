@@ -231,11 +231,13 @@ function PanelLevelStrip({ level }: { level: AutonomyLevel }) {
 function PanelWorkflowRow({
   row,
   isEditing,
+  readOnly = false,
   onOpen,
   onSelectLevel,
 }: {
   row: WorkflowRow;
   isEditing: boolean;
+  readOnly?: boolean;
   onOpen: () => void;
   onSelectLevel: (level: AutonomyLevel) => void;
 }) {
@@ -250,12 +252,18 @@ function PanelWorkflowRow({
     >
       <header className="authority__panel-card-head">
         <span className="authority__domain">{row.workflow}</span>
-        <span className={`authority__risk authority__risk--${row.tone}`}>
-          {riskLabel(row.tone)}
-        </span>
       </header>
 
-      {isEditing ? (
+      {readOnly ? (
+        <div
+          className="authority__panel-level authority__panel-level--readonly"
+          role="img"
+          aria-label={`${row.workflow}, ${LEVELS[row.level]}`}
+        >
+          <PanelLevelStrip level={row.level} />
+          <span className="authority__panel-level-text">{LEVELS[row.level]}</span>
+        </div>
+      ) : isEditing ? (
         <div
           className="authority__panel-picker"
           role="radiogroup"
@@ -309,6 +317,7 @@ function WorkflowRowView({
   row,
   compact,
   panel = false,
+  readOnly = false,
   isEditing,
   onOpen,
   onSelectLevel,
@@ -316,6 +325,7 @@ function WorkflowRowView({
   row: WorkflowRow;
   compact?: boolean;
   panel?: boolean;
+  readOnly?: boolean;
   isEditing: boolean;
   onOpen: () => void;
   onSelectLevel: (level: AutonomyLevel) => void;
@@ -333,6 +343,7 @@ function WorkflowRowView({
       <PanelWorkflowRow
         row={row}
         isEditing={isEditing}
+        readOnly={readOnly}
         onOpen={onOpen}
         onSelectLevel={onSelectLevel}
       />
@@ -378,9 +389,11 @@ function WorkflowRowView({
 function GradientBody({
   compact = false,
   variant = "standalone",
+  readOnly = false,
 }: {
   compact?: boolean;
   variant?: AuthorityVariant;
+  readOnly?: boolean;
 }) {
   const panel = variant === "panel";
   const [groups, setGroups] = useState<AgentGroup[]>(() =>
@@ -390,6 +403,7 @@ function GradientBody({
   const bodyRef = useRef<HTMLDivElement>(null);
 
   const updateRowLevel = useCallback((rowId: string, level: AutonomyLevel) => {
+    if (readOnly) return;
     setGroups((current) =>
       current.map((group) => ({
         ...group,
@@ -405,10 +419,10 @@ function GradientBody({
       })),
     );
     setEditingRowId(null);
-  }, []);
+  }, [readOnly]);
 
   useEffect(() => {
-    if (!editingRowId) return;
+    if (readOnly || !editingRowId) return;
 
     const handlePointerDown = (event: MouseEvent) => {
       const target = event.target;
@@ -426,7 +440,7 @@ function GradientBody({
 
     document.addEventListener("mousedown", handlePointerDown);
     return () => document.removeEventListener("mousedown", handlePointerDown);
-  }, [editingRowId]);
+  }, [editingRowId, readOnly]);
 
   const areaCount = groups.reduce((count, group) => count + group.rows.length, 0);
 
@@ -435,7 +449,9 @@ function GradientBody({
       ref={bodyRef}
       className={`authority${
         compact ? " authority--compact" : ""
-      }${panel ? " authority--panel" : ""}`}
+      }${panel ? " authority--panel" : ""}${
+        readOnly ? " authority--readonly" : ""
+      }`}
       data-area-count={panel ? areaCount : undefined}
     >
       {!panel ? (
@@ -464,7 +480,8 @@ function GradientBody({
                   row={row}
                   compact={compact}
                   panel={panel}
-                  isEditing={editingRowId === row.id}
+                  readOnly={readOnly}
+                  isEditing={!readOnly && editingRowId === row.id}
                   onOpen={() =>
                     setEditingRowId((current) =>
                       current === row.id ? null : row.id,
@@ -508,7 +525,7 @@ export function AuthorityGradient({ compact = false }: { compact?: boolean }) {
 export function AuthorityGradientInContext() {
   return (
     <PatternPanelCard title="Authority Gradient" statusTag="10 areas">
-      <GradientBody variant="panel" />
+      <GradientBody variant="panel" readOnly />
     </PatternPanelCard>
   );
 }

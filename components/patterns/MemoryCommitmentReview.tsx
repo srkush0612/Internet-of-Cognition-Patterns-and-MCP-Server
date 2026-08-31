@@ -13,18 +13,25 @@ import {
   COMMIT_BELIEFS,
   COMMIT_CHOICE_LABEL,
   COMMIT_CHOICE_LOG,
-  STANDALONE_BELIEFS,
-  STANDALONE_SCENARIO,
+  MOCK_BELIEFS,
+  type Belief,
+  type BeliefDecision,
   type CommitAgent,
   type CommitChoice,
-  type StandaloneBelief,
 } from "@/lib/memory-commitment-data";
-import { AcmeRenewalDemo } from "@/components/demos/acme-renewal/AcmeRenewalDemo";
-import { PatternComponentCard } from "./PatternComponentCard";
-import { PatternPanelCard } from "./PatternPanelCard";
-import { LockIcon } from "./icons";
+import { PlatformRunbookDemo } from "@/components/demos/platform-runbook/PlatformRunbookDemo";
+import { BeliefCard } from "./BeliefCard";
+import { StarIcon } from "./icons";
+
+export type { Belief, BeliefDecision } from "@/lib/memory-commitment-data";
 
 const CHOICES: CommitChoice[] = ["acknowledge", "restore", "revoke"];
+
+const PROGRESSION = [
+  { key: "saw", label: "Agent saw it", tone: "muted" as const },
+  { key: "proposed", label: "Proposed to you", tone: "active" as const },
+  { key: "believes", label: "System believes it", tone: "success" as const },
+];
 
 type MemoryCommitmentContextValue = {
   choices: Partial<Record<string, CommitChoice>>;
@@ -95,55 +102,233 @@ function useMemoryCommitmentContext(required = true) {
   return context;
 }
 
-function AgentTag({ agent }: { agent: CommitAgent }) {
-  return <span className="memory-commit__agent">{agent}</span>;
+function normalizeBeliefs(beliefs: Belief[]): Belief[] {
+  return beliefs.map((belief) => ({
+    ...belief,
+    decision: belief.decision ?? "pending",
+    scope: belief.scope ?? "Team",
+    keep: belief.keep ?? "Permanent",
+  }));
 }
 
-function StandaloneBeliefRow({
-  belief,
-  showShift,
-  shiftNote,
+function computeSummary(beliefs: Belief[]) {
+  let committed = 0;
+  let expiring = 0;
+  let rejected = 0;
+  let pending = 0;
+
+  for (const belief of beliefs) {
+    const decision = belief.decision ?? "pending";
+    if (decision === "committed") {
+      committed += 1;
+      if (belief.keep === "Expires 30d") expiring += 1;
+    } else if (decision === "rejected") {
+      rejected += 1;
+    } else {
+      pending += 1;
+    }
+  }
+
+  return { committed, expiring, rejected, pending };
+}
+
+function MemoryCommitmentReviewHeader({
+  beliefCount,
+  committedCount,
 }: {
-  belief: StandaloneBelief;
-  showShift?: boolean;
-  shiftNote?: string;
+  beliefCount: number;
+  committedCount: number;
 }) {
+  const believesReached = committedCount > 0;
+
   return (
-    <>
-      {showShift && shiftNote ? (
-        <p className="memory-commit__shift-note">{shiftNote}</p>
-      ) : null}
-      <article
-        className={`memory-commit__belief memory-commit__belief--${belief.weight}`}
+    <header className="memory-commitment-review__header">
+      <div className="memory-commitment-review__title-row">
+        <h3 className="memory-commitment-review__title">Memory Commitment Review</h3>
+        <span className="memory-commitment-review__badge">
+          <StarIcon size={12} />
+          Agent · session digest
+        </span>
+      </div>
+      <p className="memory-commitment-review__intro">
+        The agent observed <strong>{beliefCount} things</strong> worth remembering this
+        week. Nothing is stored until you commit it.
+      </p>
+      <div
+        className="memory-commitment-review__progression"
+        aria-label="Belief lifecycle"
       >
-        <AgentTag agent={belief.agent} />
-        <p className="memory-commit__belief-text">{belief.text}</p>
-        {belief.weight === "stale" ? (
-          <span className="memory-commit__weight-label">Stale</span>
-        ) : belief.weight === "operative" ? (
-          <span className="memory-commit__weight-label">Operative</span>
-        ) : null}
-      </article>
-    </>
+        {PROGRESSION.map((stage, index) => {
+          const reached =
+            stage.key === "saw" ||
+            stage.key === "proposed" ||
+            (stage.key === "believes" && believesReached);
+          const active = stage.key === "proposed" && !believesReached;
+
+          return (
+            <div key={stage.key} className="memory-commitment-review__progression-step">
+              {index > 0 ? (
+                <span
+                  className={`memory-commitment-review__progression-arrow${
+                    reached ? " memory-commitment-review__progression-arrow--reached" : ""
+                  }`}
+                  aria-hidden
+                />
+              ) : null}
+              <span
+                className={`memory-commitment-review__progression-pill memory-commitment-review__progression-pill--${stage.tone}${
+                  reached ? " memory-commitment-review__progression-pill--reached" : ""
+                }${active ? " memory-commitment-review__progression-pill--current" : ""}${
+                  believesReached && stage.key === "believes"
+                    ? " memory-commitment-review__progression-pill--current"
+                    : ""
+                }`}
+              >
+                <span className="memory-commitment-review__progression-dot" aria-hidden />
+                {stage.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </header>
   );
 }
 
-function StalenessBody({ compact = false }: { compact?: boolean }) {
+export type MemoryCommitmentReviewBodyProps = {
+  beliefs?: Belief[];
+  onBeliefsChange?: (beliefs: Belief[]) => void;
+  showSummary?: boolean;
+  variant?: "standalone" | "panel";
+};
+
+export function MemoryCommitmentReviewBody({
+  beliefs: beliefsProp,
+  onBeliefsChange,
+  showSummary = true,
+  variant = "standalone",
+}: MemoryCommitmentReviewBodyProps) {
+  const [internalBeliefs, setInternalBeliefs] = useState(() =>
+    normalizeBeliefs(beliefsProp ?? MOCK_BELIEFS),
+  );
+
+  const isControlled = beliefsProp != null;
+  const beliefs = isControlled ? normalizeBeliefs(beliefsProp) : internalBeliefs;
+
+  const setBeliefs = useCallback(
+    (updater: Belief[] | ((prev: Belief[]) => Belief[])) => {
+      if (isControlled) {
+        const next =
+          typeof updater === "function" ? updater(beliefs) : updater;
+        onBeliefsChange?.(next);
+        return;
+      }
+
+      setInternalBeliefs((prev) => {
+        const next = typeof updater === "function" ? updater(prev) : updater;
+        onBeliefsChange?.(next);
+        return next;
+      });
+    },
+    [beliefs, isControlled, onBeliefsChange],
+  );
+
+  const updateBelief = useCallback(
+    (id: string, patch: Partial<Belief>) => {
+      setBeliefs((prev) =>
+        prev.map((belief) => (belief.id === id ? { ...belief, ...patch } : belief)),
+      );
+    },
+    [setBeliefs],
+  );
+
+  const summary = useMemo(() => computeSummary(beliefs), [beliefs]);
+
+  const commitAllApproved = useCallback(() => {
+    setBeliefs((prev) =>
+      prev.map((belief) =>
+        (belief.decision ?? "pending") === "pending"
+          ? { ...belief, decision: "committed" as const }
+          : belief,
+      ),
+    );
+  }, [setBeliefs]);
+
   return (
-    <div className={`memory-commit${compact ? " memory-commit--compact" : ""}`}>
-      <p className="memory-commit__scenario">{STANDALONE_SCENARIO.title}</p>
-      <div className="memory-commit__belief-stack">
-        {STANDALONE_BELIEFS.map((belief, index) => (
-          <StandaloneBeliefRow
-            key={belief.id}
-            belief={belief}
-            showShift={index === 1}
-            shiftNote={index === 1 ? STANDALONE_SCENARIO.shiftNote : undefined}
-          />
+    <div
+      className={`memory-commitment-review memory-commitment-review--${variant}${
+        showSummary ? " memory-commitment-review--with-summary" : ""
+      }`}
+    >
+      <MemoryCommitmentReviewHeader
+        beliefCount={beliefs.length}
+        committedCount={summary.committed}
+      />
+
+      <ul className="memory-commitment-review__list">
+        {beliefs.map((belief) => (
+          <li key={belief.id} className="memory-commitment-review__item">
+            <BeliefCard
+              belief={belief}
+              onBeliefChange={(patch) => updateBelief(belief.id, patch)}
+            />
+          </li>
         ))}
-      </div>
+      </ul>
+
+      {showSummary ? (
+        <footer className="memory-commitment-review__summary" aria-live="polite">
+          <div className="memory-commitment-review__summary-stats">
+            <div className="memory-commitment-review__summary-item">
+              <span className="memory-commitment-review__summary-value memory-commitment-review__summary-value--committed">
+                {summary.committed}
+              </span>
+              <span className="memory-commitment-review__summary-label">Committed</span>
+            </div>
+            <div className="memory-commitment-review__summary-item">
+              <span className="memory-commitment-review__summary-value memory-commitment-review__summary-value--expiring">
+                {summary.expiring}
+              </span>
+              <span className="memory-commitment-review__summary-label">Expiring</span>
+            </div>
+            <div className="memory-commitment-review__summary-item">
+              <span className="memory-commitment-review__summary-value memory-commitment-review__summary-value--rejected">
+                {summary.rejected}
+              </span>
+              <span className="memory-commitment-review__summary-label">Rejected</span>
+            </div>
+            <div className="memory-commitment-review__summary-item">
+              <span className="memory-commitment-review__summary-value">
+                {summary.pending}
+              </span>
+              <span className="memory-commitment-review__summary-label">Pending</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="memory-commitment-review__commit-all"
+            onClick={commitAllApproved}
+            disabled={summary.pending === 0}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+              <path
+                d="M2.5 7.25l3 3 6-6"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Commit all approved
+          </button>
+        </footer>
+      ) : null}
     </div>
   );
+}
+
+function AgentTag({ agent }: { agent: CommitAgent }) {
+  return <span className="memory-commit__agent">{agent}</span>;
 }
 
 type CommitGateProps = {
@@ -299,38 +484,46 @@ export function MemoryCommitmentCommitGate({ variant = "full" }: CommitGateProps
   );
 }
 
-export function MemoryCommitmentInContextPanel() {
-  return (
-    <PatternPanelCard title="Memory Commitment Review" statusTag="4 beliefs">
-      <MemoryCommitmentCommitGate variant="panel" />
-    </PatternPanelCard>
-  );
-}
+export type MemoryCommitmentReviewProps = {
+  compact?: boolean;
+  beliefs?: Belief[];
+  onBeliefsChange?: (beliefs: Belief[]) => void;
+};
 
-export function MemoryCommitmentReview({ compact = false }: { compact?: boolean }) {
+export function MemoryCommitmentReview({
+  compact = false,
+  beliefs,
+  onBeliefsChange,
+}: MemoryCommitmentReviewProps) {
   return (
-    <PatternComponentCard
-      patternKey="MemoryCommitmentReview"
-      dotColor="#3b5ec6"
-      title="When beliefs shift, mark what's stale"
-      contextLabel="Acme Renewal · pricing"
-      icon={<LockIcon size={compact ? 15 : 18} />}
-      footerLeft="Staleness surfaced inline · commitment gated at session end"
-      footerRight="beat 7"
-      compact={compact}
-    >
-      <StalenessBody compact={compact} />
-    </PatternComponentCard>
+    <div className="memory-commitment-review-shell">
+      <MemoryCommitmentReviewBody
+        beliefs={beliefs}
+        onBeliefsChange={onBeliefsChange}
+        showSummary={!compact}
+        variant="standalone"
+      />
+    </div>
   );
 }
 
 export function MemoryCommitmentInContext() {
-  return (
-    <MemoryCommitmentProvider>
-      <AcmeRenewalDemo embedded demoFocus="memory-commitment" />
-    </MemoryCommitmentProvider>
-  );
+  return <PlatformRunbookDemo embedded />;
 }
 
 /** Registry alias for in-context / panel previews. */
 export const MemoryCommitmentPanel = MemoryCommitmentInContext;
+
+/** @deprecated Use MemoryCommitmentReviewBody in panel contexts */
+export function MemoryCommitmentInContextPanel() {
+  return (
+    <MemoryCommitmentReviewBody
+      showSummary={false}
+      variant="panel"
+      beliefs={MOCK_BELIEFS}
+    />
+  );
+}
+
+/** @deprecated Use MemoryCommitmentReviewList naming */
+export const MemoryCommitmentReviewList = MemoryCommitmentReviewBody;

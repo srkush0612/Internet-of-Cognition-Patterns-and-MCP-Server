@@ -34,6 +34,14 @@ export function getPatternReadyCompanionTags(slug: string): readonly string[] {
   );
 }
 
+/** Homepage grid — curated snapshot, not the full ready catalog. */
+export const HOMEPAGE_PATTERN_SNAPSHOT = [
+  "authority-gradient",
+  "memory-commitment-review",
+  "convergence-point",
+  "decision-ledger",
+] as const;
+
 export function partitionPatternsByReady(patterns: Pattern[]): {
   ready: Pattern[];
   pending: Pattern[];

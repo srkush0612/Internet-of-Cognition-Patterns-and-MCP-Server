@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { AcmeRenewalRightPanel } from "./AcmeRenewalRightPanel";
 import { MemoryCommitmentCommitGate } from "@/components/patterns/MemoryCommitmentReview";
-import { ACTIVE_BEAT, BEATS, CHAT_MESSAGES } from "./acme-renewal-data";
+import { CHAT_MESSAGES } from "./acme-renewal-data";
 import type { ChatMessage } from "./acme-renewal-data";
 import "./acme-renewal.css";
 
@@ -246,26 +246,6 @@ export function AcmeRenewalDemo({
 
         <AcmeRenewalRightPanel demoFocus={demoFocus} />
       </div>
-
-      <footer className="acme-renewal__beats" aria-label="Workflow beats">
-        <span className="acme-renewal__beats-label">Beats</span>
-        <ol className="acme-renewal__beats-track">
-          {BEATS.map((beat) => (
-            <li
-              key={beat.id}
-              className={`acme-renewal__beat${
-                beat.id === ACTIVE_BEAT ? " acme-renewal__beat--active" : ""
-              }${beat.id < ACTIVE_BEAT ? " acme-renewal__beat--done" : ""}`}
-            >
-              <span className="acme-renewal__beat-id">Beat {beat.id}</span>
-              <span className="acme-renewal__beat-label">{beat.label}</span>
-            </li>
-          ))}
-        </ol>
-        <span className="acme-renewal__beats-status">
-          Emergent Outcome · {ACTIVE_BEAT} / {BEATS.length}
-        </span>
-      </footer>
     </div>
   );
 }

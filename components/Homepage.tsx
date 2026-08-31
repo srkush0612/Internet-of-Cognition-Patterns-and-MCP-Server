@@ -15,7 +15,10 @@ import {
   Zap,
 } from "lucide-react";
 import { patterns, type BackingStrength, type Pattern } from "@/lib/patterns";
-import { PATTERN_READY_SLUGS } from "@/lib/pattern-ready";
+import {
+  HOMEPAGE_PATTERN_SNAPSHOT,
+  PATTERN_READY_SLUGS,
+} from "@/lib/pattern-ready";
 import { HeroBackground } from "@/components/HeroBackground";
 
 const BTN_PRIMARY = "osh-cta-solid px-8 py-4 text-base";
@@ -198,7 +201,7 @@ function PatternShowcaseCard({ pattern }: { pattern: Pattern }) {
   return (
     <Link
       href={`/patterns/${pattern.slug}`}
-      className="group osh-card relative flex flex-col p-6"
+      className="group osh-card relative flex h-full flex-col p-6"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -234,38 +237,47 @@ function PatternShowcaseCard({ pattern }: { pattern: Pattern }) {
 }
 
 function PatternShowcase() {
-  const featured = PATTERN_READY_SLUGS.map((slug) =>
+  const featured = HOMEPAGE_PATTERN_SNAPSHOT.map((slug) =>
     patterns.find((pattern) => pattern.slug === slug),
   ).filter((pattern): pattern is Pattern => Boolean(pattern));
 
   return (
     <section className="bg-hover px-6 py-24 sm:px-12 lg:px-24">
-      <RevealSection className="mx-auto max-w-6xl">
-        <h2 className="font-heading text-center text-3xl font-bold text-ink sm:text-4xl">
-          {PATTERN_READY_SLUGS.length} Patterns Ready to Use
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-center text-muted">
-          Start with these live patterns — more are on the way.
-        </p>
+      <div className="mx-auto max-w-6xl">
+        <RevealSection>
+          <h2 className="font-heading text-center text-3xl font-bold text-ink sm:text-4xl">
+            Pattern snapshot
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-center text-muted">
+            A few ready patterns to start with — {PATTERN_READY_SLUGS.length} live
+            in the library today.
+          </p>
+        </RevealSection>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto mt-14 grid max-w-4xl items-stretch gap-6 sm:grid-cols-2">
           {featured.map((pattern, index) => (
-            <RevealSection key={pattern.slug} delay={index * 80}>
+            <RevealSection
+              key={pattern.slug}
+              delay={index * 80}
+              className="h-full"
+            >
               <PatternShowcaseCard pattern={pattern} />
             </RevealSection>
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <Link
-            href="/gallery"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-accent transition hover:text-accent-h"
-          >
-            View all {patterns.length} patterns
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </RevealSection>
+        <RevealSection delay={120}>
+          <div className="mt-12 text-center">
+            <Link
+              href="/gallery"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-accent transition hover:text-accent-h"
+            >
+              View all {patterns.length} patterns
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </RevealSection>
+      </div>
     </section>
   );
 }
@@ -332,7 +344,7 @@ function HowItWorks() {
 
 function Stats() {
   const stats = [
-    { value: `${patterns.length} Patterns`, label: "Ready to use" },
+    { value: `${PATTERN_READY_SLUGS.length} ready`, label: `${patterns.length} in library` },
     { value: "100+ Use Cases", label: "From practitioner research" },
     { value: "Multi-agent", label: "Coordination focus" },
     { value: "Research", label: "Grounded design" },

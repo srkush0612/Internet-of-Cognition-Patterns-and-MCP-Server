@@ -65,7 +65,7 @@ renameDirIfExists(
   path.join(outDir, "_next/static/chunks/app/_site_"),
 );
 renameDirIfExists(
-  path.join(outDir, "_next/static/chunks/app/(site)/patterns/[slug]"),
+  path.join(outDir, "_next/static/chunks/app/_site_/patterns/[slug]"),
   path.join(outDir, "_next/static/chunks/app/_site_/patterns/_slug_"),
 );
 renameDirIfExists(
