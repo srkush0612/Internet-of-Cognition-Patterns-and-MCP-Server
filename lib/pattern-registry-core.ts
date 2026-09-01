@@ -123,36 +123,73 @@ export function getPatternRegistry(): Map<string, ComponentDefinition> {
   return registryCache;
 }
 
+/** Words ignored when tokenizing a discovery query. */
+const STOP_WORDS = new Set([
+  "a", "an", "and", "are", "as", "at", "be", "by", "can", "do", "for", "from",
+  "how", "i", "in", "is", "it", "its", "keep", "make", "me", "my", "of", "on",
+  "or", "so", "that", "the", "their", "them", "they", "this", "to", "want",
+  "was", "we", "what", "when", "which", "with", "you", "your",
+]);
+
+/** Lowercase, split on non-alphanumerics, drop stop words, and lightly stem. */
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token.length > 2 && !STOP_WORDS.has(token))
+    .map(stem);
+}
+
+/** Crude suffix stemmer — enough to fold plurals/gerunds onto a common root. */
+function stem(word: string): string {
+  if (word.length > 5 && word.endsWith("ing")) return word.slice(0, -3);
+  if (word.length > 4 && word.endsWith("ed")) return word.slice(0, -2);
+  if (word.length > 4 && word.endsWith("ies")) return `${word.slice(0, -3)}y`;
+  if (word.length > 3 && word.endsWith("es")) return word.slice(0, -2);
+  if (word.length > 3 && word.endsWith("s")) return word.slice(0, -1);
+  return word;
+}
+
 export function discoverComponents(query: string): ComponentMetadata[] {
-  const normalizedQuery = query.toLowerCase();
+  const normalizedQuery = query.trim().toLowerCase();
+  const queryTokens = tokenize(normalizedQuery);
   const results: Array<ComponentMetadata & { _score?: number }> = [];
 
   for (const component of getPatternRegistry().values()) {
-    let score = 0;
     const { metadata } = component;
+    let score = 0;
 
-    if (
-      metadata.triggers.some((trigger) =>
-        normalizedQuery.includes(trigger.toLowerCase()),
-      )
-    ) {
-      score += 10;
+    const triggerText = metadata.triggers.join(" ").toLowerCase();
+    const nameText = metadata.name.toLowerCase();
+    const descriptionText = metadata.description.toLowerCase();
+
+    // Whole-phrase hits (strongest signal, kept from the original heuristic).
+    if (normalizedQuery.length > 2) {
+      if (
+        metadata.triggers.some(
+          (trigger) =>
+            normalizedQuery.includes(trigger.toLowerCase()) ||
+            trigger.toLowerCase().includes(normalizedQuery),
+        )
+      ) {
+        score += 10;
+      }
+      if (nameText.includes(normalizedQuery)) score += 6;
+      if (descriptionText.includes(normalizedQuery)) score += 2;
     }
 
-    if (
-      metadata.triggers.some((trigger) =>
-        trigger.toLowerCase().includes(normalizedQuery),
-      )
-    ) {
-      score += 5;
-    }
-
-    if (metadata.name.toLowerCase().includes(normalizedQuery)) {
-      score += 3;
-    }
-
-    if (metadata.description.toLowerCase().includes(normalizedQuery)) {
-      score += 1;
+    // Per-token hits (handles multi-word / natural-language queries).
+    const haystacks = tokenize(
+      `${metadata.slug} ${triggerText} ${nameText} ${descriptionText}`,
+    );
+    const haystackSet = new Set(haystacks);
+    for (const token of queryTokens) {
+      if (haystackSet.has(token)) {
+        // Weight matches by where they land.
+        if (tokenize(nameText).includes(token)) score += 4;
+        else if (tokenize(triggerText).includes(token)) score += 3;
+        else score += 1;
+      }
     }
 
     if (score > 0) {
@@ -185,13 +222,42 @@ export function createLocalInstance(
   };
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Object.getPrototypeOf(value) === Object.prototype
+  );
+}
+
+/**
+ * Recursively merge `updates` into `base`. Nested plain objects (e.g. `workspace`)
+ * are merged key-by-key rather than replaced wholesale; arrays and primitives
+ * overwrite.
+ */
+export function deepMerge(
+  base: Record<string, unknown>,
+  updates: Record<string, unknown>,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(updates)) {
+    const existing = result[key];
+    if (isPlainObject(existing) && isPlainObject(value)) {
+      result[key] = deepMerge(existing, value);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
 export function mergeLocalInstanceState(
   state: Record<string, unknown>,
   updates: Record<string, unknown>,
 ): Record<string, unknown> {
   return {
-    ...state,
-    ...updates,
+    ...deepMerge(state, updates),
     updatedAt: new Date().toISOString(),
   };
 }

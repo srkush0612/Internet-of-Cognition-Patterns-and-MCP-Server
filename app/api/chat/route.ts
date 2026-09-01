@@ -11,8 +11,17 @@ export const dynamic = "force-dynamic";
 export type { ChatRecommendation };
 
 export async function POST(request: NextRequest) {
+  let body;
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Request body must be valid JSON" },
+      { status: 400 },
+    );
+  }
+
+  try {
     const message = body.message as string | undefined;
     const sessionId = (body.sessionId as string | undefined) ?? "anonymous";
 

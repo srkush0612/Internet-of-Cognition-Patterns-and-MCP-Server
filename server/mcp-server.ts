@@ -9,6 +9,7 @@ import "server-only";
 
 import {
   buildComponentFromPattern,
+  deepMerge,
   discoverComponents as discoverFromCore,
   fetchComponent as fetchFromCore,
   getPatternRegistry,
@@ -128,8 +129,9 @@ export function updateInstanceState(
   const instance = instances.get(instanceId);
   if (!instance) return null;
 
-  instance.state = { ...instance.state, ...updates };
-  instance.lastModified = new Date().toISOString();
+  const now = new Date().toISOString();
+  instance.state = { ...deepMerge(instance.state, updates), updatedAt: now };
+  instance.lastModified = now;
   instances.set(instanceId, instance);
 
   return instance;

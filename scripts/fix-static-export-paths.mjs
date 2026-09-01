@@ -55,8 +55,11 @@ function isTextAsset(filePath) {
 }
 
 if (!fs.existsSync(outDir)) {
-  console.error("out/ not found. Run next build first.");
-  process.exit(1);
+  // No static export present — this step only applies to `build:reviewa`
+  // (output: "export"). A plain `next build` produces `.next/`, not `out/`,
+  // so treat the absence as a no-op instead of failing the build.
+  console.log("out/ not found — skipping static-export path fixes (not an export build).");
+  process.exit(0);
 }
 
 // Rename dynamic-route chunk folders (parent routes before children).

@@ -6,20 +6,23 @@
     "dev": "lsof -ti:3000,3001,3002,3006,3007 2>/dev/null | xargs kill -9 2>/dev/null; pkill -f 'next dev' 2>/dev/null; next dev",
     "dev:clean": "rm -rf .next && next dev",
     "dev:restart": "for port in 3000 3001 3002 3006 3007; do pids=$(lsof -ti:$port 2>/dev/null); [ -n \"$pids\" ] && kill -9 $pids 2>/dev/null; done; pkill -f 'next dev' 2>/dev/null; rm -rf .next && next dev",
-    "build": "next build && node scripts/fix-static-export-paths.mjs",
+    "build": "next build",
     "build:reviewa": "node scripts/build-reviewa.mjs",
     "deploy:reviewa": "node scripts/build-reviewa.mjs && curl -fsSL https://reviewa.work/cli.mjs -o /tmp/reviewa.mjs && node /tmp/reviewa.mjs update epbhm84q out",
     "start": "next start",
     "lint": "next lint",
     "verify:themes": "npx tsx scripts/verify-gallery-themes.ts",
-    "mcp": "npx tsx server/mcp-server.ts"
+    "mcp": "node --conditions=react-server --import tsx server/mcp-server.ts",
+    "mcp:stdio": "node --conditions=react-server --import tsx server/mcp-stdio.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "lucide-react": "^1.32.0",
     "next": "^15.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
@@ -28,7 +31,9 @@
     "autoprefixer": "^10.4.20",
     "playwright": "^1.61.1",
     "postcss": "^8.4.49",
+    "server-only": "^0.0.1",
     "tailwindcss": "^3.4.16",
+    "tsx": "^4.23.13",
     "typescript": "^5.7.2"
   }
 }

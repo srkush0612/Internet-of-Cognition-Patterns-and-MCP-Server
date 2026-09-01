@@ -4,8 +4,18 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  let parsed;
   try {
-    const { query, context } = await request.json();
+    parsed = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Request body must be valid JSON" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const { query, context } = parsed;
 
     if (!query) {
       return NextResponse.json(
