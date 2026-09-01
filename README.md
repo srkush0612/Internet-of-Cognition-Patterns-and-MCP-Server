@@ -15,7 +15,10 @@ Open [http://localhost:3000](http://localhost:3000).
 
 The **pattern registry and instance engine** lives in [`server/mcp-server.ts`](./server/mcp-server.ts). It reads all patterns from [`lib/patterns.ts`](./lib/patterns.ts) at startup and exposes tools agents can use to discover patterns, spin up live instances, update state, and hand off between patterns.
 
-This is a **TypeScript module**, not a separate daemon. Next.js API routes import it in-process; you can also import it from your own agent, Express service, or stdio MCP wrapper.
+The core is a **TypeScript module**, not a daemon — Next.js API routes import it in-process. Two entrypoints wrap it:
+
+- [`server/mcp-server.ts`](./server/mcp-server.ts) — run directly to verify the registry (prints a banner, no transport).
+- [`server/mcp-stdio.ts`](./server/mcp-stdio.ts) — a real **MCP stdio server** (`@modelcontextprotocol/sdk`) exposing the seven tools below to any MCP client (Claude Desktop, Cursor, Windsurf, MCP Inspector).
 
 ### Verify the registry
 
@@ -25,14 +28,40 @@ npm run mcp
 
 Expect one registration line per pattern (17 total) and `Registry initialized with 17 patterns`.
 
+### Run the MCP stdio server
+
+```bash
+npm run mcp:stdio          # serves on stdio
+node scripts/smoke-mcp-stdio.mjs   # handshake + full-flow smoke test
+```
+
+Tools exposed: `discover_patterns`, `fetch_pattern`, `instantiate_pattern`, `update_instance`, `get_instance`, `list_installations`, `handoff`.
+
+Claude Desktop (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "ioc-patterns": {
+      "command": "node",
+      "args": [
+        "--conditions=react-server",
+        "--import", "tsx",
+        "/abs/path/to/server/mcp-stdio.ts"
+      ]
+    }
+  }
+}
+```
+
 ### What it can do
 
 | Capability | Function | Description |
 |------------|----------|-------------|
-| **Discover** | `discoverComponents(query)` | Keyword search over pattern names, triggers, and descriptions. Returns ranked metadata (backing strength, evidence count). Powers the `/advisor` chat recommendations. |
+| **Discover** | `discoverComponents(query)` | Tokenized keyword search (light stemming, stop-word filtering) over pattern slugs, names, triggers, and descriptions. Returns ranked metadata (backing strength, evidence count). Handles multi-word / natural-language queries. Powers the `/advisor` chat recommendations. |
 | **Fetch** | `fetchComponent(slug)` | Full component definition: metadata, state schema, handlers, and UI text sections for one pattern. |
 | **Instantiate** | `instantiateComponent(slug, initialState, agentId?, persistent?)` | Creates a live instance with a unique ID and timestamped state. Tracks which agent installed which pattern. |
-| **Update** | `updateInstanceState(instanceId, updates)` | Merges new fields into instance state (e.g. workspace form data, evidence, decisions). |
+| **Update** | `updateInstanceState(instanceId, updates)` | Deep-merges new fields into instance state (nested objects like `workspace` merge key-by-key; arrays/primitives overwrite). Bumps `state.updatedAt`. |
 | **Get** | `getInstanceState(instanceId)` | Reads the current instance snapshot. |
 | **List** | `listInstallations(agentId?)` | Lists pattern installations and instance IDs for one agent, or all agents. |
 | **Handoff** | `brokerStateHandoff(fromId, toSlug, toAgentId, context?)` | Creates a new instance on a different pattern, inheriting context from the source (e.g. Decision Ledger → Convergence Point). |
@@ -110,7 +139,14 @@ components/
   gallery/         Legacy token gallery primitives (design-system route)
 lib/               Pattern catalog, advisor logic, workspace state defaults
 scripts/           Reviewa export, static path fixes, theme verification
-server/            MCP server
+server/            MCP registry core + stdio server
+```
+
+## Build
+
+```bash
+npm run build            # Next.js server build → .next/
+npm run build:reviewa    # static export → out/ (runs scripts/fix-static-export-paths.mjs)
 ```
 
 ## Routes
