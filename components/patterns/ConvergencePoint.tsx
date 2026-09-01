@@ -11,6 +11,7 @@ import {
 } from "@/lib/pattern-live-preview";
 import { convergenceFormToWorkspace } from "@/components/patterns/edit/convergence-point-extractor";
 import type { ConvergenceSaveRevealState } from "@/lib/convergence-save-reveal";
+import { defaultWorkspaceForSlug } from "@/lib/workspace-defaults";
 
 export function ConvergencePoint({
   compact = false,
@@ -21,7 +22,9 @@ export function ConvergencePoint({
   live?: PatternLivePreviewInput;
   saveReveal?: ConvergenceSaveRevealState;
 }) {
-  const workspace = live ? asConvergence(live.workspace) : null;
+  const workspace = live
+    ? asConvergence(live.workspace)
+    : asConvergence(defaultWorkspaceForSlug("convergence-point"));
   const isDemoData =
     (!live || !hasUserScenario("convergence-point", live.workspace)) &&
     !saveReveal?.showAlternatives;
@@ -35,7 +38,7 @@ export function ConvergencePoint({
     <div className="convergence-point-wide">
       <ConvergencePointVisualizationSelector
         compact={compact}
-        workspace={workspace ?? undefined}
+        workspace={workspace}
         isDemoData={isDemoData}
         contextLabel={contextLabel}
         saveReveal={saveReveal}
@@ -111,7 +114,7 @@ export function ConvergencePointInContext({
       activeAgentName={activeAgent}
       message={message}
     >
-      <ConvergencePoint live={resolvedLive} saveReveal={saveReveal} />
+      <ConvergencePoint compact live={resolvedLive} saveReveal={saveReveal} />
     </PatternInboxShell>
   );
 }

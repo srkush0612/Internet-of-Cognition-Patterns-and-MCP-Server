@@ -28,6 +28,8 @@ type ViewCardConfig = {
   title: string;
   patternKey: string;
   dotColor: string;
+  footerLeft?: string;
+  footerRight?: string;
   renderIcon: (compact?: boolean) => ReactNode;
 };
 
@@ -36,6 +38,8 @@ const VIEW_CARDS: Record<ConflictVisibilityViewId, ViewCardConfig> = {
     title: "Agent convergence timeline",
     patternKey: "ConvergencePoint",
     dotColor: "#23A06B",
+    footerLeft: "Four streams · merge and pinch points",
+    footerRight: "live",
     renderIcon: (compact) => <PresenceIcon size={compact ? 15 : 18} />,
   },
   network: {
@@ -93,6 +97,8 @@ function VisualizationCard({
         title={config.title}
         contextLabel={contextLabel}
         icon={config.renderIcon(compact)}
+        footerLeft={config.footerLeft}
+        footerRight={config.footerRight}
         compact={compact}
       >
         {children}
@@ -223,7 +229,7 @@ export function ConvergencePointVisualizationSelector({
     fadeIn = false,
     selected = false,
   ) => {
-    if (!workspace) return null;
+    if (!workspace && view !== "timeline") return null;
 
     const cardProps = {
       view,
@@ -243,21 +249,17 @@ export function ConvergencePointVisualizationSelector({
       case "network":
         return (
           <VisualizationCard {...cardProps} sectionRef={networkRef}>
-            <ConflictNetworkVisualization workspace={workspace} />
+            <ConflictNetworkVisualization workspace={workspace!} />
           </VisualizationCard>
         );
       case "tree":
         return (
           <VisualizationCard {...cardProps} sectionRef={treeRef}>
-            <DecisionTreeVisualization workspace={workspace} />
+            <DecisionTreeVisualization workspace={workspace!} />
           </VisualizationCard>
         );
     }
   };
-
-  if (!workspace) {
-    return null;
-  }
 
   const cardSelectedView = Boolean(activeView && activeViewToken > 0);
 
