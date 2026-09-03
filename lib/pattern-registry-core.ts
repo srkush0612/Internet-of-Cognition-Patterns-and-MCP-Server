@@ -1,5 +1,9 @@
 import { patterns, type Pattern } from "@/lib/patterns";
 import { anonymizeParticipants } from "@/lib/evidence-privacy";
+import {
+  PATTERN_UI_COMPONENTS,
+  type PatternUiComponent,
+} from "@/lib/pattern-ui-components";
 
 export type BackingStrength = "Strong" | "Moderate" | "Thin" | "None";
 
@@ -29,6 +33,7 @@ export type ComponentDefinition = {
         type: "field" | "status";
       }>;
     };
+    component?: PatternUiComponent;
   };
 };
 
@@ -105,6 +110,9 @@ export function buildComponentFromPattern(pattern: Pattern): ComponentDefinition
           },
         ],
       },
+      ...(PATTERN_UI_COMPONENTS[pattern.slug]
+        ? { component: PATTERN_UI_COMPONENTS[pattern.slug] }
+        : {}),
     },
   };
 }
