@@ -18,6 +18,8 @@ export type PatternUiComponent = {
   stepKinds?: Record<string, string>;
   statusKinds?: Record<string, string>;
   actions?: string[];
+  /** Per-item-kind action lists; falls back to `actions`. */
+  actionsByKind?: Record<string, string[]>;
 };
 
 export const PATTERN_UI_COMPONENTS: Record<string, PatternUiComponent> = {
@@ -31,6 +33,12 @@ export const PATTERN_UI_COMPONENTS: Record<string, PatternUiComponent> = {
     },
     statusKinds: { missed: "MISSED", "at-risk": "AT-RISK", active: "ACTIVE" },
     actions: ["Approve", "Snooze", "Delegate"],
+    actionsByKind: {
+      urgent: ["Approve", "Reply", "Delegate", "Snooze"],
+      blocked: ["Unblock", "Ping owner", "Reassign", "Snooze"],
+      commitment: ["Mark done", "Renegotiate", "Nudge", "Snooze"],
+      fyi: ["Acknowledge", "Archive"],
+    },
   },
   "deferred-detail": {
     layout: "itemcards",
