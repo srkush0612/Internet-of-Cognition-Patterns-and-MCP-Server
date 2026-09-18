@@ -15,7 +15,7 @@ const antiPatterns: AntiPattern[] = [
 
 function baseDecision(): Decision {
   return {
-    encounterId: "enc-1",
+    situationId: "sit-1",
     patternId: "p-1",
     elementsPresent: ["el-required-1", "el-required-2"],
     elementsRemoved: [],

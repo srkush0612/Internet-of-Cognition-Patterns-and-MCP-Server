@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 import { getPattern } from "@/lib/patterns";
 import { isPatternReady } from "@/lib/pattern-ready";
 import { PATTERN_STANDALONE } from "@/components/patterns/pattern-registry";
-import { elementsForPattern, getEncounter } from "@/lib/studio/content";
+import { elementsForPattern, getSituation } from "@/lib/studio/content";
 import type { Scenario } from "@/lib/studio/types";
 import "./studio.css";
 
-type Props = { scenarioId: string; encounterId: string };
+type Props = { scenarioId: string; situationId: string };
 
-export function PatternChoice({ scenarioId, encounterId }: Props) {
+export function PatternChoice({ scenarioId, situationId }: Props) {
   const router = useRouter();
   const [scenario, setScenario] = useState<Scenario | null | undefined>(undefined);
 
@@ -31,17 +31,17 @@ export function PatternChoice({ scenarioId, encounterId }: Props) {
     };
   }, [scenarioId]);
 
-  const encounter = getEncounter(encounterId);
+  const situation = getSituation(situationId);
 
   if (scenario === undefined) {
     return <div className="studio-map studio-muted">Loading…</div>;
   }
 
-  if (scenario === null || !encounter) {
+  if (scenario === null || !situation) {
     return (
       <div className="studio-map">
         <p className="studio-empty-state">
-          {scenario === null ? "Scenario not found." : "Encounter not found."}
+          {scenario === null ? "Scenario not found." : "Situation not found."}
         </p>
       </div>
     );
@@ -49,47 +49,47 @@ export function PatternChoice({ scenarioId, encounterId }: Props) {
 
   async function choosePattern(patternId: string) {
     router.push(
-      `/studio/${scenarioId}/encounter/${encounterId}/canvas?pattern=${encodeURIComponent(patternId)}`,
+      `/studio/${scenarioId}/situation/${situationId}/canvas?pattern=${encodeURIComponent(patternId)}`,
     );
   }
 
-  const patterns = encounter.patternIds
+  const patterns = situation.patternIds
     .map((id) => getPattern(id))
     .filter((p): p is NonNullable<typeof p> => p !== undefined);
 
-  const singlePatternGap = encounter.patternIds.length === 1;
+  const singlePatternGap = situation.patternIds.length === 1;
   const allNotReady = patterns.length > 0 && patterns.every((p) => !isPatternReady(p.slug));
 
   return (
     <div className="studio-map">
       <p className="studio-breadcrumb">
         <Link href="/studio">Studio</Link> /{" "}
-        <Link href={`/studio/${scenarioId}`}>{scenario.name}</Link> / {encounter.title}
+        <Link href={`/studio/${scenarioId}`}>{scenario.name}</Link> / {situation.title}
       </p>
-      <h1 className="studio-map__title">{encounter.title}</h1>
+      <h1 className="studio-map__title">{situation.title}</h1>
       <p className="studio-encounter-row__example" style={{ marginBottom: "1.5rem" }}>
-        {encounter.example}
+        {situation.example}
       </p>
 
-      {encounter.patternIds.length === 0 && (
+      {situation.patternIds.length === 0 && (
         <div className="studio-empty-state">
           <p>
-            <strong>Not yet in the library.</strong> No pattern has been mapped to this encounter
-            yet — see <code>content/studio/encounters.json</code>.
+            <strong>Not yet in the library.</strong> No pattern has been mapped to this situation
+            yet — see <code>content/studio/situations.json</code>.
           </p>
         </div>
       )}
 
       {singlePatternGap && (
         <div className="studio-notice studio-notice--gap">
-          <strong>Library gap.</strong> Only one pattern currently answers this encounter — there
+          <strong>Library gap.</strong> Only one pattern currently answers this situation — there
           is no comparison to make yet. This is itself a finding, not a resolved choice.
         </div>
       )}
 
       {allNotReady && (
         <div className="studio-notice studio-notice--not-ready">
-          <strong>No ready pattern yet.</strong> Every pattern mapped to this encounter is still
+          <strong>No ready pattern yet.</strong> Every pattern mapped to this situation is still
           unbuilt (see the readiness badge on each card below) — you can still open the canvas to
           see its elements, but there is no vetted reference design behind it.
         </div>

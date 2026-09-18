@@ -4,7 +4,7 @@ export type { BackingStrength };
 
 /**
  * The three intake questions (Studio home). Topology is unchanged — it
- * changes difficulty, not which encounters exist. The other two were
+ * changes difficulty, not which situations exist. The other two were
  * reworded: duration conflated "how long" with "is anyone watching," and
  * those come apart — an hour-long run someone is watching is a different
  * risk than ten unattended seconds at 3am.
@@ -34,7 +34,7 @@ export const IRREVERSIBILITY_LABEL: Record<Irreversibility, string> = {
 };
 
 /** Map state — derived from whether a Decision exists and whether it has a gap. */
-export type EncounterState = "unanswered" | "answered" | "answered_with_gap";
+export type SituationState = "unanswered" | "answered" | "answered_with_gap";
 
 /**
  * At-risk is a deterministic lookup over the scenario's attendance/
@@ -47,11 +47,11 @@ export type RiskRule = {
 };
 
 /**
- * The fixed encounter list. Content-authored (content/studio/encounters.json) —
+ * The fixed situation list. Content-authored (content/studio/situations.json) —
  * never invented by code. `patternIds` is many-to-many with the real pattern
- * library (by slug); an encounter with an empty list is a library gap, not an error.
+ * library (by slug); a situation with an empty list is a library gap, not an error.
  */
-export type Encounter = {
+export type Situation = {
   id: string;
   order: number;
   title: string;
@@ -98,18 +98,18 @@ export type AntiPattern = {
 };
 
 /**
- * Something continuity-checking follows across encounters — a plan, an
+ * Something continuity-checking follows across situations — a plan, an
  * action item, a decision, a permission grant.
  */
 export type Entity = {
   id: string;
   label: string;
-  appearsInEncounterIds: string[];
+  appearsInSituationIds: string[];
 };
 
-/** One encounter's resolution within a scenario. */
+/** One situation's resolution within a scenario. */
 export type Decision = {
-  encounterId: string;
+  situationId: string;
   patternId: string;
   reasoning?: string;
   elementsPresent: string[];
@@ -136,7 +136,7 @@ export type Scenario = {
 /** A continuity gap — the harder finding is `not_reachable`, not `not_designed`. */
 export type ContinuityGap = {
   entityId: string;
-  sourceEncounterId: string;
-  targetEncounterId: string;
+  sourceSituationId: string;
+  targetSituationId: string;
   kind: "not_designed" | "not_reachable";
 };

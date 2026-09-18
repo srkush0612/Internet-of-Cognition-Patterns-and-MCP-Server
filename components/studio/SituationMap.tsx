@@ -5,31 +5,31 @@ import Link from "next/link";
 import { getPattern } from "@/lib/patterns";
 import { isPatternReady } from "@/lib/pattern-ready";
 import { isAtRisk } from "@/lib/studio/risk";
-import { encounters } from "@/lib/studio/content";
+import { situations } from "@/lib/studio/content";
 import { TOPOLOGY_LABEL } from "@/lib/studio/types";
-import type { Encounter, EncounterState, Scenario } from "@/lib/studio/types";
+import type { Situation, SituationState, Scenario } from "@/lib/studio/types";
 import "./studio.css";
 
-/** True only when the encounter has at least one mapped pattern and none of them are ready yet. */
-function noReadyPattern(encounter: Encounter): boolean {
-  return encounter.patternIds.length > 0 && encounter.patternIds.every((id) => !isPatternReady(id));
+/** True only when the situation has at least one mapped pattern and none of them are ready yet. */
+function noReadyPattern(situation: Situation): boolean {
+  return situation.patternIds.length > 0 && situation.patternIds.every((id) => !isPatternReady(id));
 }
 
 type Props = { scenarioId: string };
 
-function stateFor(encounterId: string, scenario: Scenario): EncounterState {
-  const decision = scenario.decisions.find((d) => d.encounterId === encounterId);
+function stateFor(situationId: string, scenario: Scenario): SituationState {
+  const decision = scenario.decisions.find((d) => d.situationId === situationId);
   if (!decision) return "unanswered";
   return decision.state;
 }
 
-const STATE_LABEL: Record<EncounterState, string> = {
+const STATE_LABEL: Record<SituationState, string> = {
   unanswered: "unanswered",
   answered: "answered",
   answered_with_gap: "answered with a gap",
 };
 
-export function EncounterMap({ scenarioId }: Props) {
+export function SituationMap({ scenarioId }: Props) {
   const [scenario, setScenario] = useState<Scenario | null | undefined>(undefined);
 
   useEffect(() => {
@@ -59,12 +59,12 @@ export function EncounterMap({ scenarioId }: Props) {
     );
   }
 
-  const states = encounters.map((e) => stateFor(e.id, scenario));
-  const atRiskCount = encounters.filter((e) => isAtRisk(e, scenario)).length;
+  const states = situations.map((s) => stateFor(s.id, scenario));
+  const atRiskCount = situations.filter((s) => isAtRisk(s, scenario)).length;
   const gapCount = states.filter((s) => s === "answered_with_gap").length;
   const unansweredCount = states.filter((s) => s === "unanswered").length;
-  const harderCount = encounters.filter((e) => e.difficultyNotes?.[scenario.topology]).length;
-  const noReadyPatternCount = encounters.filter(noReadyPattern).length;
+  const harderCount = situations.filter((s) => s.difficultyNotes?.[scenario.topology]).length;
+  const noReadyPatternCount = situations.filter(noReadyPattern).length;
 
   return (
     <div className="studio-map">
@@ -72,12 +72,12 @@ export function EncounterMap({ scenarioId }: Props) {
         <Link href="/studio">Studio</Link> / {scenario.name}
       </p>
       <h1 className="studio-map__title">
-        {encounters.length > 0
-          ? `${encounters.length} encounter${encounters.length === 1 ? "" : "s"} this system will have`
-          : "Encounters"}
+        {situations.length > 0
+          ? `${situations.length} situation${situations.length === 1 ? "" : "s"} this system will have`
+          : "Situations"}
       </h1>
 
-      {encounters.length > 0 && (
+      {situations.length > 0 && (
         <div className="studio-map__stats">
           <span className="studio-tag studio-tag--risk">{atRiskCount} at risk</span>
           <span className="studio-tag studio-tag--gap">{gapCount} answered with a gap</span>
@@ -93,43 +93,43 @@ export function EncounterMap({ scenarioId }: Props) {
         </div>
       )}
 
-      {encounters.length === 0 ? (
+      {situations.length === 0 ? (
         <div className="studio-empty-state">
           <p>
-            <strong>Not yet in the library.</strong> The fixed encounter list hasn&apos;t been
-            authored yet — see <code>content/studio/encounters.json</code>. This screen will list
-            every encounter the research has identified once it is; nothing here is generated from
+            <strong>Not yet in the library.</strong> The fixed situation list hasn&apos;t been
+            authored yet — see <code>content/studio/situations.json</code>. This screen will list
+            every situation the research has identified once it is; nothing here is generated from
             your description.
           </p>
         </div>
       ) : (
         <ol className="studio-encounter-list">
-          {encounters.map((encounter, index) => {
-            const decision = scenario.decisions.find((d) => d.encounterId === encounter.id);
+          {situations.map((situation, index) => {
+            const decision = scenario.decisions.find((d) => d.situationId === situation.id);
             const state = states[index];
-            const atRisk = isAtRisk(encounter, scenario);
-            const harderNote = encounter.difficultyNotes?.[scenario.topology];
+            const atRisk = isAtRisk(situation, scenario);
+            const harderNote = situation.difficultyNotes?.[scenario.topology];
             const chosenPattern = decision ? getPattern(decision.patternId) : undefined;
-            const notReady = noReadyPattern(encounter);
+            const notReady = noReadyPattern(situation);
 
             return (
-              <li key={encounter.id}>
+              <li key={situation.id}>
                 <Link
-                  href={`/studio/${scenarioId}/encounter/${encounter.id}`}
+                  href={`/studio/${scenarioId}/situation/${situation.id}`}
                   className="studio-encounter-row"
                 >
                   <span className="studio-encounter-row__number">
-                    {String(encounter.order).padStart(2, "0")}
+                    {String(situation.order).padStart(2, "0")}
                   </span>
                   <div className="studio-encounter-row__main">
                     <div className="studio-encounter-row__title-line">
-                      <span className="studio-encounter-row__title">{encounter.title}</span>
+                      <span className="studio-encounter-row__title">{situation.title}</span>
                       {atRisk && <span className="studio-tag studio-tag--risk">at risk</span>}
                       {notReady && (
                         <span className="studio-tag studio-tag--not-ready">no ready pattern</span>
                       )}
                     </div>
-                    <p className="studio-encounter-row__example">{encounter.example}</p>
+                    <p className="studio-encounter-row__example">{situation.example}</p>
                     {harderNote && (
                       <p className="studio-encounter-row__harder">
                         <span className="studio-tag studio-tag--harder">harder</span> {harderNote}
@@ -139,8 +139,8 @@ export function EncounterMap({ scenarioId }: Props) {
                   <div className="studio-encounter-row__pattern">
                     {chosenPattern ? (
                       <span>{chosenPattern.title}</span>
-                    ) : encounter.patternIds.length > 0 ? (
-                      <span className="studio-muted">{encounter.patternIds.length} patterns</span>
+                    ) : situation.patternIds.length > 0 ? (
+                      <span className="studio-muted">{situation.patternIds.length} patterns</span>
                     ) : (
                       <span className="studio-muted" title="Not yet in the library">
                         not yet in the library

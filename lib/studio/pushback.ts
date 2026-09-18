@@ -13,7 +13,7 @@ export function antiPatternsForRemoval(
   return antiPatterns.filter((ap) => ap.triggeredByElementIds.includes(elementId));
 }
 
-/** Accepting the pushback: records the required reason, flips the encounter's state. */
+/** Accepting the pushback: records the required reason, flips the situation's state. */
 export function acceptRemoval(decision: Decision, elementId: string, reason: string): Decision {
   return {
     ...decision,
@@ -26,7 +26,7 @@ export function acceptRemoval(decision: Decision, elementId: string, reason: str
   };
 }
 
-/** "Put it back" — restores the element; the encounter is only clean again if no gaps remain. */
+/** "Put it back" — restores the element; the situation is only clean again if no gaps remain. */
 export function restoreElement(decision: Decision, elementId: string): Decision {
   const removedElementReasons = { ...decision.removedElementReasons };
   delete removedElementReasons[elementId];

@@ -9,7 +9,7 @@
   "readOnly": true,
   "decisions": [
     {
-      "encounterId": "triage-proposes-before-touching",
+      "situationId": "triage-proposes-before-touching",
       "patternId": "signal-to-intent-handshake",
       "reasoning": "Shipped confirm-or-defer for the 3am page; there wasn't time to build a working correction path, and the team accepted that gap to ship the checkpoint at all rather than skip it.",
       "elementsPresent": ["sith-noticed", "sith-interpreted", "sith-proposed", "sith-confirm", "sith-defer"],

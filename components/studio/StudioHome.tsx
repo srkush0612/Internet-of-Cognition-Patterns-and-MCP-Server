@@ -87,8 +87,8 @@ export function StudioHome({ sampleScenarioId }: Props) {
         <h1 className="studio-home__title">Design for an agent scenario</h1>
         <p className="studio-home__subtitle">
           {returning
-            ? "Describe what your agent does. Studio works out the encounters it will have with people, then puts the right pattern in front of you for each one."
-            : "Describe the work you are handing to agents — one agent or a dozen. Studio maps every encounter that work creates, between the people and the agents, then hands you the patterns that answer each one."}
+            ? "Describe what your agent does. Studio works out the situations it will have with people, then puts the right pattern in front of you for each one."
+            : "Describe the work you are handing to agents — one agent or a dozen. Studio maps every situation that work creates, between the people and the agents, then hands you the patterns that answer each one."}
         </p>
 
         <div className="studio-card">
@@ -107,7 +107,7 @@ export function StudioHome({ sampleScenarioId }: Props) {
           <div className="studio-question">
             <span className="studio-field-label">
               How many agents, and do they work together?
-              <span className="studio-hint-tag">changes how hard each encounter is</span>
+              <span className="studio-hint-tag">changes how hard each situation is</span>
             </span>
             <div className="studio-pill-row studio-pill-row--cards">
               {TOPOLOGIES.map((t) => (
@@ -157,7 +157,7 @@ export function StudioHome({ sampleScenarioId }: Props) {
           </div>
 
           <p className="studio-home__risk-note">
-            These two decide which encounters carry the most risk, and nobody watching plus
+            These two decide which situations carry the most risk, and nobody watching plus
             nothing reversible is the hardest combination.
           </p>
 
@@ -168,7 +168,7 @@ export function StudioHome({ sampleScenarioId }: Props) {
               disabled={!ready || submitting}
               onClick={handleSubmit}
             >
-              {submitting ? "Mapping…" : "Map the encounters"}
+              {submitting ? "Mapping…" : "Map the situations"}
             </button>
             <span className="studio-home__cta-hint">
               {ready ? " " : "Answer all three and Studio can map the system."}

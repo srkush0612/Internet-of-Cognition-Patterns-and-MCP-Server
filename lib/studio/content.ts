@@ -1,14 +1,14 @@
-import encountersJson from "@/content/studio/encounters.json";
+import situationsJson from "@/content/studio/situations.json";
 import patternElementsJson from "@/content/studio/pattern-elements.json";
 import antiPatternsJson from "@/content/studio/anti-patterns.json";
 import entitiesJson from "@/content/studio/entities.json";
 import sampleScenarioJson from "@/content/studio/sample-scenario.json";
 import type {
   AntiPattern,
-  Encounter,
   Entity,
   PatternElement,
   Scenario,
+  Situation,
 } from "@/lib/studio/types";
 
 /**
@@ -20,7 +20,7 @@ import type {
  * pattern's own live component (components/patterns/pattern-registry.tsx)
  * instead of an authored example, so there's nothing to seed for it.
  */
-export const encounters: Encounter[] = [...(encountersJson as Encounter[])].sort(
+export const situations: Situation[] = [...(situationsJson as Situation[])].sort(
   (a, b) => a.order - b.order,
 );
 
@@ -33,8 +33,8 @@ export const entities: Entity[] = entitiesJson as Entity[];
 /** null until content/studio/sample-scenario.json is authored. */
 export const sampleScenario: Scenario | null = sampleScenarioJson as Scenario | null;
 
-export function getEncounter(id: string): Encounter | undefined {
-  return encounters.find((e) => e.id === id);
+export function getSituation(id: string): Situation | undefined {
+  return situations.find((s) => s.id === id);
 }
 
 export function elementsForPattern(patternId: string): PatternElement[] {

@@ -1,10 +1,10 @@
-import { EncounterMap } from "@/components/studio/EncounterMap";
+import { SituationMap } from "@/components/studio/SituationMap";
 
-export default async function EncounterMapPage({
+export default async function SituationMapPage({
   params,
 }: {
   params: Promise<{ scenarioId: string }>;
 }) {
   const { scenarioId } = await params;
-  return <EncounterMap scenarioId={scenarioId} />;
+  return <SituationMap scenarioId={scenarioId} />;
 }

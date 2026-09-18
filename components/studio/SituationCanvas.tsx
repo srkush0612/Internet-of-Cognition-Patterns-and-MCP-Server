@@ -8,14 +8,14 @@ import { PATTERN_STANDALONE } from "@/components/patterns/pattern-registry";
 import {
   antiPatternsForElement,
   elementsForPattern,
-  getEncounter,
+  getSituation,
 } from "@/lib/studio/content";
 import { acceptRemoval, restoreElement } from "@/lib/studio/pushback";
 import type { Decision, Scenario } from "@/lib/studio/types";
 import { PatternEmbed } from "./PatternEmbed";
 import "./studio.css";
 
-type Props = { scenarioId: string; encounterId: string };
+type Props = { scenarioId: string; situationId: string };
 
 async function saveDecision(scenarioId: string, decisions: Decision[]): Promise<Scenario | null> {
   const res = await fetch("/api/studio/scenarios", {
@@ -27,7 +27,7 @@ async function saveDecision(scenarioId: string, decisions: Decision[]): Promise<
   return data.success ? (data.scenario as Scenario) : null;
 }
 
-export function EncounterCanvas({ scenarioId, encounterId }: Props) {
+export function SituationCanvas({ scenarioId, situationId }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [scenario, setScenario] = useState<Scenario | null | undefined>(undefined);
@@ -51,18 +51,18 @@ export function EncounterCanvas({ scenarioId, encounterId }: Props) {
     };
   }, [scenarioId]);
 
-  const encounter = getEncounter(encounterId);
-  const existingDecision = scenario?.decisions.find((d) => d.encounterId === encounterId);
+  const situation = getSituation(situationId);
+  const existingDecision = scenario?.decisions.find((d) => d.situationId === situationId);
   const patternId = existingDecision?.patternId ?? searchParams.get("pattern") ?? undefined;
   const pattern = patternId ? getPattern(patternId) : undefined;
   const elements = useMemo(() => (patternId ? elementsForPattern(patternId) : []), [patternId]);
   const Component = patternId ? PATTERN_STANDALONE[patternId] : undefined;
 
-  // Seed the decision the first time this pattern is chosen for this encounter.
+  // Seed the decision the first time this pattern is chosen for this situation.
   useEffect(() => {
     if (!scenario || !patternId || existingDecision) return;
     const decision: Decision = {
-      encounterId,
+      situationId,
       patternId,
       elementsPresent: elements.map((el) => el.id),
       elementsRemoved: [],
@@ -79,11 +79,11 @@ export function EncounterCanvas({ scenarioId, encounterId }: Props) {
     return <div className="studio-canvas studio-muted">Loading…</div>;
   }
 
-  if (scenario === null || !encounter) {
+  if (scenario === null || !situation) {
     return (
       <div className="studio-canvas">
         <p className="studio-empty-state">
-          {scenario === null ? "Scenario not found." : "Encounter not found."}
+          {scenario === null ? "Scenario not found." : "Situation not found."}
         </p>
       </div>
     );
@@ -94,7 +94,7 @@ export function EncounterCanvas({ scenarioId, encounterId }: Props) {
       <div className="studio-canvas">
         <p className="studio-empty-state">
           No pattern chosen yet.{" "}
-          <Link href={`/studio/${scenarioId}/encounter/${encounterId}`}>
+          <Link href={`/studio/${scenarioId}/situation/${situationId}`}>
             Go back and choose one.
           </Link>
         </p>
@@ -109,7 +109,7 @@ export function EncounterCanvas({ scenarioId, encounterId }: Props) {
     if (!scenario) return;
     setSaving(true);
     const nextDecisions = scenario.decisions.map((d) =>
-      d.encounterId === encounterId ? next : d,
+      d.situationId === situationId ? next : d,
     );
     const updated = await saveDecision(scenarioId, nextDecisions);
     if (updated) setScenario(updated);
@@ -145,7 +145,7 @@ export function EncounterCanvas({ scenarioId, encounterId }: Props) {
     setCopying(false);
     if (data.success) {
       router.push(
-        `/studio/${data.scenario.id}/encounter/${encounterId}/canvas?pattern=${encodeURIComponent(patternId ?? "")}`,
+        `/studio/${data.scenario.id}/situation/${situationId}/canvas?pattern=${encodeURIComponent(patternId ?? "")}`,
       );
     }
   }
@@ -157,7 +157,7 @@ export function EncounterCanvas({ scenarioId, encounterId }: Props) {
       <p className="studio-breadcrumb">
         <Link href="/studio">Studio</Link> /{" "}
         <Link href={`/studio/${scenarioId}`}>{scenario.name}</Link> /{" "}
-        <Link href={`/studio/${scenarioId}/encounter/${encounterId}`}>{encounter.title}</Link> /{" "}
+        <Link href={`/studio/${scenarioId}/situation/${situationId}`}>{situation.title}</Link> /{" "}
         {pattern.title}
       </p>
       {locked && (
@@ -178,7 +178,7 @@ export function EncounterCanvas({ scenarioId, encounterId }: Props) {
       <p className="studio-muted">
         {elements.length === 0
           ? "No elements authored yet for this pattern — see content/studio/pattern-elements.json."
-          : "Required elements are on by default. Removing one that is required needs a reason, and the encounter is marked answered with a gap."}
+          : "Required elements are on by default. Removing one that is required needs a reason, and the situation is marked answered with a gap."}
         {saving && " Saving…"}
       </p>
 
@@ -308,7 +308,7 @@ export function EncounterCanvas({ scenarioId, encounterId }: Props) {
       </div>
 
       <p className="studio-muted" style={{ marginTop: "2rem" }}>
-        <Link href={`/studio/${scenarioId}`}>Back to the encounter map</Link>
+        <Link href={`/studio/${scenarioId}`}>Back to the situation map</Link>
       </p>
     </div>
   );
