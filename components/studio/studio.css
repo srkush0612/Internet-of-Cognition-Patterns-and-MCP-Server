@@ -1,0 +1,748 @@
+/* Shared primitives */
+
+.studio-card {
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(15, 15, 10, 0.04), 0 6px 16px rgba(15, 15, 10, 0.04);
+}
+
+.studio-field-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+}
+
+.studio-hint-tag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-accent-soft, var(--color-tag-bg));
+  color: var(--color-accent);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.studio-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  resize: vertical;
+  margin-bottom: 1.25rem;
+}
+
+.studio-question {
+  margin-bottom: 1.25rem;
+}
+
+.studio-question-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.studio-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.studio-pill {
+  padding: 0.4375rem 0.875rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.studio-pill--active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--button-primary-text, #fff);
+}
+
+.studio-pill-row--cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 700px) {
+  .studio-pill-row--cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studio-pill-card {
+  text-align: left;
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.studio-pill-card--active {
+  border-color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+.studio-button {
+  padding: 0.625rem 1.125rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.studio-button--primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--button-primary-text, #fff);
+}
+
+.studio-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.studio-button--ghost {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.studio-button--small {
+  padding: 0.3125rem 0.75rem;
+  font-size: 0.78rem;
+}
+
+.studio-muted {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.studio-empty-state {
+  border: 1px dashed var(--color-border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  background: var(--color-tag-bg, var(--color-surface));
+}
+
+.studio-empty-state code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85em;
+}
+
+.studio-breadcrumb {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.studio-breadcrumb a {
+  color: var(--color-text-muted);
+}
+
+/* Tags — state semantics vs. at-risk are deliberately different colours */
+
+.studio-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.studio-tag--risk {
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 14%, transparent);
+  color: var(--color-danger, #dc2626);
+}
+
+.studio-tag--gap {
+  background: color-mix(in srgb, var(--color-warning, #b4791f) 16%, transparent);
+  color: var(--color-warning, #b4791f);
+}
+
+.studio-tag--neutral {
+  background: var(--color-tag-bg, #f1f1ef);
+  color: var(--color-text-muted);
+}
+
+.studio-tag--harder {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  color: var(--color-accent);
+}
+
+.studio-tag--not-ready {
+  background: color-mix(in srgb, #7c3aed 14%, transparent);
+  color: #7c3aed;
+}
+
+/* Studio home — a single centered column on first run, matching the
+   Encounter Map / Pattern Choice / Canvas screens' centered block layout.
+   Once scenarios exist, it switches to a two-column dashboard (main +
+   "your scenarios" list), which is the one screen meant to be asymmetric. */
+
+.studio-home {
+  padding: 2rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.studio-home--with-scenarios {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+}
+
+@media (max-width: 900px) {
+  .studio-home--with-scenarios {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studio-home__title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.75rem;
+}
+
+.studio-home__subtitle {
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.studio-home__risk-note {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin: 0.5rem 0 1.25rem;
+}
+
+.studio-home__cta-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.studio-home__cta-hint {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.studio-home__error {
+  color: var(--color-danger, #dc2626);
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.studio-home__sample {
+  margin-top: 1.25rem;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.studio-home__sample--disabled {
+  opacity: 0.6;
+}
+
+.studio-home__scenarios-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+}
+
+.studio-scenario-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.studio-scenario-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+}
+
+.studio-scenario-card__name {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.studio-scenario-card__meta {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* Encounter map */
+
+.studio-map {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.studio-map__title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+}
+
+.studio-map__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.studio-encounter-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.studio-encounter-row {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr 10rem 9rem;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.125rem;
+  border-bottom: 1px solid var(--color-border);
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.1s ease;
+}
+
+.studio-encounter-row:hover {
+  background: var(--color-tag-bg, #f7f7f5);
+}
+
+.studio-encounter-list li:last-child .studio-encounter-row {
+  border-bottom: none;
+}
+
+@media (max-width: 800px) {
+  .studio-encounter-row {
+    grid-template-columns: 1fr;
+    gap: 0.375rem;
+  }
+}
+
+.studio-encounter-row__number {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+}
+
+.studio-encounter-row__title-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.studio-encounter-row__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.studio-encounter-row__example {
+  margin: 0.1875rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.studio-encounter-row__harder {
+  margin: 0.375rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.studio-encounter-row__pattern {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.studio-state-chip {
+  justify-self: start;
+  display: inline-flex;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.studio-state-chip--answered {
+  background: color-mix(in srgb, var(--color-success, #16a34a) 14%, transparent);
+  border-color: transparent;
+  color: var(--color-success, #16a34a);
+}
+
+.studio-state-chip--answered_with_gap {
+  background: color-mix(in srgb, var(--color-warning, #b4791f) 16%, transparent);
+  border-color: transparent;
+  color: var(--color-warning, #b4791f);
+}
+
+.studio-state-chip--unanswered {
+  background: var(--color-tag-bg, #f1f1ef);
+}
+
+/* Notices — encounter-level findings shown above the pattern choice list */
+
+.studio-notice {
+  border-radius: 0.5rem;
+  padding: 0.875rem 1.125rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.studio-notice--gap {
+  background: color-mix(in srgb, var(--color-warning, #b4791f) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-warning, #b4791f) 30%, transparent);
+  color: var(--color-text);
+}
+
+.studio-notice--not-ready {
+  background: color-mix(in srgb, #7c3aed 8%, transparent);
+  border: 1px solid color-mix(in srgb, #7c3aed 25%, transparent);
+  color: var(--color-text);
+}
+
+/* Pattern choice */
+
+.studio-pattern-choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 760px;
+}
+
+.studio-pattern-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.studio-pattern-card__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.studio-pattern-card__badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.studio-pattern-card__oneliner {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.studio-pattern-card__meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 0 0 1.25rem;
+}
+
+@media (max-width: 700px) {
+  .studio-pattern-card__meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studio-pattern-card__meta dt {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.studio-pattern-card__meta dd {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.studio-pattern-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Badges — readiness (build state) and evidence strength are always shown
+   as two separate badges; they measure different things and must never be
+   collapsed into one indicator. */
+
+.studio-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.studio-badge--ready {
+  background: color-mix(in srgb, var(--color-success, #16a34a) 14%, transparent);
+  color: var(--color-success, #16a34a);
+}
+
+.studio-badge--not-ready {
+  background: color-mix(in srgb, #7c3aed 14%, transparent);
+  color: #7c3aed;
+}
+
+.studio-badge--evidence-strong {
+  background: color-mix(in srgb, var(--color-success, #16a34a) 12%, transparent);
+  color: var(--color-success, #16a34a);
+}
+
+.studio-badge--evidence-moderate {
+  background: color-mix(in srgb, var(--color-warning, #b4791f) 14%, transparent);
+  color: var(--color-warning, #b4791f);
+}
+
+.studio-badge--evidence-thin,
+.studio-badge--evidence-none {
+  background: var(--color-tag-bg, #f1f1ef);
+  color: var(--color-text-muted);
+}
+
+/* Canvas */
+
+.studio-canvas {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.studio-canvas__layout {
+  display: grid;
+  grid-template-columns: 1fr 22rem;
+  gap: 2rem;
+  align-items: start;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .studio-canvas__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Pattern embed: the real component renders untouched; markers are drawn in
+   an absolutely-positioned sibling layer on top, located by DOM text match —
+   never by reaching into the component's own props or markup. */
+
+.studio-embed {
+  position: relative;
+}
+
+.studio-embed__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.studio-embed__marker-box {
+  position: absolute;
+  border: 2px solid var(--color-accent);
+  border-radius: 0.375rem;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+.studio-embed__marker-box--removed {
+  border: 2px dashed var(--color-danger, #dc2626);
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 8%, transparent);
+}
+
+.studio-embed__marker-number {
+  position: absolute;
+  top: -0.6rem;
+  left: -0.6rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--button-primary-text, #fff);
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.studio-embed__marker-box--removed .studio-embed__marker-number {
+  background: var(--color-danger, #dc2626);
+}
+
+.studio-embed__marker-removed-label {
+  position: absolute;
+  bottom: -0.6rem;
+  right: -0.4rem;
+  padding: 0.0625rem 0.4375rem;
+  border-radius: 999px;
+  background: var(--color-danger, #dc2626);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Elements panel */
+
+.studio-elements-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.studio-element-row {
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.875rem;
+  background: var(--color-surface);
+}
+
+.studio-element-row--removed {
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.studio-element-row__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.studio-element-row__label {
+  font-weight: 600;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.studio-element-row__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: var(--color-tag-bg, #f1f1ef);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.studio-element-row__hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.studio-element-row__evidence {
+  margin: 0.5rem 0 0;
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.5rem;
+}
+
+.studio-element-row__reason {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.625rem;
+  background: color-mix(in srgb, var(--color-warning, #b4791f) 10%, transparent);
+  border-radius: 0.375rem;
+  font-size: 0.78rem;
+}
+
+.studio-pushback {
+  margin-top: 0.625rem;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid color-mix(in srgb, var(--color-danger, #dc2626) 35%, transparent);
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 6%, transparent);
+}
+
+.studio-pushback__title {
+  font-weight: 700;
+  font-size: 0.82rem;
+  margin: 0 0 0.375rem;
+}
+
+.studio-pushback__anti-pattern {
+  font-size: 0.8rem;
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+}
+
+.studio-pushback textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  margin-bottom: 0.5rem;
+  resize: vertical;
+}
+
+.studio-pushback__actions {
+  display: flex;
+  gap: 0.5rem;
+}

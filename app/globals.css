@@ -1177,3 +1177,17 @@
     color: var(--color-accent-hover);
   }
 }
+
+.archived-notice {
+  padding: 0.75rem 2rem;
+  background: #fef3c7;
+  color: #92400e;
+  border-bottom: 1px solid #fcd34d;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.archived-notice a {
+  font-weight: 600;
+  text-decoration: underline;
+}

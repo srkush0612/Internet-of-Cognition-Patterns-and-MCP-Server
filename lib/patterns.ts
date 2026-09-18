@@ -33,6 +33,10 @@ export type Pattern = {
   backingStrength?: BackingStrength;
   participants?: string;
   researchNote?: string;
+  // Not yet authored for any pattern (see content/studio/README.md).
+  // Additive fields, undefined everywhere today.
+  composesWith?: string[];
+  conflictsWith?: string[];
 };
 
 // A GTM / positioning finding from the synthesis that is not itself a UI

@@ -1,0 +1,68 @@
+[
+  {
+    "id": "sith-noticed",
+    "patternId": "signal-to-intent-handshake",
+    "label": "What it noticed",
+    "hint": "The observation that started the checkpoint — quoted, not summarized.",
+    "required": true,
+    "evidence": "Published interaction model: 'a short checkpoint in three parts: what it noticed, what it thinks that means with a confidence level, and what it proposes to do next.'",
+    "backingStrength": "Moderate",
+    "markerNumber": 1,
+    "domMatchText": "5xx errors on svc-payments jumped 4× in the last 3 minutes."
+  },
+  {
+    "id": "sith-interpreted",
+    "patternId": "signal-to-intent-handshake",
+    "label": "What it thinks that means, with a confidence level",
+    "hint": "The agent's read of the signal, not stated as fact.",
+    "required": true,
+    "evidence": "Published interaction model, second part of the three-part checkpoint.",
+    "backingStrength": "Moderate",
+    "markerNumber": 2,
+    "domMatchText": "A retry storm from the checkout retry loop, not a capacity shortfall."
+  },
+  {
+    "id": "sith-proposed",
+    "patternId": "signal-to-intent-handshake",
+    "label": "What it proposes to do next",
+    "hint": "The action the agent wants to take, stated before taking it.",
+    "required": true,
+    "evidence": "Published interaction model, third part of the three-part checkpoint.",
+    "backingStrength": "Moderate",
+    "markerNumber": 3,
+    "domMatchText": "Pause the retry job and scale payments replicas from 3 to 6."
+  },
+  {
+    "id": "sith-confirm",
+    "patternId": "signal-to-intent-handshake",
+    "label": "Confirm & proceed",
+    "hint": "One of the three responses the person can give.",
+    "required": true,
+    "evidence": "'You can confirm, correct the interpretation, or defer.'",
+    "backingStrength": "Moderate",
+    "markerNumber": 4,
+    "domMatchText": "Confirm & proceed"
+  },
+  {
+    "id": "sith-correct-interpretation",
+    "patternId": "signal-to-intent-handshake",
+    "label": "Correct interpretation",
+    "hint": "Lets the person fix what the agent got wrong, in place.",
+    "required": true,
+    "evidence": "'You can confirm, correct the interpretation, or defer.' Honest limitation: trust themes support explaining intent before acting, but this specific handshake step is inferred by the design team, not something practitioners asked for by name.",
+    "backingStrength": "Moderate",
+    "markerNumber": 5,
+    "domMatchText": "Correct interpretation"
+  },
+  {
+    "id": "sith-defer",
+    "patternId": "signal-to-intent-handshake",
+    "label": "Defer",
+    "hint": "Declines to answer now without blocking the agent from asking again.",
+    "required": true,
+    "evidence": "'You can confirm, correct the interpretation, or defer.' Nothing irreversible happens until you respond.",
+    "backingStrength": "Moderate",
+    "markerNumber": 6,
+    "domMatchText": "Not now"
+  }
+]

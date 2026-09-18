@@ -1,0 +1,65 @@
+[
+  {
+    "id": "agents-pick-up-alert",
+    "order": 1,
+    "title": "The agents pick up the alert",
+    "example": "Telemetry, triage, and deploy agents all start working the same page overnight — the engineer needs to see who's doing what without waking up.",
+    "patternIds": ["presence-boundary"]
+  },
+  {
+    "id": "triage-proposes-before-touching",
+    "order": 2,
+    "title": "Triage proposes before it touches anything",
+    "example": "Triage thinks it's a retry storm and wants to pause the retry job and scale payments replicas — nothing happens until someone responds.",
+    "patternIds": ["signal-to-intent-handshake"]
+  },
+  {
+    "id": "triage-unsure-retry-loop",
+    "order": 3,
+    "title": "Triage isn't sure it's the retry loop",
+    "example": "The signal could be a genuine capacity problem or a retry storm — triage is inferring, not reading a deterministic signal.",
+    "patternIds": ["certainty-boundary"]
+  },
+  {
+    "id": "deploy-wants-to-scale-replicas",
+    "order": 4,
+    "title": "Deploy wants to scale replicas",
+    "example": "Deploy can act alone on some changes and needs sign-off on others — scaling payments replicas at 2am is which kind?",
+    "patternIds": ["authority-gradient"]
+  },
+  {
+    "id": "telemetry-triage-differ",
+    "order": 5,
+    "title": "Telemetry and triage read the signal differently",
+    "example": "Telemetry sees a capacity ceiling; triage sees a retry storm — same metrics, opposite read.",
+    "patternIds": ["convergence-point"]
+  },
+  {
+    "id": "root-cause-changes-0340",
+    "order": 6,
+    "title": "The root cause changes at 03:40",
+    "example": "The retry-storm theory was operative for two hours before triage revises it — everything decided on the old belief is now stale.",
+    "patternIds": ["memory-commitment-review"]
+  },
+  {
+    "id": "engineer-returns-0700",
+    "order": 7,
+    "title": "The engineer comes back at 07:00",
+    "example": "Three agents worked the incident all night — the engineer needs the story, not the raw log.",
+    "patternIds": ["background-work-ledger"]
+  },
+  {
+    "id": "why-did-it-rollback-postmortem",
+    "order": 8,
+    "title": "\"Why did it roll back?\" in the postmortem",
+    "example": "Weeks later, someone needs to know why deploy rolled back build 812 — not just that it did.",
+    "patternIds": ["decision-ledger"]
+  },
+  {
+    "id": "forty-actions-one-summary",
+    "order": 9,
+    "title": "Forty actions, one summary to read",
+    "example": "By morning the three agents have taken something like forty actions between them — nobody is reading all forty.",
+    "patternIds": ["deferred-detail"]
+  }
+]

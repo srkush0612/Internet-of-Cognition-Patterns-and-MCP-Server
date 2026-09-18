@@ -13,7 +13,8 @@
     "lint": "next lint",
     "verify:themes": "npx tsx scripts/verify-gallery-themes.ts",
     "mcp": "node --conditions=react-server --import tsx server/mcp-server.ts",
-    "mcp:stdio": "node --conditions=react-server --import tsx server/mcp-stdio.ts"
+    "mcp:stdio": "node --conditions=react-server --import tsx server/mcp-stdio.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",
@@ -22,6 +23,7 @@
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-live": "^4.1.8",
     "zod": "^4.5.4"
   },
   "devDependencies": {
@@ -34,6 +36,7 @@
     "server-only": "^0.0.1",
     "tailwindcss": "^3.4.16",
     "tsx": "^4.23.13",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^5.0.0"
   }
 }

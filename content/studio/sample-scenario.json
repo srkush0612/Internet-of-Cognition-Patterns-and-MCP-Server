@@ -1,0 +1,25 @@
+{
+  "id": "sample-oncall-incident",
+  "name": "On-call incident: payments retry storm",
+  "description": "A telemetry agent watches the fleet, a triage agent interprets what it sees, and a deploy agent can act — while the on-call engineer is asleep.",
+  "topology": "handoff",
+  "attendance": "unattended",
+  "irreversibility": "yes",
+  "isSample": true,
+  "readOnly": true,
+  "decisions": [
+    {
+      "encounterId": "triage-proposes-before-touching",
+      "patternId": "signal-to-intent-handshake",
+      "reasoning": "Shipped confirm-or-defer for the 3am page; there wasn't time to build a working correction path, and the team accepted that gap to ship the checkpoint at all rather than skip it.",
+      "elementsPresent": ["sith-noticed", "sith-interpreted", "sith-proposed", "sith-confirm", "sith-defer"],
+      "elementsRemoved": ["sith-correct-interpretation"],
+      "removedElementReasons": {
+        "sith-correct-interpretation": "No correction path yet — if triage's read is wrong, the only way to catch it tonight is to defer and page a human, not to fix triage's interpretation in place."
+      },
+      "state": "answered_with_gap"
+    }
+  ],
+  "createdAt": "2026-08-01T03:12:00.000Z",
+  "updatedAt": "2026-08-01T07:04:00.000Z"
+}

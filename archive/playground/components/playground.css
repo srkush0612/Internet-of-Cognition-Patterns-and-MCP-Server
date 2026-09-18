@@ -1,0 +1,447 @@
+.playground {
+  padding: 1.75rem 2rem 3rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.playground__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.playground__title {
+  font-size: 1.625rem;
+  font-weight: 700;
+  margin: 0 0 0.375rem;
+  letter-spacing: -0.01em;
+}
+
+.playground__subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.906rem;
+  max-width: 50ch;
+  line-height: 1.5;
+}
+
+.playground__usecase {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 260px;
+}
+
+.playground__usecase label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.playground__usecase select {
+  padding: 0.5625rem 0.625rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+/* Scenario bar — a slim, chrome-light toolbar, not a boxed panel: saving and
+   sharing are secondary actions and shouldn't compete visually with the
+   preview/editor below. */
+
+.scenario-bar {
+  margin-bottom: 1.375rem;
+}
+
+.scenario-bar__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.scenario-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--color-tag-bg, var(--color-surface));
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.scenario-bar__btn:hover {
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.scenario-bar__btn--active,
+.scenario-bar__btn--toggle.scenario-bar__btn--active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.scenario-bar__caret {
+  display: inline-block;
+  transition: transform 0.15s ease;
+  font-size: 0.65rem;
+}
+
+.scenario-bar__caret--open {
+  transform: rotate(180deg);
+}
+
+.scenario-bar__list {
+  list-style: none;
+  margin: 0.625rem 0 0;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+  max-width: 480px;
+}
+
+.scenario-bar__list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.scenario-bar__list-row:last-child {
+  border-bottom: none;
+}
+
+.scenario-bar__row-main {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  min-width: 0;
+}
+
+.scenario-bar__row-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scenario-bar__row-meta {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono, monospace);
+  flex: none;
+}
+
+.scenario-bar__icon-btn {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+/* Preset chips — nested inside the preview panel's head, since they act on
+   what's being previewed rather than standing on their own. */
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4375rem;
+}
+
+.chip {
+  padding: 0.3125rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+}
+
+.chip:hover {
+  color: var(--color-text);
+}
+
+.chip--active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--button-primary-text, #fff);
+}
+
+.chip-row--compact .chip {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.7rem;
+}
+
+/* Layout */
+
+.playground__layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.125rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .playground__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.playground__previews {
+  display: grid;
+  gap: 1.125rem;
+}
+
+.playground__previews--split {
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 700px) {
+  .playground__previews--split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Panels share one visual language: subtle elevation lifts them off the page
+   background, a tinted head separates chrome from content. */
+
+.playground__preview,
+.playground__tabs,
+.compare-pane {
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px rgba(15, 15, 10, 0.04), 0 6px 16px rgba(15, 15, 10, 0.04);
+}
+
+.playground__preview-head {
+  padding: 0.75rem 0.9375rem;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: var(--color-tag-bg, var(--color-bg));
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.playground__preview-head-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.playground__preview-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.playground__preview-tag {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono, monospace);
+  flex: 1;
+}
+
+.playground__compare-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0.3125rem 0.6875rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex: none;
+}
+
+.playground__compare-btn--active {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--button-primary-text, #fff);
+}
+
+.playground__preview-body {
+  padding: 1.25rem;
+  min-height: 220px;
+  max-height: 600px;
+  overflow: auto;
+}
+
+.playground__tab-nav {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.5rem 0.625rem 0;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-tag-bg, var(--color-bg));
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.playground__tab-btn {
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.playground__tab-btn--active {
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
+}
+
+.playground__tab-body {
+  padding: 1rem 1.125rem 1.25rem;
+  max-height: 660px;
+  overflow: auto;
+}
+
+.playground__code-note {
+  margin: 0 0 0.625rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.playground__live-editor {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8125rem;
+  border-radius: 0.375rem;
+  overflow: auto;
+  max-height: 360px;
+}
+
+.playground__live-error {
+  margin-top: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-danger, #dc2626);
+  border-radius: 0.375rem;
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 10%, transparent);
+  color: var(--color-danger, #dc2626);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+}
+
+.playground__live-error:empty {
+  display: none;
+}
+
+/* Compare pane */
+
+.compare-pane {
+  padding: 0.875rem;
+}
+
+.compare-pane__head select {
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-weight: 500;
+  margin-bottom: 0.625rem;
+}
+
+.compare-pane__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+
+.compare-pane__body {
+  max-height: 600px;
+  overflow: auto;
+}
+
+/* Ask tab */
+
+.playground-ask__hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.playground-ask__row {
+  display: flex;
+  gap: 0.625rem;
+}
+
+.playground-ask__row input {
+  flex: 1;
+  padding: 0.5625rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.playground-ask__row button {
+  padding: 0.5625rem 0.875rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 0.375rem;
+  background: var(--color-accent);
+  color: var(--button-primary-text, #fff);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.playground-ask__row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.playground-ask__message {
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.375rem;
+}
+
+.playground-ask__message--ok {
+  color: var(--color-success, #16a34a);
+  background: color-mix(in srgb, var(--color-success, #16a34a) 10%, transparent);
+}
+
+.playground-ask__message--error {
+  color: var(--color-danger, #dc2626);
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 10%, transparent);
+}

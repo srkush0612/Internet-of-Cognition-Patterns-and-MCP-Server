@@ -130,7 +130,7 @@ Updates https://epbhm84q.reviewa.work/
 
 ```
 app/
-  (site)/          Main site — homepage, gallery, advisor, pattern pages, setup
+  (site)/          Main site — homepage, gallery, advisor, pattern pages, setup, studio
   (themed)/        Theme-switcher gallery at /design-system (internal reference)
   api/             Chat + instance APIs (dev only; excluded from Reviewa export)
 components/
