@@ -223,7 +223,7 @@ function StepCard({
   body: string;
 }) {
   return (
-    <article className="rounded-2xl border border-line bg-white p-6 shadow-sm transition hover:shadow-md hover:shadow-slate-200/60">
+    <article className="rounded-2xl border border-line bg-white p-6 shadow-sm transition hover:shadow-[var(--shadow-hover)]">
       <div className="flex gap-4">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white">
           {step}
@@ -256,8 +256,8 @@ function Checklist({
             <span
               className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-1 ${
                 optional
-                  ? "bg-hover text-slate-400 ring-slate-200"
-                  : "bg-emerald-50 text-emerald-600 ring-emerald-200"
+                  ? "bg-hover text-faint ring-line"
+                  : "bg-success-bg text-success-ink ring-success-line"
               }`}
             >
               <Check className="h-3 w-3" strokeWidth={3} />
@@ -296,7 +296,7 @@ function AccordionItem({
       >
         <span className="font-medium text-ink">{question}</span>
         <ChevronDown
-          className={`h-5 w-5 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`}
+          className={`h-5 w-5 shrink-0 text-faint transition ${open ? "rotate-180" : ""}`}
         />
       </button>
       <div
@@ -333,7 +333,7 @@ function ArchitectureDiagram() {
             </div>
             {index < layers.length - 1 ? (
               <div className="flex justify-center py-1" aria-hidden>
-                <ArrowRight className="h-4 w-4 rotate-90 text-slate-300" />
+                <ArrowRight className="h-4 w-4 rotate-90 text-faint" />
               </div>
             ) : null}
           </div>
@@ -341,9 +341,9 @@ function ArchitectureDiagram() {
       </div>
       <p className="mt-4 text-sm leading-relaxed text-muted">
         The MCP registry ships as a TypeScript module imported by Next.js API routes.
-        Run <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">npm run mcp</code>{" "}
+        Run <code className="rounded bg-hover px-1.5 py-0.5 font-mono text-xs">npm run mcp</code>{" "}
         to verify it loads standalone; run{" "}
-        <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">npm run dev</code>{" "}
+        <code className="rounded bg-hover px-1.5 py-0.5 font-mono text-xs">npm run dev</code>{" "}
         to use it through the web app and REST endpoints.
       </p>
     </div>
@@ -398,7 +398,7 @@ export function SetupGuide() {
                     "Coordinating handoffs between patterns",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 shrink-0 text-emerald-600" />
+                      <Check className="h-4 w-4 shrink-0 text-success-ink" />
                       {item}
                     </li>
                   ))}
@@ -440,8 +440,8 @@ export function SetupGuide() {
         </Section>
 
         <Section title="What to expect">
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6">
-            <p className="mb-4 text-sm font-semibold text-emerald-800">
+          <div className="rounded-2xl border border-success-line bg-success-bg p-6">
+            <p className="mb-4 text-sm font-semibold text-success-ink">
               Successful output from npm run mcp
             </p>
             <pre className="overflow-x-auto font-mono text-xs leading-relaxed text-ink sm:text-sm">
@@ -453,7 +453,7 @@ export function SetupGuide() {
         <Section title="Verification checklist">
           <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
             <Checklist items={VERIFICATION_ITEMS} />
-            <p className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+            <p className="mt-6 rounded-xl border border-success-line bg-success-bg px-4 py-3 text-sm font-medium text-success-ink">
               If every item above checks out, you are ready to use Human Agent IoC Patterns.
             </p>
           </div>
@@ -502,7 +502,7 @@ export function SetupGuide() {
               "Connect external agents via the REST API",
             ].map((item) => (
               <li key={item} className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-emerald-600" />
+                <Check className="h-4 w-4 text-success-ink" />
                 {item}
               </li>
             ))}
@@ -533,7 +533,7 @@ export function SetupGuide() {
           >
             <span className="font-semibold text-ink">Advanced options</span>
             <ChevronDown
-              className={`h-5 w-5 text-slate-400 transition ${advancedOpen ? "rotate-180" : ""}`}
+              className={`h-5 w-5 text-faint transition ${advancedOpen ? "rotate-180" : ""}`}
             />
           </button>
           {advancedOpen ? (

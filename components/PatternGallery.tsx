@@ -2,156 +2,445 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowUpRight,
-  Search,
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
-} from "lucide-react";
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import { Search } from "lucide-react";
 import {
   patterns,
-  type BackingStrength,
+  PATTERN_CATEGORY_COLOR,
+  PATTERN_CATEGORY_DEFINITIONS,
+  PATTERN_CATEGORY_ORDER,
+  REASONING_MODE_DEFINITIONS,
+  REASONING_MODE_LABEL,
+  REASONING_MODE_ORDER,
   type Pattern,
+  type PatternCategory,
+  type ReasoningMode,
 } from "@/lib/patterns";
+import { isPatternReady } from "@/lib/pattern-ready";
 import {
-  getPatternReadyCompanionTags,
-  partitionPatternsByReady,
-  PATTERN_READY_SLUGS,
-} from "@/lib/pattern-ready";
+  BackingSignal,
+  byEvidence,
+  CategoryIcon,
+  EvidenceBars,
+  factsLine,
+  HeroOrbs,
+  REASONING_COLOR,
+  ReasoningTag,
+} from "@/components/PatternTaxonomy";
 
-type SortOption = "az" | "backing" | "newest";
+type GroupBy = "category" | "reasoning";
+type Layout = "grid" | "cols";
 
-const BACKING_RANK: Record<BackingStrength, number> = {
-  Strong: 4,
-  Moderate: 3,
-  Thin: 2,
-  None: 1,
+type Group = {
+  key: string;
+  label: string;
+  definition: string;
+  color: string;
+  category?: PatternCategory;
+  items: Pattern[];
 };
 
-const BACKING_FILTERS: BackingStrength[] = [
-  "Strong",
-  "Moderate",
-  "Thin",
-  "None",
-];
+/** Counts up to the new total rather than snapping, so a filter reads as a move. */
+function useCountUp(value: number): number {
+  const [shown, setShown] = useState(value);
+  const from = useRef(value);
 
-function backingBadgeClass(strength?: BackingStrength): string {
-  switch (strength) {
-    case "Strong":
-      return "bg-emerald-100 text-emerald-800 ring-emerald-200";
-    case "Moderate":
-      return "bg-amber-100 text-amber-800 ring-amber-200";
-    case "Thin":
-      return "bg-slate-100 text-muted ring-slate-200";
-    default:
-      return "bg-[var(--color-tag-bg)] text-accent-h ring-[var(--color-tag-border)]";
-  }
-}
+  useEffect(() => {
+    const start = from.current;
+    if (start === value) return;
 
-function BackingIcon({ strength }: { strength?: BackingStrength }) {
-  if (strength === "Strong") {
-    return <ShieldCheck className="h-3.5 w-3.5" />;
-  }
-  if (strength === "Moderate") {
-    return <Shield className="h-3.5 w-3.5" />;
-  }
-  return <ShieldAlert className="h-3.5 w-3.5" />;
-}
+    let frame = 0;
+    const t0 = performance.now();
 
-const READY_TAG =
-  "inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200";
-
-const COMING_SOON_TAG =
-  "inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted ring-1 ring-slate-200";
-
-const COMPANION_TAG =
-  "inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700 ring-1 ring-indigo-200";
-
-function sortPatterns(list: Pattern[], sort: SortOption): Pattern[] {
-  return [...list].sort((a, b) => {
-    if (sort === "backing") {
-      const rankA = BACKING_RANK[a.backingStrength ?? "None"];
-      const rankB = BACKING_RANK[b.backingStrength ?? "None"];
-      return rankB - rankA || a.title.localeCompare(b.title);
+    function step(now: number) {
+      const progress = Math.min(1, (now - t0) / 300);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setShown(Math.round(start + (value - start) * eased));
+      if (progress < 1) frame = requestAnimationFrame(step);
     }
 
-    if (sort === "newest") {
-      return patterns.indexOf(b) - patterns.indexOf(a);
-    }
+    frame = requestAnimationFrame(step);
+    from.current = value;
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
 
-    return a.title.localeCompare(b.title);
-  });
+  return shown;
 }
 
-function PatternCard({
+function SegControl<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: Array<{ value: T; label: string }>;
+  onChange: (next: T) => void;
+}) {
+  const container = useRef<HTMLDivElement>(null);
+  const [thumb, setThumb] = useState<{ left: number; width: number } | null>(
+    null,
+  );
+
+  const measure = useCallback(() => {
+    const node = container.current?.querySelector<HTMLButtonElement>(
+      'button[aria-selected="true"]',
+    );
+    if (node) {
+      setThumb({ left: node.offsetLeft - 3, width: node.offsetWidth });
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    measure();
+  }, [measure, value]);
+
+  useEffect(() => {
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [measure]);
+
+  return (
+    <div className="osh-seg" role="tablist" aria-label={label} ref={container}>
+      <span
+        className="osh-seg-thumb"
+        aria-hidden
+        style={
+          thumb
+            ? {
+                transform: `translateX(${thumb.left}px)`,
+                width: `${thumb.width}px`,
+              }
+            : { opacity: 0 }
+        }
+      />
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          role="tab"
+          aria-selected={value === option.value}
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The matrix is the filter. Row labels filter a category, column headers
+ * filter a reasoning mode, a cell filters the intersection, and a cell with
+ * no patterns is inert — an empty cell is a finding, not a dead control.
+ */
+function Matrix({
+  categoryFilters,
+  reasoningFilters,
+  onToggleCategory,
+  onToggleReasoning,
+  onPickCell,
+  onReset,
+  note,
+  showReset,
+}: {
+  categoryFilters: Set<PatternCategory>;
+  reasoningFilters: Set<ReasoningMode>;
+  onToggleCategory: (category: PatternCategory) => void;
+  onToggleReasoning: (reasoning: ReasoningMode) => void;
+  onPickCell: (category: PatternCategory, reasoning: ReasoningMode) => void;
+  onReset: () => void;
+  note: React.ReactNode;
+  showReset: boolean;
+}) {
+  const counts = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const pattern of patterns) {
+      const key = `${pattern.category}|${pattern.reasoning}`;
+      map.set(key, (map.get(key) ?? 0) + 1);
+    }
+    return map;
+  }, []);
+
+  return (
+    <div className="matrix-shell">
+      <div className="matrix-cap">
+        <span>Category × Reasoning</span>
+        <button
+          type="button"
+          className="matrix-reset"
+          data-show={showReset}
+          onClick={onReset}
+          tabIndex={showReset ? 0 : -1}
+        >
+          Clear
+        </button>
+      </div>
+
+      <div className="matrix">
+        <div />
+        {REASONING_MODE_ORDER.map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            className={`mx-h ${mode === "ioc" ? "mx-h--ioc" : ""}`}
+            data-active={reasoningFilters.has(mode)}
+            title={REASONING_MODE_DEFINITIONS[mode]}
+            onClick={() => onToggleReasoning(mode)}
+          >
+            {REASONING_MODE_LABEL[mode]}
+          </button>
+        ))}
+
+        {PATTERN_CATEGORY_ORDER.map((category) => (
+          <div key={category} className="contents">
+            <button
+              type="button"
+              className="mx-row-label"
+              data-active={categoryFilters.has(category)}
+              title={PATTERN_CATEGORY_DEFINITIONS[category]}
+              style={{ "--c": PATTERN_CATEGORY_COLOR[category] } as CSSProperties}
+              onClick={() => onToggleCategory(category)}
+            >
+              <CategoryIcon category={category} />
+              {category}
+            </button>
+
+            {REASONING_MODE_ORDER.map((mode) => {
+              const count = counts.get(`${category}|${mode}`) ?? 0;
+              const active =
+                categoryFilters.has(category) && reasoningFilters.has(mode);
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  className="mx-cell"
+                  data-zero={count === 0}
+                  data-active={active}
+                  disabled={count === 0}
+                  aria-label={`${category}, ${REASONING_MODE_LABEL[mode]}: ${count} patterns`}
+                  style={
+                    {
+                      "--c": PATTERN_CATEGORY_COLOR[category],
+                      "--w": count / 5,
+                    } as CSSProperties
+                  }
+                  onClick={() => onPickCell(category, mode)}
+                >
+                  {count === 0 ? "·" : count}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      <p className="mx-note">{note}</p>
+    </div>
+  );
+}
+
+function PatternFace({
   pattern,
-  ready,
+  color,
+  showCategoryIcon,
+  index,
 }: {
   pattern: Pattern;
-  ready: boolean;
+  color: string;
+  showCategoryIcon: boolean;
+  index: number;
 }) {
-  const sourceCount = pattern.evidence?.length ?? 0;
-  const companionTags = ready ? getPatternReadyCompanionTags(pattern.slug) : [];
+  const facts = factsLine(pattern);
 
   return (
     <Link
       href={`/patterns/${pattern.slug}`}
-      className={`group osh-card flex h-full flex-col p-6 ${
-        ready ? "" : "opacity-95"
-      }`}
+      className="osh-face"
+      data-facts={Boolean(facts)}
+      style={{ "--c": color, "--i": index } as CSSProperties}
     >
-      <div className="mb-2 flex flex-wrap items-center gap-1.5">
-        <span className={ready ? READY_TAG : COMING_SOON_TAG}>
-          {ready ? "Ready" : "Coming soon"}
+      <div className="osh-face-top">
+        <span
+          className="osh-face-cat"
+          style={{ "--c": color } as CSSProperties}
+        >
+          {showCategoryIcon ? <CategoryIcon category={pattern.category} /> : null}
+          {pattern.category}
         </span>
-        {companionTags.map((tag) => (
-          <span key={tag} className={COMPANION_TAG}>
-            {tag}
-          </span>
-        ))}
+        {isPatternReady(pattern.slug) ? null : (
+          <span className="osh-soon">SOON</span>
+        )}
       </div>
 
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="font-heading text-lg font-bold text-ink transition group-hover:text-accent-h">
-          {pattern.title}
-        </h3>
-        <ArrowUpRight className="h-4 w-4 shrink-0 text-subtle transition group-hover:text-accent" />
+      <h3>{pattern.title}</h3>
+
+      <div className="osh-face-swap">
+        <p className="osh-face-one">{pattern.oneliner}</p>
+        {facts ? (
+          <p className="osh-face-facts">
+            <b>facts</b> {facts}
+          </p>
+        ) : null}
       </div>
 
-      <div className="mt-3 flex-1 rounded-xl border border-line bg-hover px-3.5 py-3">
-        <p className="text-sm leading-relaxed text-muted line-clamp-3">
-          {pattern.oneliner || pattern.explanation}
-        </p>
+      <div className="osh-face-foot">
+        <ReasoningTag reasoning={pattern.reasoning} />
+        <BackingSignal pattern={pattern} />
       </div>
-
-      <div className="mt-3 rounded-xl border border-yellow-200 bg-yellow-50 px-3 py-2">
-        <p className="text-xs font-medium text-muted">
-          <span
-            className={`mr-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ${backingBadgeClass(pattern.backingStrength)}`}
-          >
-            {pattern.backingStrength ?? "None"}
-          </span>
-          {sourceCount} source{sourceCount === 1 ? "" : "s"}
-        </p>
-      </div>
-
-      <span className="mt-4 text-sm font-semibold text-accent">
-        View Pattern
-      </span>
     </Link>
+  );
+}
+
+function GridView({
+  groups,
+  groupBy,
+}: {
+  groups: Group[];
+  groupBy: GroupBy;
+}) {
+  let index = 0;
+
+  return (
+    <>
+      {groups.map((group) => {
+        const items = byEvidence(group.items);
+        return (
+          <section
+            key={group.key}
+            className="osh-group"
+            aria-labelledby={`group-${group.key}`}
+          >
+            <div
+              className="osh-group-head"
+              style={{ "--c": group.color } as CSSProperties}
+            >
+              <h2 id={`group-${group.key}`}>{group.label}</h2>
+              <span className="n">{group.items.length}</span>
+            </div>
+            <p className="osh-group-def">{group.definition}</p>
+
+            {items.length > 0 ? (
+              <div className="osh-faces">
+                {items.map((pattern) => (
+                  <PatternFace
+                    key={pattern.slug}
+                    pattern={pattern}
+                    color={
+                      groupBy === "category"
+                        ? PATTERN_CATEGORY_COLOR[pattern.category]
+                        : REASONING_COLOR[pattern.reasoning]
+                    }
+                    showCategoryIcon={groupBy === "category"}
+                    index={index++}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="osh-group-empty">
+                No patterns match the current filters.
+              </p>
+            )}
+          </section>
+        );
+      })}
+    </>
+  );
+}
+
+function ColumnsView({
+  groups,
+  groupBy,
+}: {
+  groups: Group[];
+  groupBy: GroupBy;
+}) {
+  let index = 0;
+
+  return (
+    <div
+      className="osh-cols"
+      style={{ "--n": groups.length } as CSSProperties}
+    >
+      {groups.map((group) => (
+        <div key={group.key} className="osh-col">
+          <div
+            className="osh-col-head"
+            style={{ "--c": group.color } as CSSProperties}
+          >
+            <h2>
+              {group.label} <span className="n">{group.items.length}</span>
+            </h2>
+            <p>{group.definition}</p>
+          </div>
+
+          <div className="osh-col-stack">
+            {group.items.length > 0 ? (
+              byEvidence(group.items).map((pattern) => {
+                const facts = factsLine(pattern);
+                return (
+                  <Link
+                    key={pattern.slug}
+                    href={`/patterns/${pattern.slug}`}
+                    className="osh-mini"
+                    style={
+                      {
+                        "--c":
+                          groupBy === "category"
+                            ? PATTERN_CATEGORY_COLOR[pattern.category]
+                            : REASONING_COLOR[pattern.reasoning],
+                        "--i": index++,
+                      } as CSSProperties
+                    }
+                  >
+                    <h3>{pattern.title}</h3>
+                    <div className="osh-mini-meta">
+                      <ReasoningTag reasoning={pattern.reasoning} />
+                      <span className="osh-evidence">
+                        <EvidenceBars pattern={pattern} />
+                      </span>
+                    </div>
+                    <div className="osh-mini-reveal">
+                      <p>{pattern.oneliner}</p>
+                      {facts ? <p className="facts">{facts}</p> : null}
+                    </div>
+                  </Link>
+                );
+              })
+            ) : (
+              <p className="osh-group-empty" style={{ paddingLeft: 0 }}>
+                Nothing here.
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
 export function PatternGallery() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [query, setQuery] = useState("");
-  const [activeFilters, setActiveFilters] = useState<Set<BackingStrength>>(
+  const [categoryFilters, setCategoryFilters] = useState<Set<PatternCategory>>(
     new Set(),
   );
-  const [sort, setSort] = useState<SortOption>("az");
+  const [reasoningFilters, setReasoningFilters] = useState<Set<ReasoningMode>>(
+    new Set(),
+  );
+  const [groupBy, setGroupBy] = useState<GroupBy>("category");
+  const [layout, setLayout] = useState<Layout>("grid");
 
   useEffect(() => {
     const slug = searchParams.get("pattern");
@@ -160,173 +449,206 @@ export function PatternGallery() {
     }
   }, [searchParams, router]);
 
-  const toggleFilter = (strength: BackingStrength) => {
-    setActiveFilters((current) => {
-      const next = new Set(current);
-      if (next.has(strength)) {
-        next.delete(strength);
-      } else {
-        next.add(strength);
+  const matching = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    return patterns.filter((pattern) => {
+      if (categoryFilters.size && !categoryFilters.has(pattern.category)) {
+        return false;
       }
+      if (reasoningFilters.size && !reasoningFilters.has(pattern.reasoning)) {
+        return false;
+      }
+      if (
+        normalized &&
+        !`${pattern.title} ${pattern.oneliner} ${pattern.slug}`
+          .toLowerCase()
+          .includes(normalized)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [query, categoryFilters, reasoningFilters]);
+
+  const groups: Group[] = useMemo(() => {
+    if (groupBy === "category") {
+      return PATTERN_CATEGORY_ORDER.map((category) => ({
+        key: category,
+        label: category,
+        definition: PATTERN_CATEGORY_DEFINITIONS[category],
+        color: PATTERN_CATEGORY_COLOR[category],
+        category,
+        items: matching.filter((pattern) => pattern.category === category),
+      }));
+    }
+    return REASONING_MODE_ORDER.map((mode) => ({
+      key: mode,
+      label: REASONING_MODE_LABEL[mode],
+      definition: REASONING_MODE_DEFINITIONS[mode],
+      color: REASONING_COLOR[mode],
+      items: matching.filter((pattern) => pattern.reasoning === mode),
+    }));
+  }, [groupBy, matching]);
+
+  const shownCount = useCountUp(matching.length);
+  const filtered = categoryFilters.size > 0 || reasoningFilters.size > 0;
+
+  function toggleCategory(category: PatternCategory) {
+    setCategoryFilters((current) => {
+      const next = new Set(current);
+      if (!next.delete(category)) next.add(category);
       return next;
     });
-  };
+  }
 
-  const { ready: readyPatterns, pending: pendingPatterns, total } =
-    useMemo(() => {
-      let result = [...patterns];
+  function toggleReasoning(reasoning: ReasoningMode) {
+    setReasoningFilters((current) => {
+      const next = new Set(current);
+      if (!next.delete(reasoning)) next.add(reasoning);
+      return next;
+    });
+  }
 
-      if (query.trim()) {
-        const normalized = query.trim().toLowerCase();
-        result = result.filter(
-          (pattern) =>
-            pattern.title.toLowerCase().includes(normalized) ||
-            pattern.slug.toLowerCase().includes(normalized) ||
-            pattern.oneliner.toLowerCase().includes(normalized) ||
-            pattern.explanation.toLowerCase().includes(normalized),
-        );
-      }
+  function pickCell(category: PatternCategory, reasoning: ReasoningMode) {
+    const alreadyOnlyThis =
+      categoryFilters.size === 1 &&
+      reasoningFilters.size === 1 &&
+      categoryFilters.has(category) &&
+      reasoningFilters.has(reasoning);
 
-      if (activeFilters.size > 0) {
-        result = result.filter((pattern) =>
-          activeFilters.has(pattern.backingStrength ?? "None"),
-        );
-      }
+    setCategoryFilters(alreadyOnlyThis ? new Set() : new Set([category]));
+    setReasoningFilters(alreadyOnlyThis ? new Set() : new Set([reasoning]));
+  }
 
-      const { ready, pending } = partitionPatternsByReady(result);
+  function reset() {
+    setCategoryFilters(new Set());
+    setReasoningFilters(new Set());
+    setQuery("");
+  }
 
-      return {
-        ready: sortPatterns(ready, sort),
-        pending: sortPatterns(pending, sort),
-        total: result.length,
-      };
-    }, [query, activeFilters, sort]);
+  const tokens = [
+    ...[...categoryFilters].map((category) => ({
+      key: `cat-${category}`,
+      label: category,
+      color: PATTERN_CATEGORY_COLOR[category],
+      remove: () => toggleCategory(category),
+    })),
+    ...[...reasoningFilters].map((mode) => ({
+      key: `reason-${mode}`,
+      label: REASONING_MODE_LABEL[mode],
+      color: REASONING_COLOR[mode],
+      remove: () => toggleReasoning(mode),
+    })),
+  ];
 
   return (
-    <div className="min-h-screen bg-bg">
-      <div className="osh-container py-12">
-        <div className="max-w-3xl">
-          <h1 className="font-heading text-4xl font-bold tracking-tight text-ink sm:text-5xl">
-            All {patterns.length} Patterns
-          </h1>
-          <p className="mt-3 text-lg text-muted">
-            {PATTERN_READY_SLUGS.length} ready to use ·{" "}
-            {patterns.length - PATTERN_READY_SLUGS.length} coming soon
-          </p>
-        </div>
+    <div className="bg-bg">
+      <header className="osh-hero">
+        <HeroOrbs />
 
-        <div className="mt-10 space-y-4 rounded-2xl border border-line bg-white p-5 shadow-sm">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-subtle" />
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search patterns by name or keyword…"
-              className="w-full rounded-xl border border-line py-3 pl-10 pr-4 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--color-tag-bg)]"
+        <div className="osh-container grid items-start gap-9 py-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
+          <div>
+            <h1 className="text-[clamp(1.85rem,3.2vw,2.4rem)] font-extrabold tracking-[-0.022em] text-ink">
+              HAX 2.0 Patterns
+            </h1>
+            <p className="mt-1.5 max-w-[44ch] text-[0.95rem] leading-relaxed text-muted">
+              A research-backed reference for human-agent interaction,
+              classified two ways at once.
+            </p>
+          </div>
+
+          <Matrix
+            categoryFilters={categoryFilters}
+            reasoningFilters={reasoningFilters}
+            onToggleCategory={toggleCategory}
+            onToggleReasoning={toggleReasoning}
+            onPickCell={pickCell}
+            onReset={reset}
+            showReset={filtered || query.trim().length > 0}
+            note={
+              filtered ? (
+                <>
+                  Showing <b>{matching.length}</b> of {patterns.length}.
+                </>
+              ) : (
+                <>
+                  Autonomy holds <b>no</b> IoC patterns. Commitment holds{" "}
+                  <b>only</b> IoC patterns.
+                </>
+              )
+            }
+          />
+        </div>
+      </header>
+
+      <div className="osh-bar">
+        <div className="osh-container osh-bar-in">
+          <span className="osh-count">
+            {shownCount} <em>of {patterns.length}</em>
+          </span>
+
+          <div className="flex flex-wrap gap-1.5">
+            {tokens.map((token) => (
+              <span
+                key={token.key}
+                className="osh-token"
+                style={{ "--c": token.color } as CSSProperties}
+              >
+                {token.label}
+                <button
+                  type="button"
+                  onClick={token.remove}
+                  aria-label={`Remove ${token.label} filter`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <label className="osh-searchbox">
+              <Search className="h-3.5 w-3.5" aria-hidden />
+              <input
+                id="gallery-search"
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search…"
+                aria-label="Search patterns"
+              />
+            </label>
+
+            <SegControl
+              label="Group by"
+              value={groupBy}
+              onChange={setGroupBy}
+              options={[
+                { value: "category", label: "Category" },
+                { value: "reasoning", label: "Reasoning" },
+              ]}
+            />
+
+            <SegControl
+              label="Layout"
+              value={layout}
+              onChange={setLayout}
+              options={[
+                { value: "grid", label: "Grid" },
+                { value: "cols", label: "Columns" },
+              ]}
             />
           </div>
-
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap gap-2">
-              {BACKING_FILTERS.map((strength) => {
-                const active = activeFilters.has(strength);
-                return (
-                  <button
-                    key={strength}
-                    type="button"
-                    onClick={() => toggleFilter(strength)}
-                    className={`rounded-full px-3 py-1.5 text-xs font-semibold ring-1 transition ${
-                      active
-                        ? backingBadgeClass(strength)
-                        : "bg-white text-muted ring-slate-200 hover:bg-hover"
-                    }`}
-                  >
-                    {strength}
-                  </button>
-                );
-              })}
-            </div>
-
-            <select
-              value={sort}
-              onChange={(event) => setSort(event.target.value as SortOption)}
-              className="rounded-xl border border-line bg-white px-3 py-2 text-sm font-medium text-muted outline-none focus:border-accent focus:ring-2 focus:ring-[var(--color-tag-bg)]"
-            >
-              <option value="az">A–Z</option>
-              <option value="backing">Most backed</option>
-              <option value="newest">Newest</option>
-            </select>
-          </div>
-
-          <p className="text-sm text-subtle">
-            {total} pattern{total === 1 ? "" : "s"} match
-          </p>
         </div>
-
-        {total === 0 ? (
-          <div className="mt-12 rounded-2xl border border-dashed border-line-md bg-white p-12 text-center">
-            <p className="font-heading text-lg font-semibold text-ink">
-              No patterns found
-            </p>
-            <p className="mt-2 text-sm text-subtle">
-              Try a different search term or clear your filters.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-10 space-y-12">
-            {readyPatterns.length > 0 ? (
-              <section aria-labelledby="gallery-ready-heading">
-                <h2
-                  id="gallery-ready-heading"
-                  className="font-heading text-xl font-bold text-ink"
-                >
-                  Ready
-                </h2>
-                <p className="mt-1 text-sm text-muted">
-                  Live patterns you can explore and use in chat today.
-                </p>
-                <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {readyPatterns.map((pattern) => (
-                    <PatternCard key={pattern.slug} pattern={pattern} ready />
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
-            {readyPatterns.length > 0 && pendingPatterns.length > 0 ? (
-              <div
-                className="border-t border-line"
-                role="separator"
-                aria-hidden
-              />
-            ) : null}
-
-            {pendingPatterns.length > 0 ? (
-              <section aria-labelledby="gallery-coming-soon-heading">
-                <h2
-                  id="gallery-coming-soon-heading"
-                  className="font-heading text-xl font-bold text-ink"
-                >
-                  Coming soon
-                </h2>
-                <p className="mt-1 text-sm text-muted">
-                  Research-backed patterns still in development.
-                </p>
-                <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {pendingPatterns.map((pattern) => (
-                    <PatternCard
-                      key={pattern.slug}
-                      pattern={pattern}
-                      ready={false}
-                    />
-                  ))}
-                </div>
-              </section>
-            ) : null}
-          </div>
-        )}
       </div>
+
+      <main className="osh-container pb-16 pt-1">
+        {layout === "cols" ? (
+          <ColumnsView groups={groups} groupBy={groupBy} />
+        ) : (
+          <GridView groups={groups} groupBy={groupBy} />
+        )}
+      </main>
     </div>
   );
 }

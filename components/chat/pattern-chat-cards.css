@@ -5,7 +5,7 @@
   border-left: 4px solid var(--fill-accent);
   border-radius: var(--radius);
   padding: 16px;
-  background: var(--surface-1, var(--pattern-surface-muted, #f8f9fb));
+  background: var(--surface-1, var(--pattern-surface-muted, var(--color-hover)));
   margin-bottom: 12px;
   animation: ui-slide-in-left 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
@@ -169,7 +169,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
-  background: var(--surface-1, var(--pattern-surface-muted, #f8f9fb));
+  background: var(--surface-1, var(--pattern-surface-muted, var(--color-hover)));
   margin-bottom: 12px;
   animation: ui-slide-in-left 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }

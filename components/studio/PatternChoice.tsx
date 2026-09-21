@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getPattern } from "@/lib/patterns";
 import { isPatternReady } from "@/lib/pattern-ready";
+import { CategoryLabel, ReasoningTag } from "@/components/PatternTaxonomy";
 import { PATTERN_STANDALONE } from "@/components/patterns/pattern-registry";
 import { elementsForPattern, getSituation } from "@/lib/studio/content";
 import type { Scenario } from "@/lib/studio/types";
@@ -104,8 +105,12 @@ export function PatternChoice({ scenarioId, situationId }: Props) {
           return (
             <div key={pattern.slug} className="studio-card studio-pattern-card">
               <div className="studio-pattern-card__head">
-                <h2 className="studio-pattern-card__title">{pattern.title}</h2>
+                <div>
+                  <CategoryLabel category={pattern.category} />
+                  <h2 className="studio-pattern-card__title">{pattern.title}</h2>
+                </div>
                 <div className="studio-pattern-card__badges">
+                  <ReasoningTag reasoning={pattern.reasoning} />
                   <span
                     className={`studio-badge studio-badge--${ready ? "ready" : "not-ready"}`}
                     title="Readiness: whether this pattern has a vetted reference design"

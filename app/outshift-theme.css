@@ -26,11 +26,81 @@
   --color-shadow: rgba(41, 50, 71, 0.08);
   --color-success: #16a34a;
   --color-warning: #ea580c;
+  --color-danger: #dc2626;
+  /* Success tints, derived so the ready/verified family stays one hue. */
+  --color-success-bg: color-mix(in srgb, #16a34a 8%, white);
+  --color-success-border: color-mix(in srgb, #16a34a 30%, white);
+  --color-success-text: #15803d;
+  /* Research evidence reads in the warm end of the Outshift ramp, so a
+     quote is never mistaken for an interactive accent. */
+  --color-evidence: #eb7251;
 
   --font-sans: InterVariable, Inter, system-ui, sans-serif;
   --font-mono: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
   --radius-card: 16px;
   --radius-pill: 40px;
+  --radius-face: 14px;
+  --radius-mini: 11px;
+  --radius-control: 6px;
+
+  /* The faintest ink on the page: eyebrows, counts, captions. */
+  --color-text-faint: #949cab;
+  --color-border-soft: rgba(41, 50, 71, 0.05);
+
+  /* The violet that means "this pattern surfaces the agent's reasoning".
+     Used by the IoC tag and the reasoning grouping, nowhere else. */
+  --color-ioc: #6d28d9;
+
+  /* How much colour any tinted surface carries. One number per surface class,
+     so the whole site's saturation is tuned from these three lines. */
+  --tint: 6%;
+  --tint-soft: 3.5%;
+  --glow: 9%;
+
+  /* Hover lift is neutral ink, never tinted: a coloured shadow reads as glow. */
+  --shadow-hover: 0 12px 28px rgba(41, 50, 71, 0.09);
+  --shadow-lift: 0 4px 12px rgba(41, 50, 71, 0.09);
+
+  /* The category palette, also exported from lib/patterns.ts so TS and CSS
+     cannot drift apart. */
+  --cat-autonomy: #187adc;
+  --cat-legibility: #9345e1;
+  --cat-commitment: #00a3cc;
+  --cat-reporting: #5a9c37;
+}
+
+@property --osh-ring {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes osh-spin {
+  to {
+    --osh-ring: 360deg;
+  }
+}
+
+@keyframes osh-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes osh-rise {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .osh-container {
@@ -208,4 +278,857 @@
   .edit-panel .bg-accent,
   .edit-panel [class*="TAB_ACTIVE"] {
     background: var(--edit-accent);
+  }
+
+  /* ======================================================================
+     Shared design language
+     Category reads as colour, reasoning reads as shape. They stay separate
+     visual systems so one card can carry both without ambiguity, and the
+     reasoning distinction survives grayscale and colourblind readers.
+     Every surface below is used on more than one page: the gallery, the
+     pattern detail pages, the studio and the homepage draw from the same set.
+     ====================================================================== */
+
+  /* ---------- hero ---------- */
+
+  .osh-hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    border-bottom: 1px solid var(--color-border);
+    background-image: linear-gradient(
+      118deg,
+      rgba(210, 194, 255, 0.13) 0%,
+      rgba(255, 255, 255, 1) 46%,
+      rgba(0, 188, 235, 0.06) 100%
+    );
+  }
+
+  .osh-orb {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(52px);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .osh-orb--a {
+    width: 300px;
+    height: 300px;
+    left: -6%;
+    top: -60%;
+    background: rgba(0, 188, 235, 0.14);
+    animation: osh-drift-a 16s ease-in-out infinite;
+  }
+
+  .osh-orb--b {
+    width: 260px;
+    height: 260px;
+    left: 46%;
+    top: -35%;
+    background: rgba(147, 69, 225, 0.1);
+    animation: osh-drift-b 19s ease-in-out infinite;
+  }
+
+  .osh-orb--c {
+    width: 200px;
+    height: 200px;
+    right: 4%;
+    bottom: -70%;
+    background: rgba(245, 179, 92, 0.09);
+    animation: osh-drift-c 14s ease-in-out infinite;
+  }
+
+  @keyframes osh-drift-a {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    50% {
+      transform: translate(34px, 18px);
+    }
+  }
+
+  @keyframes osh-drift-b {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    50% {
+      transform: translate(-28px, 22px);
+    }
+  }
+
+  @keyframes osh-drift-c {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(14px, -16px) scale(1.07);
+    }
+  }
+
+  /* ---------- matrix: the category x reasoning filter ---------- */
+
+  .matrix-shell {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-face);
+    padding: 0.8rem 0.9rem 0.65rem;
+  }
+
+  .matrix-cap {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .matrix-cap span {
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+    font-weight: 600;
+  }
+
+  .matrix-reset {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: var(--color-accent-hover);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .matrix-reset[data-show="true"] {
+    opacity: 1;
+  }
+
+  .matrix {
+    display: grid;
+    grid-template-columns: 9.2rem 3.5rem 3.5rem;
+    gap: 1px;
+  }
+
+  .mx-h {
+    border: none;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+    padding: 0.2rem 0;
+    font-size: 0.63rem;
+    font-weight: 700;
+    color: var(--color-text-faint);
+    text-align: center;
+    border-radius: var(--radius-control);
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
+  }
+
+  .mx-h[data-active="true"] {
+    color: var(--color-text);
+    background: var(--color-hover);
+  }
+
+  .mx-h--ioc[data-active="true"] {
+    color: var(--color-ioc);
+    background: rgba(109, 40, 217, 0.08);
+  }
+
+  .mx-row-label {
+    display: flex;
+    align-items: center;
+    gap: 0.36rem;
+    border: none;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+    padding: 0.28rem 0.35rem 0.28rem 0.3rem;
+    border-radius: var(--radius-control);
+    text-align: left;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .mx-row-label svg {
+    width: 12px;
+    height: 12px;
+    color: var(--c);
+    flex-shrink: 0;
+  }
+
+  .mx-row-label:hover {
+    background: var(--color-hover);
+  }
+
+  .mx-row-label[data-active="true"] {
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--c) 8%, white);
+  }
+
+  .mx-cell {
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    border-radius: var(--radius-control);
+    padding: 0.28rem 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--c) calc(var(--w) * 16%), transparent);
+    transition:
+      transform 0.18s cubic-bezier(0.34, 1.5, 0.64, 1),
+      box-shadow 0.18s ease,
+      background 0.18s ease;
+  }
+
+  .mx-cell:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* An empty cell is a finding, not a gap: it stays readable and inert. */
+  .mx-cell[data-zero="true"] {
+    color: var(--color-text-faint);
+    font-weight: 500;
+    background: none;
+    box-shadow: inset 0 0 0 1px var(--color-border-soft);
+    cursor: default;
+  }
+
+  .mx-cell[data-zero="true"]:hover {
+    transform: none;
+    box-shadow: inset 0 0 0 1px var(--color-border-soft);
+  }
+
+  .mx-cell[data-active="true"] {
+    box-shadow: inset 0 0 0 1.5px var(--c);
+  }
+
+  .mx-note {
+    margin: 0.45rem 0 0;
+    font-size: 0.63rem;
+    line-height: 1.45;
+    color: var(--color-text-faint);
+  }
+
+  .mx-note b {
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+
+  /* ---------- sticky filter bar ---------- */
+
+  .osh-bar {
+    position: sticky;
+    top: 4.5rem;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .osh-bar-in {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    padding-block: 0.65rem;
+  }
+
+  .osh-count {
+    font-size: 0.79rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .osh-count em {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--color-text-faint);
+  }
+
+  .osh-token {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.24rem 0.45rem 0.24rem 0.58rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--c) 12%, white);
+    color: var(--c);
+    animation: osh-pop 0.22s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+  }
+
+  .osh-token button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: inherit;
+    padding: 0;
+    line-height: 1;
+    font-size: 0.88rem;
+    opacity: 0.55;
+  }
+
+  .osh-token button:hover {
+    opacity: 1;
+  }
+
+  .osh-searchbox {
+    display: flex;
+    align-items: center;
+    gap: 0.38rem;
+    color: var(--color-text-faint);
+  }
+
+  .osh-searchbox input {
+    border: none;
+    outline: none;
+    background: none;
+    font: inherit;
+    font-size: 0.79rem;
+    color: var(--color-text);
+    width: 6.5rem;
+  }
+
+  .osh-searchbox input::placeholder {
+    color: var(--color-text-faint);
+  }
+
+  /* ---------- segmented control ---------- */
+
+  .osh-seg {
+    position: relative;
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--color-hover);
+  }
+
+  .osh-seg button {
+    position: relative;
+    z-index: 1;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--color-text-faint);
+    padding: 0.28rem 0.62rem;
+    transition: color 0.25s ease;
+    white-space: nowrap;
+  }
+
+  .osh-seg button[aria-selected="true"] {
+    color: var(--color-text);
+  }
+
+  .osh-seg-thumb {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    border-radius: 999px;
+    background: var(--color-bg);
+    box-shadow: 0 1px 2px var(--color-shadow);
+    transition:
+      transform 0.3s cubic-bezier(0.2, 0.85, 0.25, 1),
+      width 0.3s cubic-bezier(0.2, 0.85, 0.25, 1);
+  }
+
+  /* The same rainbow ring as .osh-cta-outline, turning. */
+  .osh-seg-thumb::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    padding: 1.1px;
+    background: conic-gradient(
+      from var(--osh-ring, 0deg),
+      #9345e1,
+      #187adc,
+      #00bceb,
+      #74bf4b,
+      #f5b35c,
+      #eb7251,
+      #9345e1
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: osh-spin 7s linear infinite;
+  }
+
+  /* ---------- reasoning tag: IoC turns, non-IoC sits still ---------- */
+
+  .osh-tag-reason {
+    font-size: 0.66rem;
+    font-weight: 700;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .osh-tag-reason--ioc {
+    color: var(--color-ioc);
+  }
+
+  .osh-tag-reason--ioc::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    background: conic-gradient(
+      from var(--osh-ring, 0deg),
+      #9345e1,
+      #187adc,
+      #00bceb,
+      #9345e1
+    );
+    animation: osh-spin 4.5s linear infinite;
+  }
+
+  .osh-tag-reason--non {
+    color: var(--color-text-faint);
+    font-weight: 600;
+  }
+
+  .osh-tag-reason--non::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    background: rgba(41, 50, 71, 0.16);
+  }
+
+  /* ---------- evidence bars: four steps, Strong to None ---------- */
+
+  .osh-bars {
+    display: inline-flex;
+    gap: 2px;
+    align-items: flex-end;
+  }
+
+  .osh-bars i {
+    width: 3px;
+    border-radius: 1px;
+    background: rgba(41, 50, 71, 0.14);
+  }
+
+  .osh-bars i:nth-child(1) {
+    height: 5px;
+  }
+  .osh-bars i:nth-child(2) {
+    height: 8px;
+  }
+  .osh-bars i:nth-child(3) {
+    height: 11px;
+  }
+  .osh-bars i:nth-child(4) {
+    height: 14px;
+  }
+
+  .osh-bars i[data-on="true"] {
+    background: var(--color-accent-hover);
+  }
+
+  .osh-evidence {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 0.35rem;
+    font-size: 0.66rem;
+    color: var(--color-text-faint);
+  }
+
+  /* Readiness is not evidence strength: separate badge, deliberately quiet. */
+  .osh-soon {
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-text-faint);
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    padding: 0.04rem 0.2rem;
+  }
+
+  /* ---------- group heading ---------- */
+
+  .osh-group {
+    margin-top: 1.9rem;
+  }
+
+  .osh-group-head {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding-left: 0.8rem;
+    border-left: 2.5px solid var(--c, var(--color-accent));
+  }
+
+  .osh-group-head h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .osh-group-head .n {
+    font-size: 0.71rem;
+    font-weight: 600;
+    color: var(--color-text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .osh-group-def {
+    margin: 0.18rem 0 0.9rem;
+    padding-left: 0.8rem;
+    font-size: 0.78rem;
+    color: var(--color-text-faint);
+    max-width: 62ch;
+  }
+
+  .osh-group-empty {
+    padding-left: 0.8rem;
+    font-size: 0.78rem;
+    color: var(--color-text-faint);
+    font-style: italic;
+  }
+
+  /* ---------- pattern face: the uniform card ---------- */
+
+  .osh-faces {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .osh-face {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-face);
+    border: 1px solid var(--color-border);
+    padding: 1rem 1.05rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 178px;
+    isolation: isolate;
+    color: inherit;
+    text-decoration: none;
+    background: linear-gradient(
+      158deg,
+      color-mix(in srgb, var(--c) var(--tint), white),
+      var(--color-bg) 58%
+    );
+    animation: osh-rise 0.38s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+    animation-delay: calc(var(--i, 0) * 26ms);
+    transition:
+      transform 0.2s cubic-bezier(0.2, 0.85, 0.25, 1),
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .osh-face:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--color-border-medium);
+  }
+
+  .osh-face::after {
+    content: "";
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    right: -46px;
+    bottom: -58px;
+    border-radius: 999px;
+    z-index: -1;
+    background: color-mix(in srgb, var(--c) var(--glow), transparent);
+    filter: blur(30px);
+    opacity: 0.55;
+    transition: transform 0.45s ease;
+  }
+
+  .osh-face:hover::after {
+    transform: translate(-10px, -12px) scale(1.12);
+  }
+
+  .osh-face-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+  }
+
+  .osh-face-cat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    font-size: 0.61rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--c);
+  }
+
+  .osh-face-cat svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  .osh-face h3 {
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: -0.014em;
+    line-height: 1.28;
+    margin: 0.85rem 0 0;
+  }
+
+  /* Fixed-height copy box: the summary and, where the library has fact chips,
+     what the pattern fixes crossfade in place, so hover never changes a card's
+     height and never pushes the row below it down. */
+  .osh-face-swap {
+    position: relative;
+    height: 2.5rem;
+    margin-top: 0.35rem;
+  }
+
+  .osh-face-swap > * {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    font-size: 0.79rem;
+    line-height: 1.25rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: opacity 0.22s ease;
+  }
+
+  .osh-face-one {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+
+  .osh-face-facts {
+    color: var(--color-ioc);
+    opacity: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    line-height: 1.25rem;
+  }
+
+  .osh-face-facts b {
+    color: var(--color-text-faint);
+    font-weight: 500;
+  }
+
+  .osh-face[data-facts="true"]:hover .osh-face-one {
+    opacity: 0;
+  }
+
+  .osh-face[data-facts="true"]:hover .osh-face-facts {
+    opacity: 1;
+  }
+
+  .osh-face-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    margin-top: auto;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* ---------- columns board ---------- */
+
+  .osh-cols {
+    display: grid;
+    grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 1.6rem;
+    align-items: start;
+  }
+
+  .osh-col {
+    min-width: 0;
+  }
+
+  .osh-col-head {
+    border-top: 2.5px solid var(--c);
+    padding: 0.6rem 0.15rem 0.7rem;
+  }
+
+  .osh-col-head h2 {
+    font-size: 0.86rem;
+    font-weight: 800;
+    margin: 0 0 0.15rem;
+    letter-spacing: -0.008em;
+  }
+
+  .osh-col-head p {
+    font-size: 0.7rem;
+    line-height: 1.45;
+    color: var(--color-text-faint);
+    margin: 0;
+  }
+
+  .osh-col-head .n {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--c);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .osh-col-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .osh-mini {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-mini);
+    padding: 0.65rem 0.7rem;
+    color: inherit;
+    text-decoration: none;
+    display: block;
+    background: linear-gradient(
+      140deg,
+      color-mix(in srgb, var(--c) var(--tint-soft), white),
+      var(--color-bg) 70%
+    );
+    animation: osh-rise 0.34s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+    animation-delay: calc(var(--i, 0) * 22ms);
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .osh-mini:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--color-border-medium);
+  }
+
+  .osh-mini h3 {
+    font-size: 0.83rem;
+    font-weight: 700;
+    margin: 0 0 0.3rem;
+    line-height: 1.3;
+    letter-spacing: -0.006em;
+  }
+
+  .osh-mini-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+  }
+
+  .osh-mini-reveal {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+      max-height 0.26s ease,
+      opacity 0.2s ease,
+      margin-top 0.26s ease;
+  }
+
+  .osh-mini-reveal p {
+    font-size: 0.73rem;
+    line-height: 1.45;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .osh-mini-reveal .facts {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--color-ioc);
+    margin: 0.35rem 0 0;
+  }
+
+  .osh-mini:hover .osh-mini-reveal {
+    max-height: 14rem;
+    opacity: 1;
+    margin-top: 0.45rem;
+  }
+
+  /* ---------- focus and motion ---------- */
+
+  .mx-h:focus-visible,
+  .mx-cell:focus-visible,
+  .mx-row-label:focus-visible,
+  .osh-seg button:focus-visible,
+  .osh-token button:focus-visible,
+  .matrix-reset:focus-visible,
+  .osh-face:focus-visible,
+  .osh-mini:focus-visible {
+    outline: 2px solid var(--color-accent-hover);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 900px) {
+    .matrix {
+      grid-template-columns: 8.4rem 1fr 1fr;
+    }
+
+    .osh-cols {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    .osh-cols,
+    .osh-faces {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .osh-orb,
+    .osh-tag-reason--ioc::before,
+    .osh-seg-thumb::before,
+    .osh-face,
+    .osh-mini,
+    .osh-token {
+      animation: none !important;
+    }
+
+    .osh-face,
+    .osh-mini {
+      opacity: 1;
+      transform: none;
+    }
   }

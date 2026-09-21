@@ -74,7 +74,7 @@
     rgba(0, 188, 235, 0.22) 0%,
     rgba(147, 69, 225, 0.2) 100%
   );
-  color: #7c3aed;
+  color: var(--color-ioc);
   border: 1px solid rgba(147, 69, 225, 0.22);
 }
 
