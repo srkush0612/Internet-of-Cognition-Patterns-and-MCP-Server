@@ -1,15 +1,11 @@
-import { Suspense } from "react";
-import { SituationCanvas } from "@/components/studio/SituationCanvas";
+import { redirect } from "next/navigation";
 
-export default async function CanvasPage({
+/** Superseded, same as the situation route above. */
+export default async function CanvasRedirect({
   params,
 }: {
-  params: Promise<{ scenarioId: string; situationId: string }>;
+  params: Promise<{ scenarioId: string }>;
 }) {
-  const { scenarioId, situationId } = await params;
-  return (
-    <Suspense fallback={<div className="studio-canvas studio-muted">Loading…</div>}>
-      <SituationCanvas scenarioId={scenarioId} situationId={situationId} />
-    </Suspense>
-  );
+  const { scenarioId } = await params;
+  redirect(`/studio/${scenarioId}`);
 }

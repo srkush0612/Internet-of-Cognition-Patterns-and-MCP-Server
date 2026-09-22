@@ -2,64 +2,98 @@
   {
     "id": "agents-pick-up-alert",
     "order": 1,
+    "number": "01",
     "title": "The agents pick up the alert",
-    "example": "Telemetry, triage, and deploy agents all start working the same page overnight — the engineer needs to see who's doing what without waking up.",
+    "moment": "03:08, telemetry fires and nobody is awake",
+    "answers": "make it clear who is working and on what, before anyone has to ask",
+    "example": "Telemetry, triage, and deploy agents all start working the same page overnight. The engineer needs to see who is doing what without waking up.",
     "patternIds": ["presence-boundary"]
   },
   {
     "id": "triage-proposes-before-touching",
     "order": 2,
+    "number": "02",
     "title": "Triage proposes before it touches anything",
-    "example": "Triage thinks it's a retry storm and wants to pause the retry job and scale payments replicas — nothing happens until someone responds.",
-    "patternIds": ["signal-to-intent-handshake"]
+    "moment": "03:11, it wants to pause the retry job and scale replicas",
+    "answers": "the agent says what it saw, what it thinks it means and what it plans to do, then waits",
+    "example": "Triage thinks it is a retry storm and wants to pause the retry job and scale payments replicas. Nothing happens until someone responds.",
+    "patternIds": ["signal-to-intent-handshake"],
+    "tensions": [
+      {
+        "attendances": ["unattended"],
+        "label": "waits for a person, and yours finds out afterwards",
+        "cites": "signal-to-intent-handshake.interactionModel: 'Nothing irreversible happens until you respond.'"
+      }
+    ]
   },
   {
     "id": "triage-unsure-retry-loop",
     "order": 3,
-    "title": "Triage isn't sure it's the retry loop",
-    "example": "The signal could be a genuine capacity problem or a retry storm — triage is inferring, not reading a deterministic signal.",
+    "number": "03",
+    "title": "Triage is not sure it is the retry loop",
+    "moment": "03:12, medium confidence on a root cause",
+    "answers": "the agent shows how sure it is, so nobody treats a guess as a fact",
+    "example": "The signal could be a genuine capacity problem or a retry storm. Triage is inferring, not reading a deterministic signal.",
     "patternIds": ["certainty-boundary"]
   },
   {
     "id": "deploy-wants-to-scale-replicas",
     "order": 4,
+    "number": "04",
     "title": "Deploy wants to scale replicas",
-    "example": "Deploy can act alone on some changes and needs sign-off on others — scaling payments replicas at 2am is which kind?",
+    "moment": "03:13, inside its granted area or outside it",
+    "answers": "set what each agent may do on its own, area by area",
+    "example": "Deploy can act alone on some changes and needs sign-off on others. Scaling payments replicas at 3am is which kind?",
     "patternIds": ["authority-gradient"]
   },
   {
     "id": "telemetry-triage-differ",
     "order": 5,
+    "number": "05",
     "title": "Telemetry and triage read the signal differently",
-    "example": "Telemetry sees a capacity ceiling; triage sees a retry storm — same metrics, opposite read.",
+    "moment": "03:20, a retry storm or a capacity shortfall",
+    "answers": "when two agents disagree, show how the answer was reached, not just the answer",
+    "example": "Telemetry sees a capacity ceiling. Triage sees a retry storm. Same metrics, opposite read.",
     "patternIds": ["convergence-point"]
   },
   {
     "id": "root-cause-changes-0340",
     "order": 6,
-    "title": "The root cause changes at 03:40",
-    "example": "The retry-storm theory was operative for two hours before triage revises it — everything decided on the old belief is now stale.",
+    "number": "06",
+    "title": "The root cause changes",
+    "moment": "03:40, it was capacity after all",
+    "answers": "when the agent changes its mind, the person decides what happens to what was already done",
+    "example": "The retry-storm theory was operative for two hours before triage revises it. Everything decided on the old belief is now stale.",
     "patternIds": ["memory-commitment-review"]
   },
   {
     "id": "engineer-returns-0700",
     "order": 7,
-    "title": "The engineer comes back at 07:00",
-    "example": "Three agents worked the incident all night — the engineer needs the story, not the raw log.",
+    "number": "07",
+    "title": "The engineer comes back",
+    "moment": "07:00, four hours of work to reconstruct",
+    "answers": "a record of what happened while you were away that you can catch up from",
+    "example": "Three agents worked the incident all night. The engineer needs the story, not the raw log.",
     "patternIds": ["background-work-ledger"]
   },
   {
     "id": "why-did-it-rollback-postmortem",
     "order": 8,
+    "number": "08",
     "title": "\"Why did it roll back?\" in the postmortem",
-    "example": "Weeks later, someone needs to know why deploy rolled back build 812 — not just that it did.",
+    "moment": "three days later, with the reasoning gone",
+    "answers": "the agent says why it chose an action at the moment it commits",
+    "example": "Days later, someone needs to know why deploy rolled back build 812, not just that it did.",
     "patternIds": ["decision-ledger"]
   },
   {
     "id": "forty-actions-one-summary",
     "order": 9,
+    "number": "09",
     "title": "Forty actions, one summary to read",
-    "example": "By morning the three agents have taken something like forty actions between them — nobody is reading all forty.",
+    "moment": "07:02, forty actions and one summary to read",
+    "answers": "a short surface, with the detail one level down",
+    "example": "By morning the three agents have taken something like forty actions between them. Nobody is reading all forty.",
     "patternIds": ["deferred-detail"]
   }
 ]

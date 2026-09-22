@@ -1,53 +1,41 @@
 # Studio content
 
-These files are the only source of the situation list, pattern elements, anti-patterns, entities, and
-the sample scenario. **Nothing in `lib/studio` or `components/studio` invents or paraphrases this
-content** — where a file is empty, the UI renders an explicit "not yet in the library" state instead.
+These files are the only source of the situation list, the agent's script, pattern elements,
+anti-patterns, entities, and the sample scenario. **Nothing in `lib/studio` or `components/studio`
+invents or paraphrases this content.** Where a file has nothing to say, the UI renders an explicit
+"not yet in the library" state and links to the pattern page instead.
 
-Types for every file below live in `lib/studio/types.ts`.
+Types for every file live in `lib/studio/types.ts`.
 
-## Status of what's seeded right now
+## What is grounded and what is placeholder
 
-Some content here is now real (grounded in the live pattern library) and some is still placeholder
-authored during design exploration, explicitly **not** the team's content yet. Each file says which
-below. Nothing here was fabricated to fill a gap — where I couldn't ground something in the real
-library, it stays empty.
+| File | Status |
+| --- | --- |
+| `situations.json` | **Unverified.** Titles, moments, ordering, the plain-language "what this answers" lines and the situation-to-pattern mapping were written during design exploration. They are seeded so the tool runs. They are not research. |
+| `agent-script.json` | **Unverified**, and marked so in the file itself. The questions, the answers and the option labels are placeholder copy. Every claim that leans on the library carries a `cites` field naming the field it came from, so it can be checked. One answer is `computed` rather than authored: the coverage answer is generated from the library at render time and cannot drift from it. |
+| `pattern-elements.json` | **Grounded**, for `signal-to-intent-handshake` only. Its six elements come from that pattern's published `interactionModel` and its `evidence` line quotes the sentence each was derived from. `domMatchText` values are the exact strings its live component renders. |
+| `anti-patterns.json` | One entry, `status: "proposed"`. "Rubber-stamp checkpoint" is a name coined during design exploration. The library has no anti-pattern vocabulary, so the UI says the name is proposed wherever it shows it. |
+| `entities.json` | One entity, **grounded in structure but not in research**: the interpretation written into situation 02 is declared to matter again in 06 and 08. Those two situations have no element that carries it, so the record reports it as a continuity gap. That gap is the honest current state, not a bug. |
+| `sample-scenario.json` | **Partially grounded.** The premise and the intake answers are placeholder. The single decision on it uses real element ids and a real accepted-gap reason. |
 
-- **`situations.json`** — 9 situations, **unverified**. Titles, ordering, and the pattern each maps to
-  came from the on-call-incident narrative, not from the research. Treat as a placeholder shape to
-  validate the mechanism, not a shipped list.
-- **`pattern-elements.json`** — **grounded**, but only for `signal-to-intent-handshake`. Its six elements
-  (noticed / interpreted / proposed / confirm / correct / defer) are derived directly from that
-  pattern's published `interactionModel`/`factChips` (`lib/patterns.ts`) and its real component
-  (`components/patterns/SignalToIntentHandshake.tsx`) — not invented. The other 16 patterns have no
-  elements seeded; see the report on which of them even have a structured-enough interaction model to
-  derive elements from without guessing.
-- **`anti-patterns.json`** — one entry, **`status: "proposed"`**, correctly. "Rubber-stamp checkpoint" is
-  a name coined during design exploration for what removing `sith-correct-interpretation` reintroduces —
-  no anti-pattern vocabulary exists in the library yet. The UI must never render a `proposed` anti-pattern
-  as if it were verified research.
-- **`entities.json`** — empty, and can't be honestly filled in yet. Continuity checking needs an entity
-  placed via one pattern's elements and declared relevant to a situation answered by a *different*
-  pattern. Right now only `signal-to-intent-handshake` has elements, so there's no second pattern to
-  place the same entity in — adding one here would either be inert or require inventing elements for a
-  second pattern, which is exactly the kind of gap-filling this file exists to avoid.
-- **`sample-scenario.json`** — the on-call incident, **partially grounded**: the premise, topology,
-  attendance, and irreversibility are real; the one seeded decision (for
-  `triage-proposes-before-touching`) demonstrates the `answered_with_gap` behavior using the grounded
-  Signal-to-Intent Handshake elements above, but its reasoning text is mine, written to make the
-  mechanism demonstrable, not sourced from a real incident. The other 8 situations are intentionally left
-  unanswered — there's no grounded content for those patterns yet. **The sample cannot yet show a
-  continuity flag** (see `entities.json` above) — that's a real gap in what's demonstrable today, not an
-  oversight in the seed file.
+## The situation list is a placeholder, and the shape of it is a finding
 
-## No worked-example content
+Nine situations, each mapped to exactly one pattern. A one-to-one mapping means the situation layer is
+not yet earning its place as a matching layer: it is a re-labelling of nine patterns. Worth reporting
+when a real situation list exists, along with any situation that matches more than one pattern and any
+pattern that answers more than one situation.
 
-There's deliberately no `worked-examples.json` — the canvas screen embeds each pattern's own live
-component (`components/patterns/pattern-registry.tsx`'s `PATTERN_STANDALONE`) instead of an authored
-example. See the accompanying report for what that does and doesn't make possible today.
+## Where the shaping surface comes from
 
-## Situation-to-pattern coverage
+Studio does not define its own editing surface. For a pattern with a schema in
+`lib/editable-fields.ts` it embeds `PatternWorkspace`, the same editor the playground and the pattern
+pages use, and streams the draft into the pattern's own live component through `resolveLivePreview`.
+`lib/studio/shapeability.ts` works out which of three states a situation is in, from what is actually
+in the repo:
 
-Once a real situation list exists, it's worth reporting the shape of the resulting matrix — cells with
-exactly one pattern each would mean the situation layer isn't earning its place. That's a content/product
-review, not something this codebase decides for you.
+- `annotated` element detail is authored here, and is marked onto the live component.
+- `editable` the pattern has a live component and an edit schema, so a field edit updates it.
+- `matched_only` the match stands, but there is nothing here to shape.
+
+Nothing asserts how many situations are in each state. Change what the library has and the counts,
+the groupings on the overview, and the agent's coverage answer all follow.

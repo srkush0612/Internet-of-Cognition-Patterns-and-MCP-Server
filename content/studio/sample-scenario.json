@@ -1,7 +1,7 @@
 {
   "id": "sample-oncall-incident",
   "name": "On-call incident: payments retry storm",
-  "description": "A telemetry agent watches the fleet, a triage agent interprets what it sees, and a deploy agent can act — while the on-call engineer is asleep.",
+  "description": "A telemetry agent watches the fleet, a triage agent interprets what it sees, and a deploy agent can act, while the on-call engineer is asleep.",
   "topology": "handoff",
   "attendance": "unattended",
   "irreversibility": "yes",
@@ -15,7 +15,7 @@
       "elementsPresent": ["sith-noticed", "sith-interpreted", "sith-proposed", "sith-confirm", "sith-defer"],
       "elementsRemoved": ["sith-correct-interpretation"],
       "removedElementReasons": {
-        "sith-correct-interpretation": "No correction path yet — if triage's read is wrong, the only way to catch it tonight is to defer and page a human, not to fix triage's interpretation in place."
+        "sith-correct-interpretation": "No correction path yet. If triage's read is wrong, the only way to catch it tonight is to defer and page a human, not to fix triage's interpretation in place."
       },
       "state": "answered_with_gap"
     }

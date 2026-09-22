@@ -1,0 +1,186 @@
+{
+  "unverified": true,
+  "note": "Placeholder script. The questions, the wording of the answers and the option labels were written for the prototype, not drawn from research. Every claim that cites the library carries a `cites` field naming the field it came from, so it can be checked. Answers marked `computed` are generated from the library at render time and cannot drift from it.",
+  "opening": "I have mapped nine situations this system will have, and matched each one to a pattern in the library. They are on the right. Ask me which to do first, or open any of them.",
+  "fallback": "This build has scripted answers only, so I cannot take that one. No model is called here. The suggestions above the box all work, and so does anything close to them in wording.",
+  "questions": [
+    {
+      "id": "first",
+      "scope": "*",
+      "keywords": ["first", "start", "order", "begin", "where do i"],
+      "question": "Which should I do first?",
+      "answer": "Situation 02. What you write as triage's interpretation is the same text situation 06 overturns and situation 08 asks about later, so doing it first means those two arrive part-filled instead of asking you the same thing twice.",
+      "cites": "content/studio/entities.json: the interpretation entity appears in situations 02, 06 and 08.",
+      "opens": "triage-proposes-before-touching"
+    },
+    {
+      "id": "exposed",
+      "scope": "*",
+      "keywords": ["exposed", "risk", "worst", "danger", "riskiest"],
+      "question": "What am I most exposed to?",
+      "answer": "A person finds out afterwards and the actions cannot be undone. That puts the weight on two questions: what happens when nobody answers, and whether anything written afterwards explains why the agent acted. Situations 02 and 08.",
+      "cites": "Derived from this scenario's own attendance and irreversibility answers, the two inputs lib/studio/risk.ts reads."
+    },
+    {
+      "id": "coverage",
+      "scope": "*",
+      "keywords": ["gap", "missing", "nothing", "cover", "library have"],
+      "question": "Where does the library have nothing for me?",
+      "computed": "coverage"
+    },
+    {
+      "id": "correction",
+      "scope": "triage-proposes-before-touching",
+      "keywords": ["correct", "correction", "why is"],
+      "question": "Why is correction required?",
+      "answer": "The published interaction model gives the person three responses: confirm, correct the interpretation, or defer. Take correction away and the other two collapse into one, because the engineer can say yes or say nothing. At 03:00 with a service degrading they say yes.",
+      "cites": "signal-to-intent-handshake.interactionModel, and its backing strength and participant count are shown in the header."
+    },
+    {
+      "id": "nobody",
+      "scope": "triage-proposes-before-touching",
+      "keywords": ["nobody", "on call", "asleep", "answer", "default", "no one"],
+      "question": "What if nobody is on call at all?",
+      "recommendation": {
+        "head": "Escalate rather than stall.",
+        "why": "Your actions cannot be undone and a person finds out afterwards. Holding forever means the incident sits there until morning. Escalating keeps a person in it without the agent acting on a reading nobody checked. The pattern itself does not settle this: its interaction model says nothing irreversible happens until you respond, and stops there. So whichever you pick is your decision, recorded as one.",
+        "cites": "signal-to-intent-handshake.interactionModel defines the three responses but no no-answer default, so this is recorded as a scenario decision, not as a pattern element.",
+        "options": [
+          {
+            "label": "Escalate to the secondary rota",
+            "commits": "a secondary rota that is reachable at 03:00",
+            "best": true,
+            "applies": {
+              "kind": "recordDecision",
+              "note": "Holds 10 minutes. If nobody answers it does not act, escalates to the secondary rota, and says so in the incident channel."
+            }
+          },
+          {
+            "label": "Hold indefinitely",
+            "commits": "someone noticing a stalled incident on their own",
+            "applies": {
+              "kind": "recordDecision",
+              "note": "Holds indefinitely. Nothing happens until a person answers."
+            }
+          },
+          {
+            "label": "Do the reversible half only",
+            "commits": "deciding which actions are reversible, one by one",
+            "applies": {
+              "kind": "recordDecision",
+              "note": "Pauses the retry job only. Leaves replicas alone until a person answers."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "gradient",
+      "scope": "triage-proposes-before-touching",
+      "keywords": ["authority", "gradient", "instead", "alternative", "another pattern"],
+      "question": "Could we use Authority Gradient instead?",
+      "recommendation": {
+        "head": "Run both, but the library does not back that for you.",
+        "why": "This pattern asks in the moment. Authority Gradient sets what each agent may do on its own, area by area, in advance, so routine actions never wake anyone. Those read as complementary, and with a person out of the loop I would want the gradient carrying the routine and the handshake catching what falls outside it. Be clear about the sourcing though: the library records no relationship between these two. What it does record is that this pattern pairs with Convergence Point, agent-to-human before acting against agent-to-agent after converging. Composition between this and Authority Gradient is your judgement, not a finding.",
+        "cites": "signal-to-intent-handshake.pairsWith is convergence-point; its note explains the sibling relationship. No pattern in the library declares composesWith.",
+        "options": [
+          {
+            "label": "Keep this, and shape Authority Gradient in situation 04",
+            "commits": "agreeing per-area limits before the next incident",
+            "best": true,
+            "applies": { "kind": "open", "situationId": "deploy-wants-to-scale-replicas" }
+          },
+          {
+            "label": "Swap this for Authority Gradient",
+            "commits": "nothing asking in the moment, so the record carries all the weight",
+            "applies": { "kind": "note" }
+          },
+          {
+            "label": "Leave it as it is",
+            "commits": "waking a person for routine actions too",
+            "applies": { "kind": "note" }
+          }
+        ]
+      }
+    },
+    {
+      "id": "drop",
+      "scope": "triage-proposes-before-touching",
+      "keywords": ["drop", "remove", "delete", "get rid", "no hold", "skip the"],
+      "question": "Drop the correction step, we will just let it confirm",
+      "refusal": {
+        "head": "I am not going to do that here.",
+        "why": "Correction is one of the three responses the published interaction model defines. Take it away and confirm-or-defer is the whole surface, which makes this a notification the engineer waves through rather than a handshake. You are out of the loop, so if triage's read is wrong nothing else catches it before the action lands. Removing it is a decision for the record with a reason on it, not a quiet edit. Here is what I can do instead.",
+        "cites": "signal-to-intent-handshake.interactionModel: 'You can confirm, correct the interpretation, or defer.' The element is marked required in content/studio/pattern-elements.json.",
+        "options": [
+          {
+            "label": "Record it as an accepted gap, with the reason",
+            "commits": "writing down why, and it shows as answered with a gap",
+            "best": true,
+            "applies": {
+              "kind": "acceptGap",
+              "elementId": "sith-correct-interpretation",
+              "reason": "Accepted through the agent: confirm-or-defer only for now, with no way to correct triage's read in place."
+            }
+          },
+          {
+            "label": "Move routine actions to Authority Gradient instead",
+            "commits": "per-area limits agreed in advance, so fewer checkpoints reach a person at all",
+            "applies": { "kind": "open", "situationId": "deploy-wants-to-scale-replicas" }
+          },
+          {
+            "label": "Leave the element in place",
+            "commits": "nothing, the checkpoint keeps all three responses",
+            "applies": { "kind": "note" }
+          }
+        ]
+      }
+    },
+    {
+      "id": "oldbelief",
+      "scope": "root-cause-changes-0340",
+      "keywords": ["old belief", "before", "previous", "matter", "stale"],
+      "question": "Why does the old belief matter?",
+      "answer": "Because things were already done on it. Deploy scaled replicas and paused a job on a reading that turned out to be wrong. The pattern keeps the superseded belief next to the one that displaced it, with attribution for which agent held which, so the person sees a new conclusion and a reason to go back over what was done on the old one.",
+      "cites": "memory-commitment-review.interactionModel: superseded beliefs appear with their superseding belief and attribution is preserved."
+    },
+    {
+      "id": "respond",
+      "scope": "root-cause-changes-0340",
+      "keywords": ["respond", "response", "choice", "options", "accept", "acknowledge"],
+      "question": "How should the person be able to respond?",
+      "recommendation": {
+        "head": "Acknowledge, and leave what was already done visible.",
+        "why": "The pattern gives exactly three choices at the commitment boundary: acknowledge the belief, restore it if the update was wrong, or revoke it so it never reaches long-term memory. Restoring is the honest choice when a revision is uncertain, but confidence went up here, not down. Revoking loses the fact that the agent was wrong once, which is the part worth keeping.",
+        "cites": "memory-commitment-review.interactionModel, and the three choices as lib/memory-commitment-data.ts labels them.",
+        "options": [
+          {
+            "label": "Acknowledge",
+            "commits": "a way to revisit the two actions already taken on the old reading",
+            "best": true,
+            "applies": {
+              "kind": "recordDecision",
+              "note": "Acknowledge: the new reading is kept in long-term memory, and the actions taken on the old one stay on the record."
+            }
+          },
+          {
+            "label": "Restore",
+            "commits": "the agent carrying on from a reading it no longer holds",
+            "applies": {
+              "kind": "recordDecision",
+              "note": "Restore: the prior belief goes back on the record."
+            }
+          },
+          {
+            "label": "Revoke",
+            "commits": "losing that it changed its mind at all",
+            "applies": {
+              "kind": "recordDecision",
+              "note": "Revoke: excluded from long-term memory."
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

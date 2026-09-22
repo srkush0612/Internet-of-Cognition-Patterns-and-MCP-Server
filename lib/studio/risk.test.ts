@@ -5,7 +5,10 @@ import type { Scenario, Situation } from "@/lib/studio/types";
 const baseSituation: Situation = {
   id: "sit-1",
   order: 1,
+  number: "01",
   title: "Test situation",
+  moment: "A moment",
+  answers: "what it answers",
   example: "An example",
   patternIds: [],
 };

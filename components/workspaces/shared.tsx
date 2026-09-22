@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getWorkspaceState, workspacePatch } from "@/lib/workspace-defaults";
 
 export type WorkspaceBaseProps<T extends Record<string, unknown>> = {
@@ -159,13 +159,31 @@ export function WorkspaceShell<T extends Record<string, unknown>>({
     setDraft(getWorkspaceState(state, defaults));
   }, [state, defaults]);
 
+  /**
+   * Two things the notify has to get right, both learned from Studio wiring a
+   * live preview to this shell:
+   *
+   * 1. It happens after the draft commits, not inside the state updater. React
+   *    can run an updater during another component's render, and a parent
+   *    setState from there is the "cannot update a component while rendering a
+   *    different component" error.
+   * 2. It fires only for edits the person made. The effect above also runs when
+   *    the `state` prop resyncs, and notifying then means telling the parent
+   *    about a value the parent just supplied, which is how a parent that
+   *    stores what it is told ends up in an update loop.
+   */
+  const personEdited = useRef(false);
+
+  useEffect(() => {
+    if (!personEdited.current) return;
+    personEdited.current = false;
+    onDraftChange?.(draft);
+  }, [draft, onDraftChange]);
+
   const updateField = useCallback(<K extends keyof T>(key: K, value: T[K]) => {
-    setDraft((current) => {
-      const next = { ...current, [key]: value };
-      onDraftChange?.(next);
-      return next;
-    });
-  }, [onDraftChange]);
+    personEdited.current = true;
+    setDraft((current) => ({ ...current, [key]: value }));
+  }, []);
 
   const save = async () => {
     setIsSaving(true);
@@ -177,8 +195,8 @@ export function WorkspaceShell<T extends Record<string, unknown>>({
   };
 
   const clear = async () => {
+    personEdited.current = true;
     setDraft(defaults);
-    onDraftChange?.(defaults);
     setIsSaving(true);
     try {
       await onSaveState(workspacePatch(defaults));
@@ -188,8 +206,18 @@ export function WorkspaceShell<T extends Record<string, unknown>>({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pb-4">
+    <div
+      className={
+        embedded ? "flex flex-col" : "flex h-full min-h-0 flex-col"
+      }
+    >
+      <div
+        className={
+          embedded
+            ? "space-y-4"
+            : "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pb-4"
+        }
+      >
         {!embedded ? (
           <p className="text-sm font-medium text-muted">{patternName}</p>
         ) : null}

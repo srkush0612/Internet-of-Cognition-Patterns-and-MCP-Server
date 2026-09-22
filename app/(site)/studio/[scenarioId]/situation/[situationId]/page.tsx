@@ -1,10 +1,14 @@
-import { PatternChoice } from "@/components/studio/PatternChoice";
+import { redirect } from "next/navigation";
 
-export default async function SituationPage({
+/**
+ * Superseded: a situation is a view on the canvas now, not its own page.
+ * Kept as a redirect so older links still land somewhere sensible.
+ */
+export default async function SituationRedirect({
   params,
 }: {
-  params: Promise<{ scenarioId: string; situationId: string }>;
+  params: Promise<{ scenarioId: string }>;
 }) {
-  const { scenarioId, situationId } = await params;
-  return <PatternChoice scenarioId={scenarioId} situationId={situationId} />;
+  const { scenarioId } = await params;
+  redirect(`/studio/${scenarioId}`);
 }

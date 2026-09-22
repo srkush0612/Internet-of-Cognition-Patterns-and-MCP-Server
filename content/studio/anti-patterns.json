@@ -3,8 +3,8 @@
     "id": "rubber-stamp-checkpoint",
     "name": "Rubber-stamp checkpoint",
     "status": "proposed",
-    "description": "Removing the correction path from a confirm/correct/defer checkpoint turns it into a single confirm-or-ignore gate — the person can no longer push back on the agent's read of the situation, only wave it through or walk away.",
-    "evidence": "Proposed during Studio's design exploration — no anti-pattern vocabulary exists in the pattern library yet. Not yet verified against interview data.",
+    "description": "Removing the correction path from a confirm/correct/defer checkpoint turns it into a single confirm-or-ignore gate. The person can no longer push back on the agent's read of the situation, only wave it through or walk away.",
+    "evidence": "Proposed during Studio's design exploration. No anti-pattern vocabulary exists in the pattern library yet, and this name is not verified against interview data.",
     "triggeredByElementIds": ["sith-correct-interpretation"]
   }
 ]

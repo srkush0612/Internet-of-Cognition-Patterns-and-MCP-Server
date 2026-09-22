@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "triage-interpretation",
+    "label": "Triage's interpretation of the signal",
+    "appearsInSituationIds": [
+      "triage-proposes-before-touching",
+      "root-cause-changes-0340",
+      "why-did-it-rollback-postmortem"
+    ],
+    "sourceElementId": "sith-interpreted"
+  }
+]

@@ -1,6 +1,6 @@
-import { StudioHome } from "@/components/studio/StudioHome";
-import { sampleScenario } from "@/lib/studio/content";
+import { StudioApp } from "@/components/studio/StudioApp";
 
+/** The setup card. Creating a scenario moves to /studio/[scenarioId]. */
 export default function StudioPage() {
-  return <StudioHome sampleScenarioId={sampleScenario?.id ?? null} />;
+  return <StudioApp />;
 }
