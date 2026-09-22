@@ -91,9 +91,8 @@ export function SetupCard({
       <div className="osh-card studio-setup__card">
         <h1>What are you handing to agents?</h1>
         <p className="studio-setup__sub">
-          Every human-agent system runs into the same situations. Your answers
-          decide which of them are the dangerous ones for you, not which ones
-          exist.
+          A line about what you are building and three quick answers, and we
+          will match the patterns that fit it.
         </p>
 
         <label className="studio-label" htmlFor="studio-desc">
