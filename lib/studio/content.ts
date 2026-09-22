@@ -3,6 +3,7 @@ import patternElementsJson from "@/content/studio/pattern-elements.json";
 import antiPatternsJson from "@/content/studio/anti-patterns.json";
 import entitiesJson from "@/content/studio/entities.json";
 import sampleScenarioJson from "@/content/studio/sample-scenario.json";
+import { isPatternReady } from "@/lib/pattern-ready";
 import type {
   AntiPattern,
   Entity,
@@ -23,6 +24,28 @@ import type {
 export const situations: Situation[] = [...(situationsJson as Situation[])].sort(
   (a, b) => a.order - b.order,
 );
+
+/**
+ * Whether to show situations whose pattern the library has not flagged ready.
+ *
+ * Set to false for now, which hides three of the nine: 02 (Signal-to-Intent
+ * Handshake), 03 (Certainty Boundary) and 07 (Background Work Ledger). Note
+ * what goes with them, because it is not obvious: 02 is the only situation
+ * with authored element detail, so hiding it also takes away the annotated
+ * canvas, the refusal flow on a required element, and the only entity that
+ * carries between situations. Flip this to true to get all nine back.
+ *
+ * Readiness is the library's own flag (lib/pattern-ready.ts). Nothing here
+ * decides that a pattern is ready, and a situation with no pattern matched
+ * stays visible, because an unmatched situation is a finding.
+ */
+export const SHOW_NOT_READY_PATTERNS = false;
+
+export const visibleSituations: Situation[] = SHOW_NOT_READY_PATTERNS
+  ? situations
+  : situations.filter((situation) =>
+      situation.patternIds.every((patternId) => isPatternReady(patternId)),
+    );
 
 export const patternElements: PatternElement[] = patternElementsJson as PatternElement[];
 

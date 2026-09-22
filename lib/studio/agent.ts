@@ -1,4 +1,6 @@
 import agentScriptJson from "@/content/studio/agent-script.json";
+import { situations, visibleSituations } from "@/lib/studio/content";
+import type { Pattern } from "@/lib/patterns";
 import type {
   AgentProposal,
   AgentScript,
@@ -7,6 +9,7 @@ import type {
   PatternElement,
   Shapeability,
   Situation,
+  SituationTension,
 } from "@/lib/studio/types";
 
 /**
@@ -20,11 +23,52 @@ import type {
  */
 export const agentScript: AgentScript = agentScriptJson as AgentScript;
 
+/**
+ * A question is only usable when every situation it refers to is on screen.
+ * Several of the scripted answers name situation 02 in their text and open it
+ * at the end, so while 02 is hidden they would point at something that is not
+ * there. Retiring them is honest; rewriting their copy to suit the filter
+ * would be inventing content.
+ */
+function questionIsUsable(question: AgentScriptQuestion): boolean {
+  const visible = (id: string) =>
+    visibleSituations.some((situation) => situation.id === id);
+  if (question.scope !== "*" && !visible(question.scope)) return false;
+  if (question.opens && !visible(question.opens)) return false;
+  if (question.mentions?.some((id) => !visible(id))) return false;
+  for (const option of question.recommendation?.options ??
+    question.refusal?.options ??
+    []) {
+    if (option.applies?.kind === "open" && !visible(option.applies.situationId)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function usableQuestions(): AgentScriptQuestion[] {
+  return agentScript.questions.filter(questionIsUsable);
+}
+
+/**
+ * The opening message. The authored sentence carries no numbers, because the
+ * numbers depend on what the filter is showing: it once said "nine
+ * situations" and stayed saying it after three were hidden.
+ */
+export function openingLine(): string {
+  const hidden = situations.length - visibleSituations.length;
+  const shown = `There ${visibleSituations.length === 1 ? "is" : "are"} ${visibleSituations.length} of them.`;
+  const withheld = hidden
+    ? ` ${hidden} more ${hidden === 1 ? "is" : "are"} mapped but not shown, because the library has not flagged ${hidden === 1 ? "its pattern" : "their patterns"} ready yet.`
+    : "";
+  return `${agentScript.opening} ${shown}${withheld}`;
+}
+
 /** Scenario-wide questions plus the ones scoped to the open situation. */
 export function questionsInScope(
   situationId: string | null,
 ): AgentScriptQuestion[] {
-  return agentScript.questions.filter(
+  return usableQuestions().filter(
     (question) => question.scope === "*" || question.scope === situationId,
   );
 }
@@ -53,7 +97,7 @@ export function matchQuestion(
   if (!normalized) return null;
 
   return (
-    agentScript.questions.find(
+    usableQuestions().find(
       (question) =>
         !askedIds.includes(question.id) &&
         question.keywords.some((keyword) => normalized.includes(keyword)),
@@ -146,4 +190,56 @@ export function refusalForElement(
       },
     ],
   };
+}
+
+
+/**
+ * What the agent says when a situation opens: why this pattern is the answer
+ * to it.
+ *
+ * Every clause is a field someone authored, and the closing line says which
+ * of them is not research. Nothing here characterises a pattern in words of
+ * its own: the summary is the library's `oneliner`, the strength and the
+ * participant count are the library's, whether the parts are shapeable comes
+ * from whether an interaction model was published, and the tension comes from
+ * the situation's own content with a citation on it.
+ */
+export function explainPattern({
+  situation,
+  pattern,
+  shapeability,
+  tensions,
+}: {
+  situation: Situation;
+  pattern: Pattern;
+  shapeability: Shapeability;
+  tensions: SituationTension[];
+}): { text: string; cites: string } {
+  const strength = pattern.backingStrength ?? "not rated";
+  const participants = pattern.participants
+    ? `, from ${pattern.participants}`
+    : "";
+
+  const shapeLine =
+    shapeability === "matched_only"
+      ? "There is nothing to shape here yet: no element detail has been published for it, so you can read the pattern but not fill it in."
+      : pattern.interactionModel
+        ? "Its published interaction model names the parts it needs, which is what you can fill in on the right."
+        : "Its parts come from the edit schema in the codebase rather than from a published interaction model, which is a weaker source than I would like.";
+
+  const tensionLine = tensions.length
+    ? ` One thing to watch, given your answers: it ${tensions
+        .map((tension) => tension.label)
+        .join(", and it ")}.`
+    : "";
+
+  const text = `${pattern.title} is the match for ${situation.number}, which is about ${situation.moment}. ${pattern.oneliner} Shaping it answers ${situation.answers}. The library rates the support for it ${strength.toLowerCase()}${participants}. ${shapeLine}${tensionLine} Worth knowing: the match itself is from the seeded situation list, not from research.`;
+
+  const cites = [
+    `${pattern.slug}.oneliner, .backingStrength, .participants${pattern.interactionModel ? ", .interactionModel" : ""}`,
+    `content/studio/situations.json: ${situation.id} (unverified placeholder)`,
+    ...tensions.map((tension) => tension.cites),
+  ].join(" · ");
+
+  return { text, cites };
 }

@@ -33,6 +33,7 @@ import {
   entities,
   patternElements,
   situations,
+  visibleSituations,
 } from "@/lib/studio/content";
 import { findContinuityGaps } from "@/lib/studio/continuity";
 import { missingDetailReason, shapeabilityOf } from "@/lib/studio/shapeability";
@@ -70,7 +71,7 @@ export function shapeabilityOfSituation(situation: Situation): Shapeability {
 }
 
 /** Only the tensions whose condition this scenario actually meets. */
-function activeTensions(
+export function activeTensionsFor(
   situation: Situation,
   scenario: Scenario,
 ): SituationTension[] {
@@ -131,11 +132,14 @@ function Bar({
 
   const stepper = view.kind === "pattern";
   const index = stepper
-    ? situations.findIndex((s) => s.id === view.situationId)
+    ? visibleSituations.findIndex((s) => s.id === view.situationId)
     : -1;
 
   function step(delta: number) {
-    const next = situations[(index + delta + situations.length) % situations.length];
+    const next =
+      visibleSituations[
+        (index + delta + visibleSituations.length) % visibleSituations.length
+      ];
     onGo({ kind: "pattern", situationId: next.id });
   }
 
@@ -192,7 +196,7 @@ function Bar({
           </button>
         </div>
         <span className="studio-count">
-          {answered} of {situations.length}
+          {answered} of {visibleSituations.length}
         </span>
       </div>
     </header>
@@ -282,7 +286,7 @@ function Overview({
       definition:
         "The pattern has a reference design and element detail, so you can fill in your own case.",
       color: "var(--color-accent-hover)",
-      items: situations.filter(
+      items: visibleSituations.filter(
         (s) => shapeabilityOfSituation(s) !== "matched_only",
       ),
     },
@@ -291,7 +295,7 @@ function Overview({
       definition:
         "The match stands and the pattern has its write-up and evidence, but there is nothing here to shape.",
       color: "var(--color-warning)",
-      items: situations.filter(
+      items: visibleSituations.filter(
         (s) => shapeabilityOfSituation(s) === "matched_only",
       ),
     },
@@ -337,7 +341,7 @@ function Record({ scenario }: { scenario: Scenario }) {
     patternElements,
     scenario.decisions,
   );
-  const open = situations.filter(
+  const open = visibleSituations.filter(
     (situation) => situationState(situation, scenario) === "unanswered",
   );
 
@@ -632,7 +636,11 @@ export function StudioCanvas({
           scenario={scenario}
           view={view}
           eyebrow={scenario.name}
-          title={<h2>Nine situations, each matched to a pattern</h2>}
+          title={
+            <h2>
+              {visibleSituations.length} situations, each matched to a pattern
+            </h2>
+          }
           onGo={onGo}
         />
         <div className="studio-canvas__body">
@@ -662,7 +670,7 @@ export function StudioCanvas({
     );
   }
 
-  const situation = situations.find(
+  const situation = visibleSituations.find(
     (candidate) => candidate.id === view.situationId,
   );
   const pattern = situation ? getPattern(situation.patternIds[0] ?? "") : undefined;
@@ -679,7 +687,9 @@ export function StudioCanvas({
         />
         <div className="studio-canvas__body">
           <p className="studio-muted">
-            No situation with that id is in content/studio/situations.json.
+            That situation is either not in
+            content/studio/situations.json, or it is one of the ones hidden
+            while SHOW_NOT_READY_PATTERNS is off.
           </p>
         </div>
       </div>
@@ -690,7 +700,7 @@ export function StudioCanvas({
   const decision = scenario.decisions.find(
     (candidate) => candidate.situationId === situation.id,
   );
-  const tensions = activeTensions(situation, scenario);
+  const tensions = activeTensionsFor(situation, scenario);
 
   return (
     <div className="studio-canvas">
@@ -744,7 +754,7 @@ export function StudioCanvas({
 
       {navOpen ? (
         <div className="studio-navdrop" role="listbox">
-          {situations.map((candidate) => {
+          {visibleSituations.map((candidate) => {
             const candidatePattern = getPattern(candidate.patternIds[0] ?? "");
             return (
               <button

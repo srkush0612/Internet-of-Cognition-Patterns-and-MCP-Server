@@ -1,37 +1,68 @@
 {
   "unverified": true,
-  "note": "Placeholder script. The questions, the wording of the answers and the option labels were written for the prototype, not drawn from research. Every claim that cites the library carries a `cites` field naming the field it came from, so it can be checked. Answers marked `computed` are generated from the library at render time and cannot drift from it.",
-  "opening": "I have mapped nine situations this system will have, and matched each one to a pattern in the library. They are on the right. Ask me which to do first, or open any of them.",
+  "note": "Placeholder script. The questions, the wording of the answers and the option labels were written for the prototype, not drawn from research. Every claim that cites the library carries a `cites` field naming the field it came from, so it can be checked. Answers marked `computed` are generated from the library at render time and cannot drift from it. `mentions` lists the situations an answer's own wording refers to, so a question is retired rather than left pointing at a situation that is not on screen. `opening` carries no counts: how many situations are on screen, and how many are hidden, is appended at render time from the library.",
+  "opening": "I have mapped the situations this system will have, and matched each one to a pattern in the library. They are on the right. Open any of them and I will say why that pattern is the match.",
   "fallback": "This build has scripted answers only, so I cannot take that one. No model is called here. The suggestions above the box all work, and so does anything close to them in wording.",
   "questions": [
     {
       "id": "first",
       "scope": "*",
-      "keywords": ["first", "start", "order", "begin", "where do i"],
+      "keywords": [
+        "first",
+        "start",
+        "order",
+        "begin",
+        "where do i"
+      ],
       "question": "Which should I do first?",
       "answer": "Situation 02. What you write as triage's interpretation is the same text situation 06 overturns and situation 08 asks about later, so doing it first means those two arrive part-filled instead of asking you the same thing twice.",
       "cites": "content/studio/entities.json: the interpretation entity appears in situations 02, 06 and 08.",
-      "opens": "triage-proposes-before-touching"
+      "opens": "triage-proposes-before-touching",
+      "mentions": [
+        "triage-proposes-before-touching",
+        "root-cause-changes-0340",
+        "why-did-it-rollback-postmortem"
+      ]
     },
     {
       "id": "exposed",
       "scope": "*",
-      "keywords": ["exposed", "risk", "worst", "danger", "riskiest"],
+      "keywords": [
+        "exposed",
+        "risk",
+        "worst",
+        "danger",
+        "riskiest"
+      ],
       "question": "What am I most exposed to?",
       "answer": "A person finds out afterwards and the actions cannot be undone. That puts the weight on two questions: what happens when nobody answers, and whether anything written afterwards explains why the agent acted. Situations 02 and 08.",
-      "cites": "Derived from this scenario's own attendance and irreversibility answers, the two inputs lib/studio/risk.ts reads."
+      "cites": "Derived from this scenario's own attendance and irreversibility answers, the two inputs lib/studio/risk.ts reads.",
+      "mentions": [
+        "triage-proposes-before-touching",
+        "why-did-it-rollback-postmortem"
+      ]
     },
     {
       "id": "coverage",
       "scope": "*",
-      "keywords": ["gap", "missing", "nothing", "cover", "library have"],
+      "keywords": [
+        "gap",
+        "missing",
+        "nothing",
+        "cover",
+        "library have"
+      ],
       "question": "Where does the library have nothing for me?",
       "computed": "coverage"
     },
     {
       "id": "correction",
       "scope": "triage-proposes-before-touching",
-      "keywords": ["correct", "correction", "why is"],
+      "keywords": [
+        "correct",
+        "correction",
+        "why is"
+      ],
       "question": "Why is correction required?",
       "answer": "The published interaction model gives the person three responses: confirm, correct the interpretation, or defer. Take correction away and the other two collapse into one, because the engineer can say yes or say nothing. At 03:00 with a service degrading they say yes.",
       "cites": "signal-to-intent-handshake.interactionModel, and its backing strength and participant count are shown in the header."
@@ -39,7 +70,14 @@
     {
       "id": "nobody",
       "scope": "triage-proposes-before-touching",
-      "keywords": ["nobody", "on call", "asleep", "answer", "default", "no one"],
+      "keywords": [
+        "nobody",
+        "on call",
+        "asleep",
+        "answer",
+        "default",
+        "no one"
+      ],
       "question": "What if nobody is on call at all?",
       "recommendation": {
         "head": "Escalate rather than stall.",
@@ -77,7 +115,13 @@
     {
       "id": "gradient",
       "scope": "triage-proposes-before-touching",
-      "keywords": ["authority", "gradient", "instead", "alternative", "another pattern"],
+      "keywords": [
+        "authority",
+        "gradient",
+        "instead",
+        "alternative",
+        "another pattern"
+      ],
       "question": "Could we use Authority Gradient instead?",
       "recommendation": {
         "head": "Run both, but the library does not back that for you.",
@@ -88,17 +132,24 @@
             "label": "Keep this, and shape Authority Gradient in situation 04",
             "commits": "agreeing per-area limits before the next incident",
             "best": true,
-            "applies": { "kind": "open", "situationId": "deploy-wants-to-scale-replicas" }
+            "applies": {
+              "kind": "open",
+              "situationId": "deploy-wants-to-scale-replicas"
+            }
           },
           {
             "label": "Swap this for Authority Gradient",
             "commits": "nothing asking in the moment, so the record carries all the weight",
-            "applies": { "kind": "note" }
+            "applies": {
+              "kind": "note"
+            }
           },
           {
             "label": "Leave it as it is",
             "commits": "waking a person for routine actions too",
-            "applies": { "kind": "note" }
+            "applies": {
+              "kind": "note"
+            }
           }
         ]
       }
@@ -106,7 +157,14 @@
     {
       "id": "drop",
       "scope": "triage-proposes-before-touching",
-      "keywords": ["drop", "remove", "delete", "get rid", "no hold", "skip the"],
+      "keywords": [
+        "drop",
+        "remove",
+        "delete",
+        "get rid",
+        "no hold",
+        "skip the"
+      ],
       "question": "Drop the correction step, we will just let it confirm",
       "refusal": {
         "head": "I am not going to do that here.",
@@ -126,12 +184,17 @@
           {
             "label": "Move routine actions to Authority Gradient instead",
             "commits": "per-area limits agreed in advance, so fewer checkpoints reach a person at all",
-            "applies": { "kind": "open", "situationId": "deploy-wants-to-scale-replicas" }
+            "applies": {
+              "kind": "open",
+              "situationId": "deploy-wants-to-scale-replicas"
+            }
           },
           {
             "label": "Leave the element in place",
             "commits": "nothing, the checkpoint keeps all three responses",
-            "applies": { "kind": "note" }
+            "applies": {
+              "kind": "note"
+            }
           }
         ]
       }
@@ -139,7 +202,13 @@
     {
       "id": "oldbelief",
       "scope": "root-cause-changes-0340",
-      "keywords": ["old belief", "before", "previous", "matter", "stale"],
+      "keywords": [
+        "old belief",
+        "before",
+        "previous",
+        "matter",
+        "stale"
+      ],
       "question": "Why does the old belief matter?",
       "answer": "Because things were already done on it. Deploy scaled replicas and paused a job on a reading that turned out to be wrong. The pattern keeps the superseded belief next to the one that displaced it, with attribution for which agent held which, so the person sees a new conclusion and a reason to go back over what was done on the old one.",
       "cites": "memory-commitment-review.interactionModel: superseded beliefs appear with their superseding belief and attribution is preserved."
@@ -147,7 +216,14 @@
     {
       "id": "respond",
       "scope": "root-cause-changes-0340",
-      "keywords": ["respond", "response", "choice", "options", "accept", "acknowledge"],
+      "keywords": [
+        "respond",
+        "response",
+        "choice",
+        "options",
+        "accept",
+        "acknowledge"
+      ],
       "question": "How should the person be able to respond?",
       "recommendation": {
         "head": "Acknowledge, and leave what was already done visible.",

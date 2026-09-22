@@ -4,15 +4,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AgentPane } from "@/components/studio/AgentPane";
 import {
+  activeTensionsFor,
   shapeabilityOfSituation,
   StudioCanvas,
   type CanvasView,
 } from "@/components/studio/StudioCanvas";
+import { getPattern } from "@/lib/patterns";
 import { SetupCard } from "@/components/studio/SetupCard";
 import {
   agentScript,
   coverageAnswer,
+  explainPattern,
   getScriptQuestion,
+  openingLine,
   matchQuestion,
   refusalForElement,
 } from "@/lib/studio/agent";
@@ -20,6 +24,7 @@ import {
   antiPatternsForElement,
   elementsForPattern,
   situations,
+  visibleSituations,
 } from "@/lib/studio/content";
 import { acceptRemoval, restoreElement } from "@/lib/studio/pushback";
 import type {
@@ -79,6 +84,16 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
   const [drafts, setDrafts] = useState<Draft>({});
   const nextId = useRef(0);
   const saveTimers = useRef<Record<string, number>>({});
+  /**
+   * Read inside openSituation without making the callback change on every
+   * write. The explanation has to be posted outside a state updater: React
+   * calls an updater more than once in development, and a queued message in
+   * there lands in the thread twice.
+   */
+  const scenarioRef = useRef<Scenario | null>(null);
+  scenarioRef.current = scenario;
+  const viewRef = useRef<CanvasView>({ kind: "overview" });
+  viewRef.current = view;
 
   const newId = useCallback(() => {
     nextId.current += 1;
@@ -122,7 +137,7 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
           id: "opening",
           from: "agent",
           kind: "answer",
-          text: agentScript.opening,
+          text: openingLine(),
         },
       ]);
     }
@@ -177,6 +192,43 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
     setThread((current) => [...current, ...messages]);
   }, []);
 
+  /**
+   * Opening a situation is the agent recommending a pattern for it, so it says
+   * why in the thread rather than leaving the canvas to speak for itself. The
+   * reasoning is assembled from library fields with a citation, and it says
+   * outright that the match itself is seeded rather than researched.
+   */
+  const openSituation = useCallback(
+    (situationId: string) => {
+      const current = viewRef.current;
+      const alreadyOpen =
+        current.kind === "pattern" && current.situationId === situationId;
+
+      setView({ kind: "pattern", situationId });
+      setNavOpen(false);
+      if (alreadyOpen) return;
+
+      const situation = visibleSituations.find(
+        (candidate) => candidate.id === situationId,
+      );
+      const pattern = situation
+        ? getPattern(situation.patternIds[0] ?? "")
+        : undefined;
+      const openScenario = scenarioRef.current;
+      if (!situation || !pattern || !openScenario) return;
+
+      const { text, cites } = explainPattern({
+        situation,
+        pattern,
+        shapeability: shapeabilityOfSituation(situation),
+        tensions: activeTensionsFor(situation, openScenario),
+      });
+
+      say([{ id: newId(), from: "agent", kind: "answer", text, cites }]);
+    },
+    [newId, say],
+  );
+
   const answerFor = useCallback((questionId: string): ThreadMessage => {
     const question = getScriptQuestion(questionId);
     if (!question) {
@@ -200,7 +252,7 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
 
     const text =
       question.computed === "coverage"
-        ? coverageAnswer(situations, shapeabilityOfSituation)
+        ? coverageAnswer(visibleSituations, shapeabilityOfSituation)
         : (question.answer ?? agentScript.fallback);
 
     return {
@@ -222,11 +274,9 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
         { id: newId(), from: "person", text: question.question },
         answerFor(questionId),
       ]);
-      if (question.scope !== "*") {
-        setView({ kind: "pattern", situationId: question.scope });
-      }
+      if (question.scope !== "*") openSituation(question.scope);
     },
-    [answerFor, askedIds, newId, say],
+    [answerFor, askedIds, newId, openSituation, say],
   );
 
   const send = useCallback(
@@ -246,11 +296,9 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
       }
       setAskedIds((current) => [...current, hit.id]);
       say([{ id: newId(), from: "person", text }, answerFor(hit.id)]);
-      if (hit.scope !== "*") {
-        setView({ kind: "pattern", situationId: hit.scope });
-      }
+      if (hit.scope !== "*") openSituation(hit.scope);
     },
-    [answerFor, askedIds, newId, say],
+    [answerFor, askedIds, newId, openSituation, say],
   );
 
   /** Nothing here runs until the person picks an option. */
@@ -289,7 +337,7 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
         const target = situations.find(
           (candidate) => candidate.id === effect.situationId,
         );
-        setView({ kind: "pattern", situationId: effect.situationId });
+        openSituation(effect.situationId);
         confirmation = target
           ? `Opened ${target.number} ${target.title}. Nothing else changed.`
           : confirmation;
@@ -323,7 +371,7 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
         { id: newId(), from: "agent", kind: "confirmation", text: confirmation },
       ]);
     },
-    [newId, say, thread, upsertDecision],
+    [newId, openSituation, say, thread, upsertDecision],
   );
 
   /* ------------------------------------------------------- canvas editing */
@@ -458,7 +506,7 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
         onAsk={ask}
         onSend={send}
         onChoose={choose}
-        onOpen={(situationId) => setView({ kind: "pattern", situationId })}
+        onOpen={openSituation}
         onEditScenario={(patch) => {
           setScenario((current) => (current ? { ...current, ...patch } : current));
           void patchScenario(patch as Record<string, unknown>);
@@ -471,6 +519,10 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
         navOpen={navOpen}
         workspaces={workspaces}
         onGo={(next) => {
+          if (next.kind === "pattern") {
+            openSituation(next.situationId);
+            return;
+          }
           setView(next);
           setNavOpen(false);
         }}
@@ -486,7 +538,7 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
         className="studio-recordbtn"
         onClick={() => setView({ kind: "record" })}
       >
-        Record {answeredCount}/{situations.length}
+        Record {answeredCount}/{visibleSituations.length}
       </button>
     </div>
   );

@@ -230,6 +230,12 @@ export type AgentScriptQuestion = {
   computed?: "coverage";
   /** Opens this situation on the canvas when the answer lands. */
   opens?: string;
+  /**
+   * Situations this answer's own wording refers to. Declared rather than
+   * detected, so that hiding a situation retires the answers that talk about
+   * it instead of leaving them pointing at nothing.
+   */
+  mentions?: string[];
   recommendation?: AgentProposal;
   /** A refusal renders like a recommendation, and never carries out the ask. */
   refusal?: AgentProposal;
