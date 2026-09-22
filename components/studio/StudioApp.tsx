@@ -22,6 +22,7 @@ import {
 } from "@/lib/studio/agent";
 import {
   antiPatternsForElement,
+  displayNumber,
   elementsForPattern,
   situations,
   visibleSituations,
@@ -339,7 +340,7 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
         );
         openSituation(effect.situationId);
         confirmation = target
-          ? `Opened ${target.number} ${target.title}. Nothing else changed.`
+          ? `Opened situation ${displayNumber(target)}, ${target.title}. Nothing else changed.`
           : confirmation;
       }
 

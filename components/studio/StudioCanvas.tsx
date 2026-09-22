@@ -30,6 +30,7 @@ import { isPatternReady } from "@/lib/pattern-ready";
 import { resolveLivePreview } from "@/lib/pattern-live-preview";
 import {
   answersSentence,
+  displayNumber,
   elementsForPattern,
   entities,
   patternElements,
@@ -205,20 +206,13 @@ function Bar({
 }
 
 /**
- * A situation card.
+ * One situation, as a full-width row.
  *
- * Every card is identical: same fields in the same order, one neutral surface,
- * no per-card tint. It used to take the tint from the pattern's category, which
- * meant one card was blue and the next purple for a reason the card no longer
- * showed anywhere. Status is carried in words, by the group it sits in and by
- * the chip in its footer.
- *
- * Nothing here truncates. The card grows to fit what it has to say, and hover
- * only lifts it, so no text appears or disappears under the pointer. The
- * surface is .osh-card, the site's own neutral card, rather than .osh-face,
- * whose crossfade and colour belong to a card that carries a taxonomy.
+ * Identical surface on every row: one subtle blue wash, no per-row colour, so
+ * nothing looks like a signal that is not one. Status is a chip. Nothing
+ * truncates; a row is as tall as its content.
  */
-function SituationCard({
+function SituationRow({
   situation,
   scenario,
   onOpen,
@@ -234,36 +228,40 @@ function SituationCard({
   return (
     <button
       type="button"
-      className="osh-card studio-card"
+      className="studio-row"
       onClick={() => onOpen(situation.id)}
     >
-      <span className="studio-card__label">Situation {situation.number}</span>
-      <h3 className="studio-card__title">{situation.title}</h3>
-      <p className="studio-card__moment">{situation.moment}</p>
-
-      <span className="studio-card__foot">
-        <span className="studio-card__pattern">
-          {pattern ? pattern.title : "No pattern matched"}
+      <span className="studio-row__head">
+        <span className="studio-row__label">
+          Situation {displayNumber(situation)}
         </span>
-        <span className="studio-card__chips">
-          {state === "answered_with_gap" ? (
-            <span className="studio-chipmark">with a gap</span>
+        <span className="studio-row__title">{situation.title}</span>
+        <span className="studio-row__chips">
+          {stateLabel(state) ? (
+            <span className="studio-chipmark">{stateLabel(state)}</span>
           ) : null}
           {detailComing ? (
             <span className="studio-chipmark">detail coming</span>
           ) : null}
         </span>
       </span>
+
+      <span className="studio-row__moment">{situation.moment}</span>
+
+      <span className="studio-row__pattern">
+        <span className="studio-row__patternlabel">Pattern</span>
+        <span className="studio-row__patternname">
+          {pattern ? pattern.title : "No pattern matched"}
+        </span>
+        {/* Why this pattern, in one line. There is no researched reason for the
+            pairing, so what it states is what the situation has to answer,
+            which is the same sentence the agent opens with. */}
+        <span className="studio-row__reason">{answersSentence(situation)}</span>
+      </span>
     </button>
   );
 }
 
-/**
- * Grouped by how far the person has got, not by how far we have got.
- * Readiness was the old split, which made a fact about our own build queue
- * look like permanent structure and would leave a heading empty once every
- * pattern has its detail written. Progress stays meaningful either way.
- */
 function Overview({
   scenario,
   onOpen,
@@ -271,51 +269,26 @@ function Overview({
   scenario: Scenario;
   onOpen: (situationId: string) => void;
 }) {
-  const groups = [
-    {
-      label: "Needs a decision",
-      definition:
-        "Nobody has chosen anything for these yet. They happen either way.",
-      items: visibleSituations.filter(
-        (situation) => situationState(situation, scenario) === "unanswered",
-      ),
-    },
-    {
-      label: "Decided",
-      definition: null,
-      items: visibleSituations.filter(
-        (situation) => situationState(situation, scenario) !== "unanswered",
-      ),
-    },
-  ];
-
   return (
-    <>
-      {groups.map((group) =>
-        group.items.length === 0 ? null : (
-          <section key={group.label} className="osh-group">
-            <div className="osh-group-head studio-group-head">
-              <h2>{group.label}</h2>
-              <span className="n">{group.items.length}</span>
-            </div>
-            {group.definition ? (
-              <p className="osh-group-def">{group.definition}</p>
-            ) : null}
+    <div className="studio-overview">
+      <p className="studio-overview__lede">
+        Situations this system could run into, and the pattern that answers each
+        one. They are candidates to check rather than a forecast: the list and
+        the pairings are seeded placeholders, not research, so some may not
+        apply to you and others may be missing.
+      </p>
 
-            <div className="osh-faces studio-cards">
-              {group.items.map((situation) => (
-                <SituationCard
-                  key={situation.id}
-                  situation={situation}
-                  scenario={scenario}
-                  onOpen={onOpen}
-                />
-              ))}
-            </div>
-          </section>
-        ),
-      )}
-    </>
+      <div className="studio-rows">
+        {visibleSituations.map((situation) => (
+          <SituationRow
+            key={situation.id}
+            situation={situation}
+            scenario={scenario}
+            onOpen={onOpen}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -353,7 +326,7 @@ function Record({ scenario }: { scenario: Scenario }) {
             return (
               <article key={decision.situationId} className="studio-rrow">
                 <b>
-                  {situation?.number} {situation?.title}
+                  {situation ? displayNumber(situation) : ""} {situation?.title}
                 </b>
                 <p>{pattern?.title}</p>
                 {decision.reasoning ? (
@@ -408,13 +381,14 @@ function Record({ scenario }: { scenario: Scenario }) {
                 className="studio-rrow"
               >
                 <b>
-                  {entity?.label} does not reach {target?.number}{" "}
+                  {entity?.label} does not reach situation{" "}
+                  {target ? displayNumber(target) : ""}{" "}
                   {target?.title}
                 </b>
                 <p>
                   {gap.kind === "not_designed"
-                    ? `Written in ${source?.number}. ${target?.number} has not been answered yet, so there is nothing for it to arrive in.`
-                    : `Written in ${source?.number}. ${target?.number} is answered, but none of its elements carry it, so it silently does not survive there.`}
+                    ? `Written in situation ${source ? displayNumber(source) : ""}. Situation ${target ? displayNumber(target) : ""} has not been answered yet, so there is nothing for it to arrive in.`
+                    : `Written in situation ${source ? displayNumber(source) : ""}. Situation ${target ? displayNumber(target) : ""} is answered, but none of its elements carry it, so it silently does not survive there.`}
                 </p>
               </article>
             );
@@ -437,7 +411,7 @@ function Record({ scenario }: { scenario: Scenario }) {
             {open.map((situation) => (
               <li key={situation.id}>
                 <b>
-                  {situation.number} {situation.title}
+                  Situation {displayNumber(situation)}. {situation.title}
                 </b>
                 {/* The `answers` fragment gets a stem rather than being run
                     into the title, which read as broken copy. */}
@@ -693,7 +667,7 @@ export function StudioCanvas({
       <Bar
         scenario={scenario}
         view={view}
-        eyebrow={`${situation.number} ${situation.title} · ${situation.moment}`}
+        eyebrow={`Situation ${displayNumber(situation)} · ${situation.title} · ${situation.moment}`}
         title={
           <button
             type="button"
@@ -752,7 +726,7 @@ export function StudioCanvas({
               >
                 <StateDot state={situationState(candidate, scenario)} />
                 <span className="studio-navitem__title">
-                  {candidate.number} {candidate.title}
+                  {displayNumber(candidate)}. {candidate.title}
                 </span>
                 <span className="studio-navitem__pattern">
                   {candidatePattern?.title ?? "No pattern matched"}

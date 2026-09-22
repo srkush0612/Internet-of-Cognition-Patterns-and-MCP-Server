@@ -2,6 +2,7 @@ import agentScriptJson from "@/content/studio/agent-script.json";
 import { anonymizeParticipants } from "@/lib/evidence-privacy";
 import {
   answersSentence,
+  displayNumber,
   situations,
   visibleSituations,
 } from "@/lib/studio/content";
@@ -135,7 +136,7 @@ export function coverageAnswer(
     unmatched.length === 0
       ? `Nowhere on the matching. All ${total} have a pattern.`
       : `${unmatched.length} of ${total} have no pattern matched to them: ${unmatched
-          .map((s) => s.number)
+          .map((s) => displayNumber(s))
           .join(", ")}. That is a gap in the library, not in your system.`;
 
   const detail =
@@ -272,7 +273,7 @@ export function explainPattern({
 
   return {
     patternSlug: pattern.slug,
-    verdict: `${pattern.title} is the match for situation ${situation.number}.`,
+    verdict: `${pattern.title} is the match for situation ${displayNumber(situation)}.`,
     why: answersSentence(situation),
     whatItDoes: firstTwoSentences(pattern.oneliner),
     participants: pattern.participants

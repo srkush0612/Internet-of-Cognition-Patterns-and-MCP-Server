@@ -290,40 +290,51 @@ export function AgentPane({
 
   return (
     <section className="studio-agent" aria-label="Agent">
+      {/* What the person typed and chose, kept in view rather than collapsed
+          into a name, so the context behind every recommendation is readable
+          without going back to the setup card. */}
       <header className="studio-agent__head">
-        <b title={scenario.description || scenario.name}>{scenario.name}</b>
-        {(Object.keys(CHIP_QUESTION) as ChipKey[]).map((key) => (
-          <div key={key} className="studio-chipwrap">
-            <button
-              type="button"
-              className="studio-chip"
-              aria-expanded={editing === key}
-              onClick={() => setEditing(editing === key ? null : key)}
-            >
-              {chipValue(scenario, key)}
-            </button>
+        {scenario.description ? (
+          <p className="studio-agent__brief">{scenario.description}</p>
+        ) : (
+          <p className="studio-agent__brief studio-agent__brief--empty">
+            No description was written for this scenario.
+          </p>
+        )}
+        <div className="studio-agent__answers">
+          {(Object.keys(CHIP_QUESTION) as ChipKey[]).map((key) => (
+            <div key={key} className="studio-chipwrap">
+              <button
+                type="button"
+                className="studio-chip"
+                aria-expanded={editing === key}
+                onClick={() => setEditing(editing === key ? null : key)}
+              >
+                {chipValue(scenario, key)}
+              </button>
 
-            {editing === key ? (
-              <div className="studio-chipmenu" role="dialog">
-                <p>{CHIP_QUESTION[key]}</p>
-                {CHIP_OPTIONS[key].map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className="studio-radio"
-                    aria-pressed={chipValue(scenario, key) === label}
-                    onClick={() => {
-                      onEditScenario({ [key]: value } as Partial<Scenario>);
-                      setEditing(null);
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ))}
+              {editing === key ? (
+                <div className="studio-chipmenu" role="dialog">
+                  <p>{CHIP_QUESTION[key]}</p>
+                  {CHIP_OPTIONS[key].map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className="studio-radio"
+                      aria-pressed={chipValue(scenario, key) === label}
+                      onClick={() => {
+                        onEditScenario({ [key]: value } as Partial<Scenario>);
+                        setEditing(null);
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
       </header>
 
       <div className="studio-thread" ref={threadRef}>
@@ -354,7 +365,8 @@ export function AgentPane({
         ) : (
           <p className="studio-suggestions__spent">
             Every scripted question has been used. Anything typed now gets the
-            fallback, which is the honest answer for a build with no model in it.
+            fallback, which is the honest answer for a build with no model in
+            it.
           </p>
         )}
 

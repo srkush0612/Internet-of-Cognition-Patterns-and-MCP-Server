@@ -84,5 +84,21 @@ export function getEntity(id: string): Entity | undefined {
  * wording of the field ever changes.
  */
 export function answersSentence(situation: Situation): string {
-  return `Situation ${situation.number} has to ${situation.answers}.`;
+  return `Situation ${displayNumber(situation)} has to ${situation.answers}.`;
+}
+
+/**
+ * What the interface calls a situation: its position in the list on screen,
+ * counting from one.
+ *
+ * `situation.number` is the label the content file authored, so with some
+ * situations filtered out the screen showed 01, 04, 05, 06, 08, 09, which
+ * reads as arbitrary. Everything the person sees uses this instead, and the
+ * content keeps its own numbering.
+ */
+export function displayNumber(situation: Situation): number {
+  const index = visibleSituations.findIndex(
+    (candidate) => candidate.id === situation.id,
+  );
+  return index === -1 ? situation.order : index + 1;
 }
