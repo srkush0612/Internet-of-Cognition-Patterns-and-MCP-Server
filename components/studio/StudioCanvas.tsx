@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { BackingSignal, CategoryLabel } from "@/components/PatternTaxonomy";
 import { PATTERN_STANDALONE } from "@/components/patterns/pattern-registry";
 import {
@@ -127,21 +127,34 @@ function Bar({
   return (
     <header className="studio-bar">
       <div className="studio-bar__title">
-        <p className="studio-bar__eyebrow">{eyebrow}</p>
+        {/* Going back sits where the trail is, on the left, rather than as a
+            control on the right next to the ones that act on this situation. */}
+        <p className="studio-bar__trail">
+          {view.kind === "overview" ? (
+            <span className="studio-bar__here">{scenario.name}</span>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="studio-back"
+                onClick={() => onGo({ kind: "overview" })}
+              >
+                <ArrowLeft aria-hidden />
+                Overview
+              </button>
+              <span className="studio-bar__sep" aria-hidden>
+                /
+              </span>
+              <span className="studio-bar__here">{eyebrow}</span>
+            </>
+          )}
+        </p>
         {title}
         {meta ? <div className="studio-bar__meta">{meta}</div> : null}
       </div>
 
       <div className="studio-bar__ctrls">
         {controls}
-        <button
-          type="button"
-          className="studio-nb"
-          aria-pressed={view.kind === "overview"}
-          onClick={() => onGo({ kind: "overview" })}
-        >
-          Overview
-        </button>
         <div className="studio-steps">
           <button
             type="button"
@@ -502,7 +515,7 @@ export function StudioCanvas({
         <Bar
           scenario={scenario}
           view={view}
-          eyebrow={scenario.name}
+          eyebrow="The record"
           title={<h2>The record</h2>}
           onGo={onGo}
         />

@@ -20,6 +20,18 @@ type Answers = {
   irreversibility: Irreversibility | null;
 };
 
+/**
+ * A scenario is named from what the person wrote about it: its first clause,
+ * capped. Nothing here composes a name of its own, so an unlabelled scenario
+ * says it is unlabelled rather than being given a plausible title.
+ */
+function scenarioName(description: string): string {
+  if (!description) return "Untitled scenario";
+  const firstClause = description.split(/[.;\n]/)[0].trim();
+  const source = firstClause || description;
+  return source.length > 60 ? `${source.slice(0, 57).trimEnd()}…` : source;
+}
+
 /** Shown under the answer, so the wording is not the only thing carrying it. */
 const ATTENDANCE_HINT: Record<Attendance, string> = {
   watched: "approves before it acts",
@@ -42,7 +54,6 @@ export function SetupCard({
     irreversibility: string;
   }) => Promise<void>;
 }) {
-  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [answers, setAnswers] = useState<Answers>({
     topology: null,
@@ -60,9 +71,10 @@ export function SetupCard({
     if (!ready || submitting) return;
     setSubmitting(true);
     try {
+      const text = description.trim();
       await onSubmit({
-        name: name.trim() || "Untitled scenario",
-        description: description.trim(),
+        name: scenarioName(text),
+        description: text,
         topology: answers.topology as string,
         attendance: answers.attendance as string,
         irreversibility: answers.irreversibility as string,
@@ -83,17 +95,6 @@ export function SetupCard({
           decide which of them are the dangerous ones for you, not which ones
           exist.
         </p>
-
-        <label className="studio-label" htmlFor="studio-name">
-          What should this be called?
-        </label>
-        <input
-          id="studio-name"
-          className="studio-text"
-          value={name}
-          placeholder="On-call incident"
-          onChange={(event) => setName(event.target.value)}
-        />
 
         <label className="studio-label" htmlFor="studio-desc">
           What is the system doing?

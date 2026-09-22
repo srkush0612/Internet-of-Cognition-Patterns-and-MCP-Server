@@ -236,7 +236,7 @@ export function AgentPane({
   return (
     <section className="studio-agent" aria-label="Agent">
       <header className="studio-agent__head">
-        <b>{scenario.name}</b>
+        <b title={scenario.description || scenario.name}>{scenario.name}</b>
         {(Object.keys(CHIP_QUESTION) as ChipKey[]).map((key) => (
           <div key={key} className="studio-chipwrap">
             <button

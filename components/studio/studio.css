@@ -64,9 +64,15 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+/* The scenario's name comes from what the person wrote about it, so it can be
+   a whole clause rather than a label. */
 .studio-agent__head b {
   font-size: 0.82rem;
   margin-right: 0.15rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .studio-chipwrap {
@@ -407,10 +413,56 @@
   min-width: 0;
 }
 
-.studio-bar__eyebrow {
-  margin: 0 0 0.1rem;
+.studio-bar__trail {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.15rem;
   font-size: 0.73rem;
   color: var(--color-text-muted);
+  min-width: 0;
+}
+
+.studio-bar__sep {
+  color: var(--color-border-medium);
+}
+
+.studio-bar__here {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studio-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-accent-hover);
+  background: none;
+  border: none;
+  padding: 0.1rem 0.25rem 0.1rem 0;
+  margin-left: -0.25rem;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.studio-back svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.15s ease;
+}
+
+.studio-back:hover svg {
+  transform: translateX(-2px);
+}
+
+.studio-back:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
 }
 
 .studio-bar h2 {
@@ -540,9 +592,9 @@
    side its own scroll. */
 .studio-canvas__body[data-side="true"] {
   display: flex;
+  align-items: flex-start;
   gap: 1.1rem;
   overflow: hidden;
-  padding-right: 0;
 }
 
 .studio-stage {
@@ -556,16 +608,21 @@
   padding-right: 0.4rem;
 }
 
+/* A panel sitting in the canvas alongside the pattern, inside the same
+   padding, so it reads as part of the work surface rather than a drawer
+   pinned to the window. */
 .studio-side {
   flex: none;
   width: 24rem;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  margin-block: -1.35rem;
-  padding: 1.1rem 1.35rem 1.35rem 1.1rem;
-  border-left: 1px solid var(--color-border);
+  max-height: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-face);
   background: var(--color-bg);
+  box-shadow: var(--shadow-lift);
+  overflow: hidden;
   animation: studio-side-in 0.22s cubic-bezier(0.2, 0.85, 0.25, 1) both;
 }
 
@@ -586,8 +643,23 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.6rem;
-  padding-bottom: 0.7rem;
+  padding: 0.85rem 0.9rem 0.75rem 1rem;
   border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-accent) 5%, white),
+    var(--color-bg)
+  );
+}
+
+.studio-side__kind {
+  display: block;
+  margin: 0 0 0.15rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-hover);
 }
 
 .studio-side__head b {
@@ -598,10 +670,10 @@
 .studio-side__head i {
   display: block;
   font-style: normal;
-  font-size: 0.74rem;
+  font-size: 0.73rem;
   line-height: 1.45;
   color: var(--color-text-muted);
-  margin-top: 0.1rem;
+  margin-top: 0.15rem;
 }
 
 .studio-side__close {
@@ -629,8 +701,9 @@
 }
 
 .studio-side__note {
+  flex: none;
   align-self: flex-start;
-  margin-top: 0.7rem;
+  margin: 0.7rem 0 0 1rem;
 }
 
 .studio-side__body {
@@ -638,8 +711,7 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  margin-top: 0.85rem;
-  padding-right: 0.25rem;
+  padding: 0.9rem 1rem 1.1rem;
 }
 
 .studio-side__close:focus-visible {
@@ -909,9 +981,28 @@
 
 .studio-el__top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.4rem;
+}
+
+.studio-el__flags {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   flex-wrap: wrap;
+  margin: 0.35rem 0 0 1.5rem;
+}
+
+.studio-el__flags:empty {
+  display: none;
+}
+
+.studio-el__foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--color-border-soft);
 }
 
 .studio-el__num {
@@ -920,6 +1011,7 @@
   justify-content: center;
   width: 1.1rem;
   height: 1.1rem;
+  margin-top: 0.05rem;
   flex-shrink: 0;
   border-radius: 999px;
   background: var(--color-accent);
@@ -936,10 +1028,10 @@
 .studio-el__label {
   font-size: 0.8rem;
   font-weight: 600;
+  line-height: 1.35;
 }
 
 .studio-el__act {
-  margin-left: auto;
   font-size: 0.68rem;
   font-weight: 600;
   color: var(--color-text-muted);
@@ -958,7 +1050,7 @@
 .studio-el__hint,
 .studio-el__evidence,
 .studio-el__reason {
-  margin: 0.35rem 0 0;
+  margin: 0.35rem 0 0 1.5rem;
   font-size: 0.74rem;
   line-height: 1.5;
 }
@@ -1337,10 +1429,8 @@
   .studio-side {
     width: auto;
     max-width: 44rem;
+    max-height: none;
     margin: 1.1rem auto 0;
-    padding: 1rem 1.15rem 1.15rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-face);
     animation: none;
   }
 

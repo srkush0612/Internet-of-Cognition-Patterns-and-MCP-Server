@@ -103,6 +103,9 @@ function AnnotatedBody({
               <div className="studio-el__top">
                 <span className="studio-el__num">{element.markerNumber}</span>
                 <span className="studio-el__label">{element.label}</span>
+              </div>
+
+              <div className="studio-el__flags">
                 {element.required ? (
                   <span className="studio-flag">required</span>
                 ) : (
@@ -113,15 +116,6 @@ function AnnotatedBody({
                     carries {carried.entity.label.toLowerCase()}
                   </span>
                 ) : null}
-                <button
-                  type="button"
-                  className="studio-el__act"
-                  onClick={() =>
-                    isRemoved ? onRestore(element) : onRemove(element)
-                  }
-                >
-                  {isRemoved ? "Put it back" : "We do not have this"}
-                </button>
               </div>
 
               <p className="studio-el__hint">{element.hint}</p>
@@ -133,6 +127,20 @@ function AnnotatedBody({
                   <b>Accepted gap.</b> {reason}
                 </p>
               ) : null}
+
+              {/* Always in the same place on every row, so the eye can find it
+                  without reading the row first. */}
+              <div className="studio-el__foot">
+                <button
+                  type="button"
+                  className="studio-el__act"
+                  onClick={() =>
+                    isRemoved ? onRestore(element) : onRemove(element)
+                  }
+                >
+                  {isRemoved ? "Put it back" : "We do not have this"}
+                </button>
+              </div>
             </li>
           );
         })}
@@ -188,6 +196,7 @@ export function MakeItYoursPanel({
     >
       <div className="studio-side__head">
         <div>
+          <span className="studio-side__kind">Customise</span>
           <b>Make it yours</b>
           <i>{RULE}</i>
         </div>
