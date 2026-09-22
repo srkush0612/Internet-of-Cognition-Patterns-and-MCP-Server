@@ -299,9 +299,7 @@ function Overview({
     <div className="studio-overview">
       <p className="studio-overview__lede">
         Situations this system could run into, and the pattern that answers each
-        one. They are candidates to check rather than a forecast: the list and
-        the pairings are seeded placeholders, not research, so some may not
-        apply to you and others may be missing.
+        one. They are candidates to check rather than a forecast.
       </p>
 
       <div className="studio-rows">
