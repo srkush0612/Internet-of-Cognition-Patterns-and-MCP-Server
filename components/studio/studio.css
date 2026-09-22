@@ -62,6 +62,11 @@
   flex-wrap: wrap;
   padding: 0.75rem 1.1rem;
   border-bottom: 1px solid var(--color-border);
+  background-image: linear-gradient(
+    118deg,
+    rgba(210, 194, 255, 0.13) 0%,
+    rgba(255, 255, 255, 1) 60%
+  );
 }
 
 /* The scenario's name comes from what the person wrote about it, so it can be
@@ -395,18 +400,20 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--color-hover);
+  background: var(--color-bg);
 }
 
+/* The same gradient and drifting orbs as the gallery's hero, so the top of the
+   canvas belongs to the same page. .osh-hero supplies both; this only sets the
+   shape of the band. */
 .studio-bar {
+  position: relative;
   flex: none;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   padding: 0.8rem 1.35rem;
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
 }
 
 .studio-bar__title {
@@ -824,93 +831,59 @@
 
 /* ---------------------------- overview grid ---------------------------- */
 
-.studio-group + .studio-group {
-  margin-top: 1.5rem;
+/* Grouping and the grid come from the gallery: .osh-group, .osh-group-head,
+   .osh-group-def, .osh-faces. Only the first group's top margin differs, since
+   the canvas already has padding above it. */
+.studio-canvas__body .osh-group:first-child {
+  margin-top: 0;
 }
 
-.studio-group__label {
-  margin: 0 0 0.6rem;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--color-text-faint);
-}
-
-.studio-group__label span {
-  font-variant-numeric: tabular-nums;
-}
-
-.studio-sgrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
-  gap: 0.65rem;
-}
-
-.studio-sit {
-  display: flex;
-  flex-direction: column;
+/* A button borrowing .osh-face: same tint, bloom, lift and crossfade as a
+   gallery card, plus the few resets a button needs to look like one. */
+.studio-face {
+  width: 100%;
   text-align: left;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-face);
-  padding: 0.8rem 0.85rem;
+  font: inherit;
+  color: inherit;
   cursor: pointer;
-  transition:
-    transform 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
 }
 
-.studio-sit:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-border-medium);
-  box-shadow: var(--shadow-hover);
-}
-
-.studio-sit__top {
+.studio-face h3 {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.4rem;
-}
-
-.studio-sit__num {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  font-weight: 600;
-  color: var(--color-text-faint);
-}
-
-.studio-sit__title {
-  font-size: 0.86rem;
-  font-weight: 600;
-  line-height: 1.35;
-  margin-bottom: 0.25rem;
-}
-
-.studio-sit__moment {
-  font-size: 0.73rem;
-  color: var(--color-text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.studio-sit__pattern {
-  display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0.4rem;
-  flex-wrap: wrap;
-  margin-top: auto;
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--color-accent-hover);
 }
 
-.studio-sit__pattern em {
-  font-style: normal;
+.studio-face__num {
+  font-family: var(--font-mono);
   font-size: 0.68rem;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--color-text-faint);
+  flex: none;
+}
+
+.studio-face__right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+}
+
+.studio-face__pattern {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--c);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* An answered situation keeps a quiet green edge, so progress is legible from
+   the grid without the card changing colour family. */
+.studio-face[data-state="answered"],
+.studio-face[data-state="answered_with_gap"] {
+  border-color: var(--color-success-border);
 }
 
 /* -------------------------- progress and flags -------------------------- */
@@ -970,9 +943,38 @@
 
 /* --------------------------- pattern canvas --------------------------- */
 
-.studio-live {
+/* The gallery's card treatment around a pattern component: the category tint,
+   the corner bloom, the same border and radius. No padding on this element in
+   the annotated case would be wrong either way, since the frame wraps the
+   embed rather than boxing it. */
+.studio-frame {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   max-width: 44rem;
   margin: 0 auto 1.1rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-face);
+  background: linear-gradient(
+    158deg,
+    color-mix(in srgb, var(--c) var(--tint-soft), white),
+    var(--color-bg) 58%
+  );
+}
+
+.studio-frame::after {
+  content: "";
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  right: -60px;
+  bottom: -80px;
+  border-radius: 999px;
+  z-index: -1;
+  background: color-mix(in srgb, var(--c) var(--glow), transparent);
+  filter: blur(36px);
+  opacity: 0.5;
 }
 
 .studio-mine__fields {
@@ -1497,7 +1499,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .studio-sit:hover {
+  .studio-face:hover {
     transform: none;
   }
 }

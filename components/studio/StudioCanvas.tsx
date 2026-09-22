@@ -9,7 +9,11 @@ import {
   ChevronRight,
   SlidersHorizontal,
 } from "lucide-react";
-import { BackingSignal, CategoryLabel } from "@/components/PatternTaxonomy";
+import {
+  BackingSignal,
+  CategoryLabel,
+  HeroOrbs,
+} from "@/components/PatternTaxonomy";
 import { PATTERN_STANDALONE } from "@/components/patterns/pattern-registry";
 import {
   CarryNote,
@@ -17,7 +21,11 @@ import {
   RemovalNotes,
 } from "@/components/studio/MakeItYours";
 import { PatternEmbed } from "@/components/studio/PatternEmbed";
-import { getPattern, type Pattern } from "@/lib/patterns";
+import {
+  getPattern,
+  PATTERN_CATEGORY_COLOR,
+  type Pattern,
+} from "@/lib/patterns";
 import { isPatternReady } from "@/lib/pattern-ready";
 import { resolveLivePreview } from "@/lib/pattern-live-preview";
 import {
@@ -28,6 +36,7 @@ import {
 } from "@/lib/studio/content";
 import { findContinuityGaps } from "@/lib/studio/continuity";
 import { missingDetailReason, shapeabilityOf } from "@/lib/studio/shapeability";
+import type { CSSProperties } from "react";
 import type {
   Decision,
   PatternElement,
@@ -131,7 +140,8 @@ function Bar({
   }
 
   return (
-    <header className="studio-bar">
+    <header className="studio-bar osh-hero">
+      <HeroOrbs />
       <div className="studio-bar__title">
         {/* Going back sits where the trail is, on the left, rather than as a
             control on the right next to the ones that act on this situation. */}
@@ -189,6 +199,76 @@ function Bar({
   );
 }
 
+/**
+ * The same faces the gallery uses, carrying the same category colour, corner
+ * bloom, hover crossfade and evidence bars. A situation and the pattern that
+ * answers it are the same object in both places, so they look the same in
+ * both places. What changes is what the card is about: here the heading is the
+ * situation, the pattern is in the foot, and the crossfade reveals what
+ * shaping it answers.
+ */
+function SituationFace({
+  situation,
+  scenario,
+  index,
+  onOpen,
+}: {
+  situation: Situation;
+  scenario: Scenario;
+  index: number;
+  onOpen: (situationId: string) => void;
+}) {
+  const pattern = getPattern(situation.patternIds[0] ?? "");
+  const state = situationState(situation, scenario);
+  const color = pattern
+    ? PATTERN_CATEGORY_COLOR[pattern.category]
+    : "var(--color-text-muted)";
+
+  return (
+    <button
+      type="button"
+      className="osh-face studio-face"
+      data-facts="true"
+      data-state={state}
+      style={{ "--c": color, "--i": index } as CSSProperties}
+      onClick={() => onOpen(situation.id)}
+    >
+      <div className="osh-face-top">
+        {pattern ? (
+          <CategoryLabel category={pattern.category} />
+        ) : (
+          <span className="osh-face-cat">Unmatched</span>
+        )}
+        <span className="studio-face__right">
+          {pattern && !isPatternReady(pattern.slug) ? (
+            <span className="osh-soon">SOON</span>
+          ) : null}
+          <StateDot state={state} />
+        </span>
+      </div>
+
+      <h3>
+        <span className="studio-face__num">{situation.number}</span>
+        {situation.title}
+      </h3>
+
+      <div className="osh-face-swap">
+        <p className="osh-face-one">{situation.moment}</p>
+        <p className="osh-face-facts">
+          <b>answers</b> {situation.answers}
+        </p>
+      </div>
+
+      <div className="osh-face-foot">
+        <span className="studio-face__pattern">
+          {pattern ? pattern.title : "No pattern matched"}
+        </span>
+        {pattern ? <BackingSignal pattern={pattern} /> : null}
+      </div>
+    </button>
+  );
+}
+
 function Overview({
   scenario,
   onOpen,
@@ -196,51 +276,53 @@ function Overview({
   scenario: Scenario;
   onOpen: (situationId: string) => void;
 }) {
-  const groups: Array<[string, Situation[]]> = [
-    [
-      "Ready to shape here",
-      situations.filter((s) => shapeabilityOfSituation(s) !== "matched_only"),
-    ],
-    [
-      "Matched, element detail not published yet",
-      situations.filter((s) => shapeabilityOfSituation(s) === "matched_only"),
-    ],
+  const groups: Array<{ label: string; definition: string; color: string; items: Situation[] }> = [
+    {
+      label: "Ready to shape here",
+      definition:
+        "The pattern has a reference design and element detail, so you can fill in your own case.",
+      color: "var(--color-accent-hover)",
+      items: situations.filter(
+        (s) => shapeabilityOfSituation(s) !== "matched_only",
+      ),
+    },
+    {
+      label: "Matched, element detail not published yet",
+      definition:
+        "The match stands and the pattern has its write-up and evidence, but there is nothing here to shape.",
+      color: "var(--color-warning)",
+      items: situations.filter(
+        (s) => shapeabilityOfSituation(s) === "matched_only",
+      ),
+    },
   ];
+
+  let index = 0;
 
   return (
     <>
-      {groups.map(([label, list]) =>
-        list.length === 0 ? null : (
-          <section key={label} className="studio-group">
-            <p className="studio-group__label">
-              {label} <span>{list.length}</span>
-            </p>
-            <div className="studio-sgrid">
-              {list.map((situation) => {
-                const pattern = getPattern(situation.patternIds[0] ?? "");
-                const state = situationState(situation, scenario);
-                return (
-                  <button
-                    key={situation.id}
-                    type="button"
-                    className="studio-sit"
-                    onClick={() => onOpen(situation.id)}
-                  >
-                    <span className="studio-sit__top">
-                      <span className="studio-sit__num">{situation.number}</span>
-                      <StateDot state={state} />
-                    </span>
-                    <span className="studio-sit__title">{situation.title}</span>
-                    <span className="studio-sit__moment">{situation.moment}</span>
-                    <span className="studio-sit__pattern">
-                      {pattern ? pattern.title : "No pattern matched"}
-                      {stateLabel(state) ? (
-                        <em>{stateLabel(state)}</em>
-                      ) : null}
-                    </span>
-                  </button>
-                );
-              })}
+      {groups.map((group) =>
+        group.items.length === 0 ? null : (
+          <section key={group.label} className="osh-group">
+            <div
+              className="osh-group-head"
+              style={{ "--c": group.color } as CSSProperties}
+            >
+              <h2>{group.label}</h2>
+              <span className="n">{group.items.length}</span>
+            </div>
+            <p className="osh-group-def">{group.definition}</p>
+
+            <div className="osh-faces">
+              {group.items.map((situation) => (
+                <SituationFace
+                  key={situation.id}
+                  situation={situation}
+                  scenario={scenario}
+                  index={index++}
+                  onOpen={onOpen}
+                />
+              ))}
             </div>
           </section>
         ),
@@ -261,8 +343,14 @@ function Record({ scenario }: { scenario: Scenario }) {
 
   return (
     <div className="studio-record">
-      <section>
-        <h3>Decided</h3>
+      <section className="osh-group">
+        <div
+          className="osh-group-head"
+          style={{ "--c": "var(--color-success)" } as CSSProperties}
+        >
+          <h2>Decided</h2>
+          <span className="n">{scenario.decisions.length}</span>
+        </div>
         {scenario.decisions.length === 0 ? (
           <p className="studio-muted">
             Nothing decided yet. Every decision here arrives from an option you
@@ -302,8 +390,14 @@ function Record({ scenario }: { scenario: Scenario }) {
         )}
       </section>
 
-      <section>
-        <h3>Does not carry across</h3>
+      <section className="osh-group">
+        <div
+          className="osh-group-head"
+          style={{ "--c": "var(--color-warning)" } as CSSProperties}
+        >
+          <h2>Does not carry across</h2>
+          <span className="n">{gaps.length}</span>
+        </div>
         {gaps.length === 0 ? (
           <p className="studio-muted">
             Nothing to check yet. This fills in once a situation whose elements
@@ -340,8 +434,14 @@ function Record({ scenario }: { scenario: Scenario }) {
         )}
       </section>
 
-      <section>
-        <h3>Still open</h3>
+      <section className="osh-group">
+        <div
+          className="osh-group-head"
+          style={{ "--c": "var(--color-border-medium)" } as CSSProperties}
+        >
+          <h2>Still open</h2>
+          <span className="n">{open.length}</span>
+        </div>
         {open.length === 0 ? (
           <p className="studio-muted">Every situation has been answered.</p>
         ) : (
@@ -444,19 +544,30 @@ function PatternBody({
           </div>
         )}
 
-        {shapeability === "annotated" && Component ? (
-          <PatternEmbed
-            Component={Component}
-            elements={elements}
-            removedElementIds={removed}
-          />
-        ) : null}
-
-        {shapeability === "editable" && Component ? (
-          <div className="studio-live">
-            <Component
-              live={resolveLivePreview(pattern.slug, { workspace: draft })}
-            />
+        {/* Framed the way a gallery card is framed, in the pattern's own
+            category colour. The component inside is untouched: the frame is a
+            wrapper, never padding on the annotated embed, whose overlay is
+            measured against the component's own box. */}
+        {Component ? (
+          <div
+            className="studio-frame"
+            style={
+              {
+                "--c": PATTERN_CATEGORY_COLOR[pattern.category],
+              } as CSSProperties
+            }
+          >
+            {shapeability === "annotated" ? (
+              <PatternEmbed
+                Component={Component}
+                elements={elements}
+                removedElementIds={removed}
+              />
+            ) : (
+              <Component
+                live={resolveLivePreview(pattern.slug, { workspace: draft })}
+              />
+            )}
           </div>
         ) : null}
 
