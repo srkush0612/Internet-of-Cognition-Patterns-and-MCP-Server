@@ -217,14 +217,14 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
       const openScenario = scenarioRef.current;
       if (!situation || !pattern || !openScenario) return;
 
-      const { text, cites } = explainPattern({
+      const explanation = explainPattern({
         situation,
         pattern,
         shapeability: shapeabilityOfSituation(situation),
         tensions: activeTensionsFor(situation, openScenario),
       });
 
-      say([{ id: newId(), from: "agent", kind: "answer", text, cites }]);
+      say([{ id: newId(), from: "agent", kind: "explanation", explanation }]);
     },
     [newId, say],
   );

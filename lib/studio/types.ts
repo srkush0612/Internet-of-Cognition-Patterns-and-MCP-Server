@@ -249,6 +249,8 @@ export type AgentScript = {
   questions: AgentScriptQuestion[];
 };
 
+import type { PatternExplanation } from "@/lib/studio/agent";
+
 /** One turn in the thread. */
 export type ThreadMessage =
   | { id: string; from: "person"; text: string }
@@ -269,7 +271,14 @@ export type ThreadMessage =
       /** Index of the option taken; undefined until the person picks. */
       taken?: number;
     }
-  | { id: string; from: "agent"; kind: "confirmation"; text: string };
+  | { id: string; from: "agent"; kind: "confirmation"; text: string }
+  /** Why a pattern is the match, in parts rather than one paragraph. */
+  | {
+      id: string;
+      from: "agent";
+      kind: "explanation";
+      explanation: PatternExplanation;
+    };
 
 /**
  * How much of a situation Studio can actually offer, worked out from the

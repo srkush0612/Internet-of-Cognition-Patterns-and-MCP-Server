@@ -75,3 +75,14 @@ export function getElement(id: string): PatternElement | undefined {
 export function getEntity(id: string): Entity | undefined {
   return entities.find((e) => e.id === id);
 }
+
+/**
+ * A situation's `answers` field is a fragment, authored to complete the stem
+ * "what this answers". Dropped into a sentence it reads as broken copy:
+ * "Shaping it answers make it clear who is working and on what". This is the
+ * only place that turns it into a sentence, so there is one thing to fix if the
+ * wording of the field ever changes.
+ */
+export function answersSentence(situation: Situation): string {
+  return `Situation ${situation.number} has to ${situation.answers}.`;
+}

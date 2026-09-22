@@ -29,6 +29,7 @@ import {
 import { isPatternReady } from "@/lib/pattern-ready";
 import { resolveLivePreview } from "@/lib/pattern-live-preview";
 import {
+  answersSentence,
   elementsForPattern,
   entities,
   patternElements,
@@ -437,8 +438,10 @@ function Record({ scenario }: { scenario: Scenario }) {
               <li key={situation.id}>
                 <b>
                   {situation.number} {situation.title}
-                </b>{" "}
-                {situation.answers}
+                </b>
+                {/* The `answers` fragment gets a stem rather than being run
+                    into the title, which read as broken copy. */}
+                <span>{answersSentence(situation)}</span>
               </li>
             ))}
           </ul>

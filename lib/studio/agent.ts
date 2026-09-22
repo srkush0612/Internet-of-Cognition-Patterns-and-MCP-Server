@@ -1,5 +1,10 @@
 import agentScriptJson from "@/content/studio/agent-script.json";
-import { situations, visibleSituations } from "@/lib/studio/content";
+import { anonymizeParticipants } from "@/lib/evidence-privacy";
+import {
+  answersSentence,
+  situations,
+  visibleSituations,
+} from "@/lib/studio/content";
 import type { Pattern } from "@/lib/patterns";
 import type {
   AgentProposal,
@@ -194,16 +199,38 @@ export function refusalForElement(
 
 
 /**
- * What the agent says when a situation opens: why this pattern is the answer
- * to it.
+ * What the agent says when a situation opens, in four parts rather than one
+ * paragraph. Six kinds of claim used to be flattened into a single block in a
+ * single voice, which made the caveats read like trivia when they are the most
+ * important thing in it.
  *
- * Every clause is a field someone authored, and the closing line says which
- * of them is not research. Nothing here characterises a pattern in words of
- * its own: the summary is the library's `oneliner`, the strength and the
- * participant count are the library's, whether the parts are shapeable comes
- * from whether an interaction model was published, and the tension comes from
- * the situation's own content with a citation on it.
+ *   verdict     the match, one line, with the library's own backing chip
+ *   why         one sentence, what this situation has to answer
+ *   whatItDoes  reference, closed by default, because it is already on the
+ *               pattern page and is not the argument
+ *   caveats     one short line each, last, styled apart from the claims
+ *
+ * Every part is a field someone authored. Participant names never appear:
+ * anonymizeParticipants gives the count, in the form the pattern pages use.
  */
+export type PatternExplanation = {
+  patternSlug: string;
+  verdict: string;
+  why: string;
+  whatItDoes: string;
+  /** Anonymised count, or null where the library records none. */
+  participants: string | null;
+  caveats: string[];
+  cites: string;
+};
+
+/** At most two sentences, cut on a sentence boundary and never mid-clause. */
+function firstTwoSentences(text: string): string {
+  const sentences = text.match(/[^.!?]+[.!?]+(\s|$)/g);
+  if (!sentences || sentences.length <= 2) return text.trim();
+  return sentences.slice(0, 2).join("").trim();
+}
+
 export function explainPattern({
   situation,
   pattern,
@@ -214,32 +241,44 @@ export function explainPattern({
   pattern: Pattern;
   shapeability: Shapeability;
   tensions: SituationTension[];
-}): { text: string; cites: string } {
-  const strength = pattern.backingStrength ?? "not rated";
-  const participants = pattern.participants
-    ? `, from ${pattern.participants}`
-    : "";
+}): PatternExplanation {
+  const caveats: string[] = [];
 
-  const shapeLine =
-    shapeability === "matched_only"
-      ? "There is nothing to shape here yet: no element detail has been published for it, so you can read the pattern but not fill it in."
-      : pattern.interactionModel
-        ? "Its published interaction model names the parts it needs, which is what you can fill in on the right."
-        : "Its parts come from the edit schema in the codebase rather than from a published interaction model, which is a weaker source than I would like.";
+  if (shapeability === "matched_only") {
+    caveats.push(
+      "No element detail has been published for it, so there is nothing to shape here yet.",
+    );
+  } else if (!pattern.interactionModel) {
+    caveats.push(
+      "Its elements come from the edit schema in the codebase, not from a published interaction model.",
+    );
+  }
 
-  const tensionLine = tensions.length
-    ? ` One thing to watch, given your answers: it ${tensions
-        .map((tension) => tension.label)
-        .join(", and it ")}.`
-    : "";
+  for (const tension of tensions) {
+    caveats.push(`Given your answers, it ${tension.label}.`);
+  }
 
-  const text = `${pattern.title} is the match for ${situation.number}, which is about ${situation.moment}. ${pattern.oneliner} Shaping it answers ${situation.answers}. The library rates the support for it ${strength.toLowerCase()}${participants}. ${shapeLine}${tensionLine} Worth knowing: the match itself is from the seeded situation list, not from research.`;
+  caveats.push(
+    "The match itself comes from the seeded situation list, not research.",
+  );
 
   const cites = [
-    `${pattern.slug}.oneliner, .backingStrength, .participants${pattern.interactionModel ? ", .interactionModel" : ""}`,
+    `${pattern.slug}.oneliner, .backingStrength, .participants${
+      pattern.interactionModel ? ", .interactionModel" : ""
+    }`,
     `content/studio/situations.json: ${situation.id} (unverified placeholder)`,
     ...tensions.map((tension) => tension.cites),
   ].join(" · ");
 
-  return { text, cites };
+  return {
+    patternSlug: pattern.slug,
+    verdict: `${pattern.title} is the match for situation ${situation.number}.`,
+    why: answersSentence(situation),
+    whatItDoes: firstTwoSentences(pattern.oneliner),
+    participants: pattern.participants
+      ? anonymizeParticipants(pattern.participants)
+      : null,
+    caveats,
+    cites,
+  };
 }

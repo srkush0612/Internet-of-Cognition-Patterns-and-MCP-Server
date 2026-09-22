@@ -9,7 +9,12 @@ import {
   suggestionsFor,
   usableQuestions,
 } from "@/lib/studio/agent";
-import { situations, visibleSituations } from "@/lib/studio/content";
+import {
+  answersSentence,
+  situations,
+  visibleSituations,
+} from "@/lib/studio/content";
+import { anonymizeParticipants } from "@/lib/evidence-privacy";
 import { getPattern } from "@/lib/patterns";
 import { shapeabilityOf } from "@/lib/studio/shapeability";
 import type { AntiPattern, PatternElement, Shapeability } from "@/lib/studio/types";
@@ -229,63 +234,102 @@ describe("the script itself", () => {
 
 describe("explainPattern", () => {
   const situation = visibleSituations[0];
-  const pattern = getPattern(situation.patternIds[0]);
+  const pattern = getPattern(situation.patternIds[0])!;
 
-  it("says why the pattern is the match, from the library's own fields", () => {
-    const { text } = explainPattern({
-      situation,
-      pattern: pattern!,
-      shapeability: shapeabilityOf(pattern!.slug, true),
-      tensions: [],
-    });
-    expect(text).toContain(pattern!.title);
-    expect(text).toContain(pattern!.oneliner);
-    expect(text).toContain(situation.number);
-    expect(text).toContain(situation.answers);
+  const explain = (
+    shapeability: Shapeability = "editable",
+    tensions: { label: string; cites: string }[] = [],
+  ) => explainPattern({ situation, pattern, shapeability, tensions });
+
+  it("states the match in one line", () => {
+    const { verdict } = explain();
+    expect(verdict).toBe(
+      `${pattern.title} is the match for situation ${situation.number}.`,
+    );
+    expect(verdict.split(". ").length).toBe(1);
   });
 
-  it("says outright that the match itself is seeded, not researched", () => {
-    const { text } = explainPattern({
-      situation,
-      pattern: pattern!,
-      shapeability: "editable",
-      tensions: [],
-    });
-    expect(text).toContain("not from research");
+  it("gives one sentence for why, and does not run the fragment into it", () => {
+    const { why } = explain();
+    expect(why).toBe(answersSentence(situation));
+    expect(why).not.toContain("answers make");
+    expect(why.match(/[.!?]/g)?.length).toBe(1);
   });
 
-  it("cites the fields it used", () => {
-    const { cites } = explainPattern({
-      situation,
-      pattern: pattern!,
-      shapeability: "editable",
-      tensions: [],
-    });
-    expect(cites).toContain(pattern!.slug);
-    expect(cites).toContain(situation.id);
+  it("keeps what-it-does to two sentences at most", () => {
+    const { whatItDoes } = explain();
+    expect(whatItDoes.match(/[^.!?]+[.!?]+/g)?.length ?? 1).toBeLessThanOrEqual(
+      2,
+    );
   });
 
-  it("carries a tension through with its own citation", () => {
-    const { text, cites } = explainPattern({
-      situation,
-      pattern: pattern!,
-      shapeability: "editable",
-      tensions: [
-        { label: "waits for a person", cites: "some.interactionModel" },
-      ],
-    });
-    expect(text).toContain("waits for a person");
-    expect(cites).toContain("some.interactionModel");
+  it("never puts a participant's name in the message", () => {
+    const { verdict, why, whatItDoes, caveats, participants } = explain();
+    const shown = [verdict, why, whatItDoes, ...caveats, participants ?? ""].join(
+      " ",
+    );
+    for (const name of pattern.participants?.split(",") ?? []) {
+      const bare = name.trim().split(" ")[0];
+      if (!bare) continue;
+      expect(shown, `leaked ${bare}`).not.toContain(bare);
+    }
+  });
+
+  it("shows the participant count the way the pattern pages do", () => {
+    expect(explain().participants).toBe(
+      pattern.participants ? anonymizeParticipants(pattern.participants) : null,
+    );
+  });
+
+  it("puts the caveat about the match last, always", () => {
+    for (const shapeability of [
+      "editable",
+      "annotated",
+      "matched_only",
+    ] as Shapeability[]) {
+      const { caveats } = explain(shapeability);
+      expect(caveats[caveats.length - 1]).toContain("not research");
+    }
+  });
+
+  it("says where the elements came from when it is not a published model", () => {
+    const { caveats } = explain("editable");
+    const expected = !pattern.interactionModel;
+    expect(
+      caveats.some((caveat) => caveat.includes("edit schema in the codebase")),
+    ).toBe(expected);
   });
 
   it("says there is nothing to shape when there is not", () => {
-    const { text } = explainPattern({
-      situation,
-      pattern: pattern!,
-      shapeability: "matched_only",
-      tensions: [],
-    });
-    expect(text).toContain("nothing to shape here yet");
+    expect(
+      explain("matched_only").caveats.some((caveat) =>
+        caveat.includes("nothing to shape here yet"),
+      ),
+    ).toBe(true);
+  });
+
+  it("carries a tension into the caveats with its own citation", () => {
+    const { caveats, cites } = explain("editable", [
+      { label: "waits for a person", cites: "some.interactionModel" },
+    ]);
+    expect(caveats.some((caveat) => caveat.includes("waits for a person"))).toBe(
+      true,
+    );
+    expect(cites).toContain("some.interactionModel");
+  });
+
+  it("keeps every caveat to one short line", () => {
+    for (const caveat of explain("matched_only", [
+      { label: "waits for a person", cites: "x" },
+    ]).caveats) {
+      expect(caveat.match(/[.!?]/g)?.length, caveat).toBe(1);
+    }
+  });
+
+  it("cites the fields it used", () => {
+    const { cites } = explain();
+    expect(cites).toContain(pattern.slug);
+    expect(cites).toContain(situation.id);
   });
 });
 

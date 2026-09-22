@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChatMessage } from "@/components/chat/ChatMessage";
+import { BackingSignal } from "@/components/PatternTaxonomy";
+import { getPattern } from "@/lib/patterns";
+import type { PatternExplanation } from "@/lib/studio/agent";
 import { suggestionsFor } from "@/lib/studio/agent";
 import {
   ATTENDANCE_LABEL,
@@ -152,6 +155,14 @@ function Message({
     );
   }
 
+  if (message.kind === "explanation") {
+    return (
+      <ChatMessage role="assistant">
+        <Explanation explanation={message.explanation} />
+      </ChatMessage>
+    );
+  }
+
   if (message.kind === "answer") {
     return (
       <ChatMessage role="assistant">
@@ -179,6 +190,50 @@ function Message({
         onChoose={(index, reason) => onChoose(message.id, index, reason)}
       />
     </ChatMessage>
+  );
+}
+
+/**
+ * Four parts, in order, each one kind of claim. The caveats are last and do not
+ * share a surface with the claims above them, because they qualify all of it.
+ */
+function Explanation({ explanation }: { explanation: PatternExplanation }) {
+  const pattern = getPattern(explanation.patternSlug);
+
+  return (
+    <div className="studio-expl">
+      <p className="studio-expl__verdict">
+        <b>{explanation.verdict}</b>
+        {pattern ? (
+          <span className="studio-expl__backing">
+            <BackingSignal pattern={pattern} />
+            {explanation.participants ? (
+              <span className="studio-expl__count">
+                {explanation.participants}
+              </span>
+            ) : null}
+          </span>
+        ) : null}
+      </p>
+
+      <p className="studio-expl__why">{explanation.why}</p>
+
+      <details className="studio-expl__more">
+        <summary>What it does</summary>
+        <p>{explanation.whatItDoes}</p>
+      </details>
+
+      <div className="studio-expl__caveats">
+        <p className="studio-expl__kind">Worth knowing</p>
+        <ul>
+          {explanation.caveats.map((caveat) => (
+            <li key={caveat}>{caveat}</li>
+          ))}
+        </ul>
+      </div>
+
+      <Cite text={explanation.cites} />
+    </div>
   );
 }
 
