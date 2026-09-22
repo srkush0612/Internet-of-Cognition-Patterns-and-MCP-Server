@@ -11,12 +11,30 @@ Types for every file live in `lib/studio/types.ts`.
 
 | File | Status |
 | --- | --- |
-| `situations.json` | **Unverified.** Titles, moments, ordering, the plain-language "what this answers" lines and the situation-to-pattern mapping were written during design exploration. They are seeded so the tool runs. They are not research. |
+| `situations.json` | **Unverified.** Titles, moments, ordering, the plain-language "what this answers" lines, the `reason` for each pairing and the situation-to-pattern mapping were all written during design exploration. They are seeded so the tool runs. They are not research. |
 | `agent-script.json` | **Unverified**, and marked so in the file itself. The questions, the answers and the option labels are placeholder copy. Every claim that leans on the library carries a `cites` field naming the field it came from, so it can be checked. One answer is `computed` rather than authored: the coverage answer is generated from the library at render time and cannot drift from it. |
 | `pattern-elements.json` | **Grounded**, for `signal-to-intent-handshake` only. Its six elements come from that pattern's published `interactionModel` and its `evidence` line quotes the sentence each was derived from. `domMatchText` values are the exact strings its live component renders. |
 | `anti-patterns.json` | One entry, `status: "proposed"`. "Rubber-stamp checkpoint" is a name coined during design exploration. The library has no anti-pattern vocabulary, so the UI says the name is proposed wherever it shows it. |
 | `entities.json` | One entity, **grounded in structure but not in research**: the interpretation written into situation 02 is declared to matter again in 06 and 08. Those two situations have no element that carries it, so the record reports it as a continuity gap. That gap is the honest current state, not a bug. |
 | `sample-scenario.json` | **Partially grounded.** The premise and the intake answers are placeholder. The single decision on it uses real element ids and a real accepted-gap reason. |
+
+## `reason` is hardcoded for the demo
+
+Each situation carries a `reason`, which is what the overview row answers with
+under "Why this pattern for this situation?" and what the agent says as its one
+line of why. These were written for the demo at the owner's instruction, and
+they are placeholders: recognisable, not researched. The agent is to produce
+this text later, at which point the field becomes its output.
+
+Two things keep that honest in the meantime. The agent's caveats say the match
+and its reason are both seeded rather than researched, and `whyThisPattern()`
+in `lib/studio/agent.ts` still falls back, in order, to the pattern's own
+`whatItSolves` from the library and then to a line saying nothing is on record,
+so deleting a `reason` shows the gap rather than a blank.
+
+Three patterns have no `whatItSolves` of their own and so nothing to fall back
+to: Presence Boundary, Certainty Boundary and Convergence Point. Writing that
+field is library work.
 
 ## The situation list is a placeholder, and the shape of it is a finding
 

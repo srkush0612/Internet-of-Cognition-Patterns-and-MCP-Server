@@ -232,6 +232,30 @@ function firstSentences(text: string, limit: number): string {
 }
 
 /**
+ * Why this pattern answers this situation, with the source named.
+ *
+ *   "seeded"   the situation's own `reason`, hardcoded for the demo. The
+ *              agent is to write this later.
+ *   "library"  no reason is seeded, so the pattern's own `whatItSolves`, the
+ *              field that states the problem it answers.
+ *   "none"     neither exists, and the line says that rather than being given
+ *              a rationale.
+ */
+export function whyThisPattern(
+  situation: Situation,
+  pattern: Pattern,
+): { text: string; source: "seeded" | "library" | "none" } {
+  if (situation.reason) {
+    return { text: situation.reason, source: "seeded" };
+  }
+  const problem = patternProblem(pattern, 2);
+  return {
+    text: problem.text,
+    source: problem.sourced ? "library" : "none",
+  };
+}
+
+/**
  * Why a pattern is worth reaching for, in the library's own words: its
  * `whatItSolves`, which is the field that states the problem it answers.
  *
@@ -264,10 +288,10 @@ export function explainPattern({
   shapeability: Shapeability;
   tensions: SituationTension[];
 }): PatternExplanation {
-  const problem = patternProblem(pattern, 2);
+  const why = whyThisPattern(situation, pattern);
   const caveats: string[] = [];
 
-  if (!problem.sourced) {
+  if (why.source === "none") {
     caveats.push(
       `Nothing in the library states what ${pattern.title} solves, so the fit is asserted rather than argued.`,
     );
@@ -288,21 +312,25 @@ export function explainPattern({
   }
 
   caveats.push(
-    "The match itself comes from the seeded situation list, not research.",
+    why.source === "seeded"
+      ? "The match and the reason for it are both seeded for the demo, not research."
+      : "The match itself comes from the seeded situation list, not research.",
   );
 
   const cites = [
     `${pattern.slug}.oneliner, .backingStrength, .participants${
-      problem.sourced ? ", .whatItSolves" : ""
+      why.source === "library" ? ", .whatItSolves" : ""
     }${pattern.interactionModel ? ", .interactionModel" : ""}`,
-    `content/studio/situations.json: ${situation.id} (unverified placeholder)`,
+    `content/studio/situations.json: ${situation.id}${
+      why.source === "seeded" ? ".reason, seeded for the demo" : ""
+    } (unverified placeholder)`,
     ...tensions.map((tension) => tension.cites),
   ].join(" · ");
 
   return {
     patternSlug: pattern.slug,
     verdict: `${pattern.title} is the match for situation ${displayNumber(situation)}.`,
-    why: problem.text,
+    why: why.text,
     whatItDoes: firstSentences(pattern.oneliner, 2),
     participants: pattern.participants
       ? anonymizeParticipants(pattern.participants)

@@ -7,7 +7,10 @@
     "moment": "03:08, telemetry fires and nobody is awake",
     "answers": "make it clear who is working and on what, before anyone has to ask",
     "example": "Telemetry, triage, and deploy agents all start working the same page overnight. The engineer needs to see who is doing what without waking up.",
-    "patternIds": ["presence-boundary"]
+    "patternIds": [
+      "presence-boundary"
+    ],
+    "reason": "Three agents are working the same page at once and the engineer is asleep. This is the pattern that puts each agent's state and the scope it can touch on one surface, so who is doing what can be read at a glance instead of reconstructed."
   },
   {
     "id": "triage-proposes-before-touching",
@@ -17,14 +20,19 @@
     "moment": "03:11, it wants to pause the retry job and scale replicas",
     "answers": "the agent says what it saw, what it thinks it means and what it plans to do, then waits",
     "example": "Triage thinks it is a retry storm and wants to pause the retry job and scale payments replicas. Nothing happens until someone responds.",
-    "patternIds": ["signal-to-intent-handshake"],
+    "patternIds": [
+      "signal-to-intent-handshake"
+    ],
     "tensions": [
       {
-        "attendances": ["unattended"],
+        "attendances": [
+          "unattended"
+        ],
         "label": "waits for a person, and yours finds out afterwards",
         "cites": "signal-to-intent-handshake.interactionModel: 'Nothing irreversible happens until you respond.'"
       }
-    ]
+    ],
+    "reason": "Triage wants to act on a reading nobody has checked. This is the pattern that makes it state what it saw, what it thinks that means and what it plans to do, and hold there until a person answers."
   },
   {
     "id": "triage-unsure-retry-loop",
@@ -34,7 +42,10 @@
     "moment": "03:12, medium confidence on a root cause",
     "answers": "the agent shows how sure it is, so nobody treats a guess as a fact",
     "example": "The signal could be a genuine capacity problem or a retry storm. Triage is inferring, not reading a deterministic signal.",
-    "patternIds": ["certainty-boundary"]
+    "patternIds": [
+      "certainty-boundary"
+    ],
+    "reason": "Triage is inferring a root cause, not reading a deterministic signal. This is the pattern that separates what the agent knows from what it is guessing, so a medium-confidence theory does not travel on as a fact."
   },
   {
     "id": "deploy-wants-to-scale-replicas",
@@ -44,7 +55,10 @@
     "moment": "03:13, inside its granted area or outside it",
     "answers": "set what each agent may do on its own, area by area",
     "example": "Deploy can act alone on some changes and needs sign-off on others. Scaling payments replicas at 3am is which kind?",
-    "patternIds": ["authority-gradient"]
+    "patternIds": [
+      "authority-gradient"
+    ],
+    "reason": "Some of what deploy does is routine and some of it is not, and one on-off switch cannot tell them apart. This is the pattern that sets the level per area, so scaling replicas can need sign-off while the routine work never wakes anyone."
   },
   {
     "id": "telemetry-triage-differ",
@@ -54,7 +68,10 @@
     "moment": "03:20, a retry storm or a capacity shortfall",
     "answers": "when two agents disagree, show how the answer was reached, not just the answer",
     "example": "Telemetry sees a capacity ceiling. Triage sees a retry storm. Same metrics, opposite read.",
-    "patternIds": ["convergence-point"]
+    "patternIds": [
+      "convergence-point"
+    ],
+    "reason": "Two agents reached opposite conclusions from the same metrics, and only one of them can be acted on. This is the pattern that shows how the adopted answer was reached and what was left unsettled, rather than publishing the winner on its own."
   },
   {
     "id": "root-cause-changes-0340",
@@ -64,7 +81,10 @@
     "moment": "03:40, it was capacity after all",
     "answers": "when the agent changes its mind, the person decides what happens to what was already done",
     "example": "The retry-storm theory was operative for two hours before triage revises it. Everything decided on the old belief is now stale.",
-    "patternIds": ["memory-commitment-review"]
+    "patternIds": [
+      "memory-commitment-review"
+    ],
+    "reason": "Two hours of work was done on a reading that turned out to be wrong. This is the pattern that keeps the superseded belief next to the one that displaced it and makes a person decide what survives into memory."
   },
   {
     "id": "engineer-returns-0700",
@@ -74,7 +94,10 @@
     "moment": "07:00, four hours of work to reconstruct",
     "answers": "a record of what happened while you were away that you can catch up from",
     "example": "Three agents worked the incident all night. The engineer needs the story, not the raw log.",
-    "patternIds": ["background-work-ledger"]
+    "patternIds": [
+      "background-work-ledger"
+    ],
+    "reason": "Hours of agent work happened with nobody watching, and a raw log is not a story. This is the pattern that reconstructs the session as one timeline and separates what the agents assumed from what they actually did."
   },
   {
     "id": "why-did-it-rollback-postmortem",
@@ -84,7 +107,10 @@
     "moment": "three days later, with the reasoning gone",
     "answers": "the agent says why it chose an action at the moment it commits",
     "example": "Days later, someone needs to know why deploy rolled back build 812, not just that it did.",
-    "patternIds": ["decision-ledger"]
+    "patternIds": [
+      "decision-ledger"
+    ],
+    "reason": "The reasoning behind a rollback decays within days, and the postmortem comes later than that. This is the pattern that captures the reason at the moment the action commits, so nobody has to reconstruct it from artifacts afterwards."
   },
   {
     "id": "forty-actions-one-summary",
@@ -94,6 +120,9 @@
     "moment": "07:02, forty actions and one summary to read",
     "answers": "a short surface, with the detail one level down",
     "example": "By morning the three agents have taken something like forty actions between them. Nobody is reading all forty.",
-    "patternIds": ["deferred-detail"]
+    "patternIds": [
+      "deferred-detail"
+    ],
+    "reason": "Forty actions is too much to read and a single summary is too little to trust. This is the pattern that shows the short surface with a count of what it is holding back, so the detail is one level down rather than gone."
   }
 ]

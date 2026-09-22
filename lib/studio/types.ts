@@ -75,6 +75,16 @@ export type Situation = {
   moment: string;
   /** Plain language: what shaping this situation answers. */
   answers: string;
+  /**
+   * Why this pattern answers this situation, for the "Why X for this
+   * situation?" line.
+   *
+   * Hardcoded for the demo at the owner's instruction, and a placeholder like
+   * everything else in this file: it is written to be recognisable, not
+   * researched. The agent is to produce this later, at which point the field
+   * becomes its output and the fallback below stops being reached.
+   */
+  reason?: string;
   example: string;
   patternIds: string[];
   riskRule?: RiskRule;

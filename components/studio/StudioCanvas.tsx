@@ -38,7 +38,7 @@ import {
   visibleSituations,
 } from "@/lib/studio/content";
 import { findContinuityGaps } from "@/lib/studio/continuity";
-import { patternProblem } from "@/lib/studio/agent";
+import { whyThisPattern } from "@/lib/studio/agent";
 import { missingDetailReason, shapeabilityOf } from "@/lib/studio/shapeability";
 import type { CSSProperties } from "react";
 import type {
@@ -225,7 +225,7 @@ function SituationRow({
   const pattern = getPattern(situation.patternIds[0] ?? "");
   const state = situationState(situation, scenario);
   const detailComing = shapeabilityOfSituation(situation) === "matched_only";
-  const problem = pattern ? patternProblem(pattern) : null;
+  const why = pattern ? whyThisPattern(situation, pattern) : null;
 
   return (
     <button
@@ -273,10 +273,10 @@ function SituationRow({
           </span>
           <span
             className="studio-row__reason"
-            data-unsourced={pattern ? !problem?.sourced : true}
+            data-unsourced={why ? why.source === "none" : true}
           >
-            {pattern
-              ? problem?.text
+            {why
+              ? why.text
               : "No pattern in the library has been mapped to it yet."}
           </span>
           <span className="studio-row__answers">

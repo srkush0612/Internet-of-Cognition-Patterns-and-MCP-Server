@@ -7,6 +7,7 @@ import {
   openingLine,
   patternProblem,
   refusalForElement,
+  whyThisPattern,
   suggestionsFor,
   usableQuestions,
 } from "@/lib/studio/agent";
@@ -253,9 +254,9 @@ describe("explainPattern", () => {
     expect(verdict.split(". ").length).toBe(1);
   });
 
-  it("takes the why from the library, and never builds it from a fragment", () => {
+  it("takes the why from the content, and never builds it from a fragment", () => {
     const { why } = explain();
-    expect(why).toBe(patternProblem(pattern, 2).text);
+    expect(why).toBe(whyThisPattern(situation, pattern).text);
     // The shipped bug: a fragment run into a stem.
     expect(why).not.toContain("has to when");
     expect(why).not.toContain("has to the agent");
@@ -400,19 +401,61 @@ describe("patternProblem", () => {
     expect(text).toContain("has not written up");
   });
 
-  it("adds a caveat when the fit is asserted rather than argued", () => {
-    const situation = visibleSituations.find(
-      (candidate) => candidate.patternIds[0] === "convergence-point",
-    )!;
-    const { caveats, why } = explainPattern({
-      situation,
-      pattern: getPattern("convergence-point")!,
+  it("says both the match and its reason are seeded, when they are", () => {
+    const seeded = visibleSituations.find((candidate) => candidate.reason)!;
+    const { caveats } = explainPattern({
+      situation: seeded,
+      pattern: getPattern(seeded.patternIds[0])!,
       shapeability: "editable",
       tensions: [],
     });
-    expect(why).toContain("has not written up");
-    expect(
-      caveats.some((caveat) => caveat.includes("asserted rather than argued")),
-    ).toBe(true);
+    expect(caveats[caveats.length - 1]).toContain(
+      "both seeded for the demo, not research",
+    );
+  });
+
+  it("falls back to the library, then to saying nothing is on record", () => {
+    const bare = visibleSituations.find(
+      (candidate) => candidate.patternIds[0] === "convergence-point",
+    )!;
+    // Convergence Point has no whatItSolves, so with no seeded reason the
+    // line has to say that rather than compose one.
+    const { text, source } = whyThisPattern(
+      { ...bare, reason: undefined },
+      getPattern("convergence-point")!,
+    );
+    expect(source).toBe("none");
+    expect(text).toContain("has not written up");
+
+    const { text: fromLibrary, source: librarySource } = whyThisPattern(
+      { ...bare, reason: undefined },
+      getPattern("decision-ledger")!,
+    );
+    expect(librarySource).toBe("library");
+    expect(getPattern("decision-ledger")!.whatItSolves).toContain(
+      fromLibrary.replace(/\.$/, ""),
+    );
+  });
+});
+
+describe("the seeded reasons", () => {
+  it("gives every situation a reason, so flipping the filter finds none missing", () => {
+    for (const situation of situations) {
+      expect(situation.reason, situation.id).toBeTruthy();
+    }
+  });
+
+  it("answers the question the row asks, in at most two sentences", () => {
+    for (const situation of situations) {
+      const reason = situation.reason!;
+      expect(reason.match(/[^.!?]+[.!?]/g)?.length, situation.id).toBeLessThanOrEqual(2);
+      expect(reason, situation.id).not.toMatch(/[—–]/);
+    }
+  });
+
+  it("names what the pattern does rather than restating the situation title", () => {
+    for (const situation of situations) {
+      expect(situation.reason, situation.id).toContain("This is the pattern that");
+    }
   });
 });
