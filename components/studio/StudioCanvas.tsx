@@ -204,12 +204,19 @@ function Bar({
 }
 
 /**
- * The same faces the gallery uses, carrying the same category colour, corner
- * bloom, hover crossfade and evidence bars. A situation and the pattern that
- * answers it are the same object in both places, so they look the same in
- * both places. What changes is what the card is about: here the heading is the
- * situation, the pattern is in the foot, and the crossfade reveals what
- * shaping it answers.
+ * A situation card, not a pattern card.
+ *
+ * It borrows the gallery's surface, because a pattern should look the same
+ * wherever it appears, but it carries a situation's information rather than a
+ * pattern's: which situation this is, what happens in it, what shaping it
+ * answers, which pattern answers it, and how far you have got. No category,
+ * because the category is a way of grouping patterns and this card is not
+ * about grouping patterns.
+ *
+ * The tint still comes from the pattern's category, which is what keeps the
+ * same pattern looking the same here and in the gallery. The pattern's name
+ * sits in that colour in the foot, so the colour is accounted for on the card
+ * rather than coding something the card never mentions.
  */
 function SituationFace({
   situation,
@@ -238,23 +245,16 @@ function SituationFace({
       onClick={() => onOpen(situation.id)}
     >
       <div className="osh-face-top">
-        {pattern ? (
-          <CategoryLabel category={pattern.category} />
-        ) : (
-          <span className="osh-face-cat">Unmatched</span>
-        )}
+        <span className="studio-face__num">Situation {situation.number}</span>
         <span className="studio-face__right">
-          {pattern && !isPatternReady(pattern.slug) ? (
-            <span className="osh-soon">SOON</span>
+          {stateLabel(state) ? (
+            <span className="studio-face__state">{stateLabel(state)}</span>
           ) : null}
           <StateDot state={state} />
         </span>
       </div>
 
-      <h3>
-        <span className="studio-face__num">{situation.number}</span>
-        {situation.title}
-      </h3>
+      <h3>{situation.title}</h3>
 
       <div className="osh-face-swap">
         <p className="osh-face-one">{situation.moment}</p>

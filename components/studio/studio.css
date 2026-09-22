@@ -848,18 +848,24 @@
   cursor: pointer;
 }
 
-.studio-face h3 {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-}
-
+/* The eyebrow slot says which situation this is, where a gallery card names a
+   category. Neutral and monospaced, so it reads as an index rather than a
+   label with meaning of its own. */
 .studio-face__num {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--color-text-faint);
   flex: none;
+}
+
+.studio-face__state {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--color-success-text);
+  white-space: nowrap;
 }
 
 .studio-face__right {
