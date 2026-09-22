@@ -1,8 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  SlidersHorizontal,
+} from "lucide-react";
 import { BackingSignal, CategoryLabel } from "@/components/PatternTaxonomy";
 import { PATTERN_STANDALONE } from "@/components/patterns/pattern-registry";
 import {
@@ -362,6 +368,7 @@ function PatternBody({
   persisted,
   decision,
   customising,
+  onOpenCustomise,
   onCloseCustomise,
   onDraftChange,
   onSave,
@@ -376,6 +383,7 @@ function PatternBody({
   persisted: Record<string, unknown>;
   decision: Decision | undefined;
   customising: boolean;
+  onOpenCustomise: () => void;
   onCloseCustomise: () => void;
   onDraftChange: (next: Record<string, unknown>) => void;
   onSave: (next: Record<string, unknown>) => Promise<void>;
@@ -414,6 +422,28 @@ function PatternBody({
   return (
     <>
       <div className="studio-stage">
+        {/* The control that opens the shaping panel belongs with the thing it
+            shapes, not up in the bar with identity and navigation. */}
+        {customising ? null : (
+          <div className="studio-stage__top">
+            <p>
+              {shapeability === "annotated"
+                ? "The elements this pattern requires are numbered on it."
+                : "Fill in your own case and this updates as you type."}
+            </p>
+            <button
+              type="button"
+              className="osh-cta-solid studio-customise"
+              aria-expanded={false}
+              aria-controls="studio-make-it-yours"
+              onClick={onOpenCustomise}
+            >
+              <SlidersHorizontal aria-hidden />
+              Customise
+            </button>
+          </div>
+        )}
+
         {shapeability === "annotated" && Component ? (
           <PatternEmbed
             Component={Component}
@@ -483,11 +513,6 @@ export function StudioCanvas({
   useEffect(() => {
     setCustomising(false);
   }, [openSituationId]);
-
-  // The panel opens beside the pattern, so there is nothing to scroll to.
-  const toggleCustomise = useCallback(() => {
-    setCustomising((open) => !open);
-  }, []);
 
   if (view.kind === "overview") {
     return (
@@ -603,19 +628,6 @@ export function StudioCanvas({
             ))}
           </>
         }
-        controls={
-          shapeability === "matched_only" ? null : (
-            <button
-              type="button"
-              className="osh-cta-solid studio-customise"
-              aria-expanded={customising}
-              aria-controls="studio-make-it-yours"
-              onClick={toggleCustomise}
-            >
-              {customising ? "Done customising" : "Customise"}
-            </button>
-          )
-        }
         onGo={onGo}
       />
 
@@ -656,6 +668,7 @@ export function StudioCanvas({
           persisted={scenario.workspaces?.[situation.id] ?? {}}
           decision={decision}
           customising={customising}
+          onOpenCustomise={() => setCustomising(true)}
           onCloseCustomise={() => setCustomising(false)}
           onDraftChange={(next) => onDraftChange(situation.id, next)}
           onSave={(next) => onSave(situation.id, next)}

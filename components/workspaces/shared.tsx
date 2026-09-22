@@ -23,7 +23,7 @@ const INPUT =
 
 const TEXTAREA = `${INPUT} min-h-[88px] resize-y`;
 
-const LABEL = "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink";
+const LABEL = "mb-1.5 block text-[0.8rem] font-semibold leading-snug text-ink";
 
 export const workspaceFieldInputClass = INPUT;
 export const workspaceFieldTextareaClass = TEXTAREA;
@@ -133,7 +133,7 @@ export function Section({
 }) {
   return (
     <section className={SECTION}>
-      <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-subtle">
+      <h3 className="mb-3 text-[0.625rem] font-bold uppercase tracking-[0.08em] text-faint">
         {title}
       </h3>
       {children}
