@@ -1,7 +1,6 @@
 import agentScriptJson from "@/content/studio/agent-script.json";
 import { anonymizeParticipants } from "@/lib/evidence-privacy";
 import {
-  answersSentence,
   displayNumber,
   situations,
   visibleSituations,
@@ -225,11 +224,33 @@ export type PatternExplanation = {
   cites: string;
 };
 
-/** At most two sentences, cut on a sentence boundary and never mid-clause. */
-function firstTwoSentences(text: string): string {
+/** At most N sentences, cut on a sentence boundary and never mid-clause. */
+function firstSentences(text: string, limit: number): string {
   const sentences = text.match(/[^.!?]+[.!?]+(\s|$)/g);
-  if (!sentences || sentences.length <= 2) return text.trim();
-  return sentences.slice(0, 2).join("").trim();
+  if (!sentences || sentences.length <= limit) return text.trim();
+  return sentences.slice(0, limit).join("").trim();
+}
+
+/**
+ * Why a pattern is worth reaching for, in the library's own words: its
+ * `whatItSolves`, which is the field that states the problem it answers.
+ *
+ * Three of the seventeen patterns have no `whatItSolves` written yet. Those
+ * return `sourced: false` and a line that says so, because the alternative is
+ * composing a rationale for a pattern match, which is the one thing this build
+ * must not do.
+ */
+export function patternProblem(
+  pattern: Pattern,
+  sentences = 1,
+): { text: string; sourced: boolean } {
+  if (!pattern.whatItSolves) {
+    return {
+      text: `The library has not written up what ${pattern.title} solves, so there is nothing on record here that says why it fits.`,
+      sourced: false,
+    };
+  }
+  return { text: firstSentences(pattern.whatItSolves, sentences), sourced: true };
 }
 
 export function explainPattern({
@@ -243,7 +264,14 @@ export function explainPattern({
   shapeability: Shapeability;
   tensions: SituationTension[];
 }): PatternExplanation {
+  const problem = patternProblem(pattern, 2);
   const caveats: string[] = [];
+
+  if (!problem.sourced) {
+    caveats.push(
+      `Nothing in the library states what ${pattern.title} solves, so the fit is asserted rather than argued.`,
+    );
+  }
 
   if (shapeability === "matched_only") {
     caveats.push(
@@ -265,8 +293,8 @@ export function explainPattern({
 
   const cites = [
     `${pattern.slug}.oneliner, .backingStrength, .participants${
-      pattern.interactionModel ? ", .interactionModel" : ""
-    }`,
+      problem.sourced ? ", .whatItSolves" : ""
+    }${pattern.interactionModel ? ", .interactionModel" : ""}`,
     `content/studio/situations.json: ${situation.id} (unverified placeholder)`,
     ...tensions.map((tension) => tension.cites),
   ].join(" · ");
@@ -274,8 +302,8 @@ export function explainPattern({
   return {
     patternSlug: pattern.slug,
     verdict: `${pattern.title} is the match for situation ${displayNumber(situation)}.`,
-    why: answersSentence(situation),
-    whatItDoes: firstTwoSentences(pattern.oneliner),
+    why: problem.text,
+    whatItDoes: firstSentences(pattern.oneliner, 2),
     participants: pattern.participants
       ? anonymizeParticipants(pattern.participants)
       : null,

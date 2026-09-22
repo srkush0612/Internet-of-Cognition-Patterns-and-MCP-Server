@@ -5,13 +5,13 @@ import {
   explainPattern,
   matchQuestion,
   openingLine,
+  patternProblem,
   refusalForElement,
   suggestionsFor,
   usableQuestions,
 } from "@/lib/studio/agent";
 import {
-  answersBecause,
-  answersSentence,
+  answersFragment,
   displayNumber,
   situations,
   visibleSituations,
@@ -253,11 +253,13 @@ describe("explainPattern", () => {
     expect(verdict.split(". ").length).toBe(1);
   });
 
-  it("gives one sentence for why, and does not run the fragment into it", () => {
+  it("takes the why from the library, and never builds it from a fragment", () => {
     const { why } = explain();
-    expect(why).toBe(answersSentence(situation));
-    expect(why).not.toContain("answers make");
-    expect(why.match(/[.!?]/g)?.length).toBe(1);
+    expect(why).toBe(patternProblem(pattern, 2).text);
+    // The shipped bug: a fragment run into a stem.
+    expect(why).not.toContain("has to when");
+    expect(why).not.toContain("has to the agent");
+    expect(why).not.toContain("has to a short");
   });
 
   it("keeps what-it-does to two sentences at most", () => {
@@ -358,26 +360,59 @@ describe("openingLine", () => {
 });
 
 describe("the answers fragment", () => {
-  const situation = visibleSituations[0];
-
-  it("never appears run into a sentence unlabelled", () => {
-    // The bug this guards: "Shaping it answers make it clear who is working".
-    expect(answersSentence(situation)).not.toContain("answers make");
-    expect(answersBecause(situation)).not.toContain("answers make");
-  });
-
-  it("gives a statement form and an answer form of the same clause", () => {
-    expect(answersSentence(situation)).toBe(
-      `Situation ${displayNumber(situation)} has to ${situation.answers}.`,
-    );
-    expect(answersBecause(situation)).toBe(
-      `Because situation ${displayNumber(situation)} has to ${situation.answers}.`,
-    );
-  });
-
-  it("numbers both forms the way the screen numbers them", () => {
-    for (const [index, candidate] of visibleSituations.entries()) {
-      expect(answersSentence(candidate)).toContain(`Situation ${index + 1} `);
+  it("is handed over as written, with no stem attached", () => {
+    for (const situation of visibleSituations) {
+      expect(answersFragment(situation)).toBe(situation.answers);
     }
+  });
+
+  it("would break under a stem, which is why there is not one", () => {
+    // Four of the six start with something no stem can precede: a conditional
+    // clause, its own subject, or a noun phrase. This records why the helper
+    // returns the fragment rather than a sentence.
+    const unstemmable = visibleSituations.filter(
+      (situation) => !/^[a-z]+(e|t|w|k)?\s/.test(situation.answers) ||
+        /^(when|the|a|an)\b/.test(situation.answers),
+    );
+    expect(unstemmable.length).toBeGreaterThan(0);
+  });
+});
+
+describe("patternProblem", () => {
+  it("uses the library's own statement of the problem where there is one", () => {
+    const pattern = getPattern("decision-ledger")!;
+    const { text, sourced } = patternProblem(pattern);
+    expect(sourced).toBe(true);
+    expect(pattern.whatItSolves).toContain(text.replace(/\.$/, ""));
+  });
+
+  it("cuts on a sentence boundary, never mid-clause", () => {
+    const pattern = getPattern("decision-ledger")!;
+    expect(patternProblem(pattern, 1).text).toMatch(/[.!?]$/);
+    expect(patternProblem(pattern, 2).text).toMatch(/[.!?]$/);
+  });
+
+  it("says the library has nothing rather than composing a reason", () => {
+    const pattern = getPattern("convergence-point")!;
+    expect(pattern.whatItSolves).toBeUndefined();
+    const { text, sourced } = patternProblem(pattern);
+    expect(sourced).toBe(false);
+    expect(text).toContain("has not written up");
+  });
+
+  it("adds a caveat when the fit is asserted rather than argued", () => {
+    const situation = visibleSituations.find(
+      (candidate) => candidate.patternIds[0] === "convergence-point",
+    )!;
+    const { caveats, why } = explainPattern({
+      situation,
+      pattern: getPattern("convergence-point")!,
+      shapeability: "editable",
+      tensions: [],
+    });
+    expect(why).toContain("has not written up");
+    expect(
+      caveats.some((caveat) => caveat.includes("asserted rather than argued")),
+    ).toBe(true);
   });
 });

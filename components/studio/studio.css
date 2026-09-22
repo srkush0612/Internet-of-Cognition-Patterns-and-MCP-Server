@@ -1121,6 +1121,20 @@
   max-width: 68ch;
 }
 
+/* Where the library has no problem statement for the pattern, the line says so
+   and is marked as an absence rather than passed off as an answer. */
+.studio-row__reason[data-unsourced="true"] {
+  color: var(--color-warning);
+}
+
+.studio-row__answers {
+  margin-top: 0.3rem;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--color-text-faint);
+  max-width: 68ch;
+}
+
 /* Status in words, with no colour semantics of its own. */
 .studio-chipmark {
   display: inline-flex;

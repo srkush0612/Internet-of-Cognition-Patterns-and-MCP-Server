@@ -29,8 +29,7 @@ import {
 import { isPatternReady } from "@/lib/pattern-ready";
 import { resolveLivePreview } from "@/lib/pattern-live-preview";
 import {
-  answersBecause,
-  answersSentence,
+  answersFragment,
   displayNumber,
   elementsForPattern,
   entities,
@@ -39,6 +38,7 @@ import {
   visibleSituations,
 } from "@/lib/studio/content";
 import { findContinuityGaps } from "@/lib/studio/continuity";
+import { patternProblem } from "@/lib/studio/agent";
 import { missingDetailReason, shapeabilityOf } from "@/lib/studio/shapeability";
 import type { CSSProperties } from "react";
 import type {
@@ -225,6 +225,7 @@ function SituationRow({
   const pattern = getPattern(situation.patternIds[0] ?? "");
   const state = situationState(situation, scenario);
   const detailComing = shapeabilityOfSituation(situation) === "matched_only";
+  const problem = pattern ? patternProblem(pattern) : null;
 
   return (
     <button
@@ -260,19 +261,26 @@ function SituationRow({
           </span>
         </span>
 
-        {/* The question, then the answer, on their own lines. There is no
-            researched reason for a pairing, so the answer states what the
-            situation has to answer, from the same source the agent uses. */}
+        {/* The question, then the answer. The answer is the library's own
+            statement of the problem the pattern solves, or, where the library
+            has not written one, a line saying exactly that. Nothing here
+            composes a rationale. */}
         <span className="studio-row__why">
           <span className="studio-row__question">
             {pattern
               ? `Why ${pattern.title} for this situation?`
               : "Why is nothing matched to this situation?"}
           </span>
-          <span className="studio-row__reason">
+          <span
+            className="studio-row__reason"
+            data-unsourced={pattern ? !problem?.sourced : true}
+          >
             {pattern
-              ? answersBecause(situation)
+              ? problem?.text
               : "No pattern in the library has been mapped to it yet."}
+          </span>
+          <span className="studio-row__answers">
+            What shaping it answers: {answersFragment(situation)}
           </span>
         </span>
       </span>
@@ -431,9 +439,9 @@ function Record({ scenario }: { scenario: Scenario }) {
                 <b>
                   Situation {displayNumber(situation)}. {situation.title}
                 </b>
-                {/* The `answers` fragment gets a stem rather than being run
-                    into the title, which read as broken copy. */}
-                <span>{answersSentence(situation)}</span>
+                {/* Labelled, never run into a sentence: the fragments are not
+                    one grammatical shape and any stem breaks most of them. */}
+                <span>Has to answer: {answersFragment(situation)}</span>
               </li>
             ))}
           </ul>

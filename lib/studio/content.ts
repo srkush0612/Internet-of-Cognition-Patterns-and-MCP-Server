@@ -83,19 +83,21 @@ export function getEntity(id: string): Entity | undefined {
  * only place that turns it into a sentence, so there is one thing to fix if the
  * wording of the field ever changes.
  */
-function answersClause(situation: Situation): string {
-  return `situation ${displayNumber(situation)} has to ${situation.answers}`;
-}
-
-/** Statement form: "Situation 1 has to make it clear who is working ..." */
-export function answersSentence(situation: Situation): string {
-  const clause = answersClause(situation);
-  return `${clause.charAt(0).toUpperCase()}${clause.slice(1)}.`;
-}
-
-/** Answer form, for where the line answers a question put to the reader. */
-export function answersBecause(situation: Situation): string {
-  return `Because ${answersClause(situation)}.`;
+/**
+ * A situation's `answers` field, for rendering after a label and never inside
+ * a sentence.
+ *
+ * The fragments are not one grammatical shape. Some are verb phrases ("make it
+ * clear who is working"), some are conditional clauses ("when two agents
+ * disagree, show how the answer was reached"), some carry their own subject
+ * ("the agent says why it chose an action"), and one is a noun phrase ("a
+ * short surface, with the detail one level down"). Any stem put in front of
+ * them breaks on most of them: "situation 3 has to when two agents disagree"
+ * was shipped and read as nonsense. After a label and a colon they all work,
+ * because that is what they were written to follow.
+ */
+export function answersFragment(situation: Situation): string {
+  return situation.answers;
 }
 
 /**
