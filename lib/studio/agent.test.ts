@@ -10,7 +10,9 @@ import {
   usableQuestions,
 } from "@/lib/studio/agent";
 import {
+  answersBecause,
   answersSentence,
+  displayNumber,
   situations,
   visibleSituations,
 } from "@/lib/studio/content";
@@ -243,8 +245,10 @@ describe("explainPattern", () => {
 
   it("states the match in one line", () => {
     const { verdict } = explain();
+    // The number the person sees is the position in the visible list, not the
+    // label the content file authored.
     expect(verdict).toBe(
-      `${pattern.title} is the match for situation ${situation.number}.`,
+      `${pattern.title} is the match for situation ${displayNumber(situation)}.`,
     );
     expect(verdict.split(". ").length).toBe(1);
   });
@@ -350,5 +354,30 @@ describe("openingLine", () => {
 
   it("keeps no number in the authored sentence", () => {
     expect(agentScript.opening).not.toMatch(/\b(nine|eight|seven|six|\d)\b/);
+  });
+});
+
+describe("the answers fragment", () => {
+  const situation = visibleSituations[0];
+
+  it("never appears run into a sentence unlabelled", () => {
+    // The bug this guards: "Shaping it answers make it clear who is working".
+    expect(answersSentence(situation)).not.toContain("answers make");
+    expect(answersBecause(situation)).not.toContain("answers make");
+  });
+
+  it("gives a statement form and an answer form of the same clause", () => {
+    expect(answersSentence(situation)).toBe(
+      `Situation ${displayNumber(situation)} has to ${situation.answers}.`,
+    );
+    expect(answersBecause(situation)).toBe(
+      `Because situation ${displayNumber(situation)} has to ${situation.answers}.`,
+    );
+  });
+
+  it("numbers both forms the way the screen numbers them", () => {
+    for (const [index, candidate] of visibleSituations.entries()) {
+      expect(answersSentence(candidate)).toContain(`Situation ${index + 1} `);
+    }
   });
 });

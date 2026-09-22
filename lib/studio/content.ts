@@ -83,8 +83,19 @@ export function getEntity(id: string): Entity | undefined {
  * only place that turns it into a sentence, so there is one thing to fix if the
  * wording of the field ever changes.
  */
+function answersClause(situation: Situation): string {
+  return `situation ${displayNumber(situation)} has to ${situation.answers}`;
+}
+
+/** Statement form: "Situation 1 has to make it clear who is working ..." */
 export function answersSentence(situation: Situation): string {
-  return `Situation ${displayNumber(situation)} has to ${situation.answers}.`;
+  const clause = answersClause(situation);
+  return `${clause.charAt(0).toUpperCase()}${clause.slice(1)}.`;
+}
+
+/** Answer form, for where the line answers a question put to the reader. */
+export function answersBecause(situation: Situation): string {
+  return `Because ${answersClause(situation)}.`;
 }
 
 /**

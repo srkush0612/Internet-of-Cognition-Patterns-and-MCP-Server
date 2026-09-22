@@ -29,6 +29,7 @@ import {
 import { isPatternReady } from "@/lib/pattern-ready";
 import { resolveLivePreview } from "@/lib/pattern-live-preview";
 import {
+  answersBecause,
   answersSentence,
   displayNumber,
   elementsForPattern,
@@ -246,17 +247,34 @@ function SituationRow({
         </span>
       </span>
 
-      <span className="studio-row__moment">{situation.moment}</span>
+      {/* The fuller account of what happens, from the situation's own
+          `example`. The `moment` field leads with a clock time, which is not
+          what someone reading the list needs. */}
+      <span className="studio-row__what">{situation.example}</span>
 
-      <span className="studio-row__pattern">
-        <span className="studio-row__patternlabel">Pattern</span>
-        <span className="studio-row__patternname">
-          {pattern ? pattern.title : "No pattern matched"}
+      <span className="studio-row__foot">
+        <span className="studio-row__pattern">
+          <span className="studio-row__patternlabel">Pattern</span>
+          <span className="studio-row__patternname">
+            {pattern ? pattern.title : "No pattern matched"}
+          </span>
         </span>
-        {/* Why this pattern, in one line. There is no researched reason for the
-            pairing, so what it states is what the situation has to answer,
-            which is the same sentence the agent opens with. */}
-        <span className="studio-row__reason">{answersSentence(situation)}</span>
+
+        {/* The question, then the answer, on their own lines. There is no
+            researched reason for a pairing, so the answer states what the
+            situation has to answer, from the same source the agent uses. */}
+        <span className="studio-row__why">
+          <span className="studio-row__question">
+            {pattern
+              ? `Why ${pattern.title} for this situation?`
+              : "Why is nothing matched to this situation?"}
+          </span>
+          <span className="studio-row__reason">
+            {pattern
+              ? answersBecause(situation)
+              : "No pattern in the library has been mapped to it yet."}
+          </span>
+        </span>
       </span>
     </button>
   );
