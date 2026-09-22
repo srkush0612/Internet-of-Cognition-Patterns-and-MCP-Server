@@ -209,9 +209,10 @@ function Bar({
  * It borrows the gallery's surface, because a pattern should look the same
  * wherever it appears, but it carries a situation's information rather than a
  * pattern's: which situation this is, what happens in it, what shaping it
- * answers, which pattern answers it, and how far you have got. No category,
- * because the category is a way of grouping patterns and this card is not
- * about grouping patterns.
+ * answers, which pattern answers it, and how far you have got. No category and
+ * no evidence strength, because both are ways of reading a pattern against the
+ * other patterns, and this card is about a situation. They are both on the
+ * pattern view, where the pattern is the subject.
  *
  * The tint still comes from the pattern's category, which is what keeps the
  * same pattern looking the same here and in the gallery. The pattern's name
@@ -267,7 +268,6 @@ function SituationFace({
         <span className="studio-face__pattern">
           {pattern ? pattern.title : "No pattern matched"}
         </span>
-        {pattern ? <BackingSignal pattern={pattern} /> : null}
       </div>
     </button>
   );
