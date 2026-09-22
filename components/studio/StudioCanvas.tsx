@@ -1,14 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { BackingSignal, CategoryLabel } from "@/components/PatternTaxonomy";
 import { PATTERN_STANDALONE } from "@/components/patterns/pattern-registry";
-import { MakeItYours } from "@/components/studio/MakeItYours";
+import {
+  CarryNote,
+  MakeItYoursPanel,
+  RemovalNotes,
+} from "@/components/studio/MakeItYours";
+import { PatternEmbed } from "@/components/studio/PatternEmbed";
 import { getPattern, type Pattern } from "@/lib/patterns";
 import { isPatternReady } from "@/lib/pattern-ready";
 import { resolveLivePreview } from "@/lib/pattern-live-preview";
-import { entities, patternElements, situations } from "@/lib/studio/content";
+import {
+  elementsForPattern,
+  entities,
+  patternElements,
+  situations,
+} from "@/lib/studio/content";
 import { findContinuityGaps } from "@/lib/studio/continuity";
 import { missingDetailReason, shapeabilityOf } from "@/lib/studio/shapeability";
 import type {
@@ -332,79 +343,97 @@ function Record({ scenario }: { scenario: Scenario }) {
 }
 
 function PatternBody({
-  situation,
   pattern,
   shapeability,
-  scenario,
   draft,
   persisted,
   decision,
+  customising,
+  onCloseCustomise,
   onDraftChange,
   onSave,
   onRemoveElement,
   onRestoreElement,
 }: {
-  situation: Situation;
   pattern: Pattern;
   shapeability: Shapeability;
-  scenario: Scenario;
-  /** What is being typed right now. Drives the component above. */
+  /** What is being typed right now. Drives the component on the stage. */
   draft: Record<string, unknown>;
   /** What has been saved. Drives the editor's own state. */
   persisted: Record<string, unknown>;
   decision: Decision | undefined;
+  customising: boolean;
+  onCloseCustomise: () => void;
   onDraftChange: (next: Record<string, unknown>) => void;
   onSave: (next: Record<string, unknown>) => Promise<void>;
   onRemoveElement: (element: PatternElement) => void;
   onRestoreElement: (element: PatternElement) => void;
 }) {
   const Component = PATTERN_STANDALONE[pattern.slug];
+  const elements = elementsForPattern(pattern.slug);
+  const removed = decision?.elementsRemoved ?? [];
 
   if (shapeability === "matched_only") {
     return (
-      <div className="studio-empty">
-        <b>The match stands. The detail does not.</b>
-        <p>
-          {pattern.title} is in the library with its write-up and its evidence,
-          and it is the answer to this situation.{" "}
-          {missingDetailReason(pattern.slug, Boolean(Component))}
-        </p>
-        <p>
-          What the library does say about it is worth reading before you build
-          anything here.
-        </p>
-        <Link
-          href={`/patterns/${pattern.slug}`}
-          className="osh-cta-outline studio-empty__link"
-        >
-          Read {pattern.title}
-        </Link>
+      <div className="studio-stage">
+        <div className="studio-empty">
+          <b>The match stands. The detail does not.</b>
+          <p>
+            {pattern.title} is in the library with its write-up and its
+            evidence, and it is the answer to this situation.{" "}
+            {missingDetailReason(pattern.slug, Boolean(Component))}
+          </p>
+          <p>
+            What the library does say about it is worth reading before you build
+            anything here.
+          </p>
+          <Link
+            href={`/patterns/${pattern.slug}`}
+            className="osh-cta-outline studio-empty__link"
+          >
+            Read {pattern.title}
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      {shapeability === "editable" && Component ? (
-        <div className="studio-live">
-          <Component
-            live={resolveLivePreview(pattern.slug, { workspace: draft })}
+      <div className="studio-stage">
+        {shapeability === "annotated" && Component ? (
+          <PatternEmbed
+            Component={Component}
+            elements={elements}
+            removedElementIds={removed}
           />
-        </div>
-      ) : null}
+        ) : null}
 
-      <MakeItYours
-        situation={situation}
-        pattern={pattern}
-        shapeability={shapeability}
-        Component={Component}
-        persisted={persisted}
-        decision={decision}
-        onDraftChange={onDraftChange}
-        onSave={onSave}
-        onRemoveElement={onRemoveElement}
-        onRestoreElement={onRestoreElement}
-      />
+        {shapeability === "editable" && Component ? (
+          <div className="studio-live">
+            <Component
+              live={resolveLivePreview(pattern.slug, { workspace: draft })}
+            />
+          </div>
+        ) : null}
+
+        <RemovalNotes decision={decision} />
+        <CarryNote patternId={pattern.slug} />
+      </div>
+
+      {customising ? (
+        <MakeItYoursPanel
+          pattern={pattern}
+          shapeability={shapeability}
+          persisted={persisted}
+          decision={decision}
+          onClose={onCloseCustomise}
+          onDraftChange={onDraftChange}
+          onSave={onSave}
+          onRemoveElement={onRemoveElement}
+          onRestoreElement={onRestoreElement}
+        />
+      ) : null}
     </>
   );
 }
@@ -432,6 +461,21 @@ export function StudioCanvas({
   onRemoveElement: (situationId: string, element: PatternElement) => void;
   onRestoreElement: (situationId: string, element: PatternElement) => void;
 }) {
+  // Customise opens the shaping panel. It starts closed so the first thing on
+  // the canvas is the pattern itself, and it closes again when the canvas
+  // moves to another situation.
+  const [customising, setCustomising] = useState(false);
+  const openSituationId = view.kind === "pattern" ? view.situationId : null;
+
+  useEffect(() => {
+    setCustomising(false);
+  }, [openSituationId]);
+
+  // The panel opens beside the pattern, so there is nothing to scroll to.
+  const toggleCustomise = useCallback(() => {
+    setCustomising((open) => !open);
+  }, []);
+
   if (view.kind === "overview") {
     return (
       <div className="studio-canvas">
@@ -551,13 +595,11 @@ export function StudioCanvas({
             <button
               type="button"
               className="osh-cta-solid studio-customise"
-              onClick={() => {
-                document
-                  .getElementById("studio-make-it-yours")
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
+              aria-expanded={customising}
+              aria-controls="studio-make-it-yours"
+              onClick={toggleCustomise}
             >
-              Customise
+              {customising ? "Done customising" : "Customise"}
             </button>
           )
         }
@@ -589,15 +631,19 @@ export function StudioCanvas({
         </div>
       ) : null}
 
-      <div className="studio-canvas__body" id="studio-make-it-yours">
+      <div className="studio-canvas__body" data-side={customising}>
         <PatternBody
-          situation={situation}
           pattern={pattern}
           shapeability={shapeability}
-          scenario={scenario}
-          draft={workspaces[situation.id] ?? scenario.workspaces?.[situation.id] ?? {}}
+          draft={
+            workspaces[situation.id] ??
+            scenario.workspaces?.[situation.id] ??
+            {}
+          }
           persisted={scenario.workspaces?.[situation.id] ?? {}}
           decision={decision}
+          customising={customising}
+          onCloseCustomise={() => setCustomising(false)}
           onDraftChange={(next) => onDraftChange(situation.id, next)}
           onSave={(next) => onSave(situation.id, next)}
           onRemoveElement={(element) => onRemoveElement(situation.id, element)}

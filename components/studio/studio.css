@@ -534,6 +534,119 @@
   padding: 1.35rem;
 }
 
+/* Customise opens beside the pattern, not under it: the component stays in
+   view while a field is edited, which is the only way the live update can be
+   seen as it is typed. The body stops scrolling as one column and hands each
+   side its own scroll. */
+.studio-canvas__body[data-side="true"] {
+  display: flex;
+  gap: 1.1rem;
+  overflow: hidden;
+  padding-right: 0;
+}
+
+.studio-stage {
+  min-width: 0;
+  flex: 1;
+}
+
+.studio-canvas__body[data-side="true"] .studio-stage {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.4rem;
+}
+
+.studio-side {
+  flex: none;
+  width: 24rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-block: -1.35rem;
+  padding: 1.1rem 1.35rem 1.35rem 1.1rem;
+  border-left: 1px solid var(--color-border);
+  background: var(--color-bg);
+  animation: studio-side-in 0.22s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+}
+
+@keyframes studio-side-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.studio-side__head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.studio-side__head b {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.studio-side__head i {
+  display: block;
+  font-style: normal;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  margin-top: 0.1rem;
+}
+
+.studio-side__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.studio-side__close svg {
+  width: 13px;
+  height: 13px;
+}
+
+.studio-side__close:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+.studio-side__note {
+  align-self: flex-start;
+  margin-top: 0.7rem;
+}
+
+.studio-side__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-top: 0.85rem;
+  padding-right: 0.25rem;
+}
+
+.studio-side__close:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+}
+
 .studio-recordbtn {
   position: absolute;
   right: 1.35rem;
@@ -762,35 +875,8 @@
   margin: 0 auto 1.1rem;
 }
 
-.studio-mine {
-  max-width: 44rem;
-  margin: 0 auto;
-  padding: 1rem 1.15rem 1.15rem;
-  background: var(--color-bg);
-}
-
-.studio-mine__head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.8rem;
-  padding-bottom: 0.7rem;
-  margin-bottom: 0.85rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.studio-mine__head b {
-  display: block;
-  font-size: 0.9rem;
-}
-
-.studio-mine__head i {
-  display: block;
-  font-style: normal;
-  font-size: 0.74rem;
-  line-height: 1.45;
-  color: var(--color-text-muted);
-  margin-top: 0.1rem;
+.studio-mine__fields {
+  font-size: 0.85rem;
 }
 
 .studio-mine__caveat {
@@ -798,10 +884,6 @@
   font-size: 0.76rem;
   line-height: 1.55;
   color: var(--color-text-muted);
-}
-
-.studio-mine__fields {
-  font-size: 0.85rem;
 }
 
 .studio-els {
@@ -1226,6 +1308,46 @@
 }
 
 /* ============================== narrow ============================== */
+
+@media (max-width: 1450px) {
+  .studio-side {
+    width: 21rem;
+  }
+}
+
+/*
+ * Two columns only when the stage still has room to show a pattern component
+ * properly: the agent pane (23rem) plus a usable stage plus the panel. Below
+ * that the panel goes back under the pattern and both scroll together, which
+ * is worse than side by side but better than squeezing the component into a
+ * column narrower than it was designed for.
+ */
+@media (max-width: 1280px) {
+  .studio-canvas__body[data-side="true"] {
+    display: block;
+    overflow-y: auto;
+    padding-right: 1.35rem;
+  }
+
+  .studio-canvas__body[data-side="true"] .studio-stage {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .studio-side {
+    width: auto;
+    max-width: 44rem;
+    margin: 1.1rem auto 0;
+    padding: 1rem 1.15rem 1.15rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-face);
+    animation: none;
+  }
+
+  .studio-side__body {
+    overflow: visible;
+  }
+}
 
 @media (max-width: 1100px) {
   .studio-agent {

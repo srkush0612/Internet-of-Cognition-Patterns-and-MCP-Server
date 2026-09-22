@@ -1,37 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { PatternWorkspace } from "@/components/PatternWorkspace";
-import { PatternEmbed } from "@/components/studio/PatternEmbed";
-import type { PatternPreviewProps } from "@/components/patterns/pattern-registry";
 import { antiPatternsForElement, elementsForPattern, entities } from "@/lib/studio/content";
-import type {
-  Decision,
-  Entity,
-  PatternElement,
-  Situation,
-} from "@/lib/studio/types";
+import type { Decision, Entity, PatternElement } from "@/lib/studio/types";
 import type { Pattern } from "@/lib/patterns";
-import { useMemo, type ComponentType } from "react";
+import { useMemo } from "react";
+import { X } from "lucide-react";
 
 const RULE = "The pattern decides which elements exist. You decide what they say.";
-
-function CardHead({ note }: { note?: string }) {
-  return (
-    <div className="studio-mine__head">
-      <div>
-        <b>Make it yours</b>
-        <i>{RULE}</i>
-      </div>
-      {note ? <span className="studio-flag studio-flag--live">{note}</span> : null}
-    </div>
-  );
-}
 
 /**
  * The editable path: the pattern has a workspace in lib/editable-fields.ts, so
  * Studio hands the same PatternWorkspace the playground and the pattern pages
- * use, embedded, and streams its draft into the component above through
+ * use, embedded, and streams its draft into the component beside it through
  * resolveLivePreview. Nothing about the editing surface is Studio's own.
  */
 function EditableBody({
@@ -44,8 +25,8 @@ function EditableBody({
   /**
    * What is stored, not what is being typed. Feeding the live draft back in
    * here would make WorkspaceShell sync from a prop it is itself driving, and
-   * the two would push each other forever. The draft goes up to the live
-   * component instead, and comes back down only once it has been saved.
+   * the two would push each other forever. The draft goes to the live
+   * component instead, and comes back only once it has been saved.
    */
   persisted: Record<string, unknown>;
   onDraftChange: (next: Record<string, unknown>) => void;
@@ -102,8 +83,8 @@ function AnnotatedBody({
     <>
       <p className="studio-mine__caveat">
         This pattern&apos;s reference design does not take live input yet, so
-        these elements are marked on the component above rather than typed into
-        it. What you can decide here is which of them your build actually has.
+        these elements are numbered on the component rather than typed into it.
+        What you can decide here is which of them your build actually has.
       </p>
 
       <ul className="studio-els">
@@ -160,34 +141,34 @@ function AnnotatedBody({
   );
 }
 
-export function MakeItYours({
-  situation,
+/**
+ * The shaping panel. It opens beside the pattern rather than under it, so the
+ * component stays in view while a field is edited and the change can be seen
+ * as it is typed.
+ */
+export function MakeItYoursPanel({
   pattern,
   shapeability,
-  Component,
   persisted,
   decision,
+  onClose,
   onDraftChange,
   onSave,
   onRemoveElement,
   onRestoreElement,
 }: {
-  situation: Situation;
   pattern: Pattern;
   shapeability: "editable" | "annotated";
-  Component: ComponentType<PatternPreviewProps> | undefined;
   persisted: Record<string, unknown>;
   decision: Decision | undefined;
+  onClose: () => void;
   onDraftChange: (next: Record<string, unknown>) => void;
   onSave: (next: Record<string, unknown>) => Promise<void>;
   onRemoveElement: (element: PatternElement) => void;
   onRestoreElement: (element: PatternElement) => void;
 }) {
   const elements = elementsForPattern(pattern.slug);
-  const removed = decision?.elementsRemoved ?? [];
 
-  // Entities this situation's elements own, and where the content team has
-  // declared they should turn up again.
   const carriedInto = elements
     .filter((element) => element.entityId)
     .map((element) => ({
@@ -199,25 +180,34 @@ export function MakeItYours({
         item.entity !== undefined,
     );
 
-  const antiPatterns = removed.flatMap((id) => antiPatternsForElement(id));
-
   return (
-    <>
-      {shapeability === "annotated" && Component ? (
-        <PatternEmbed
-          Component={Component}
-          elements={elements}
-          removedElementIds={removed}
-        />
+    <aside
+      className="studio-side"
+      id="studio-make-it-yours"
+      aria-label="Make it yours"
+    >
+      <div className="studio-side__head">
+        <div>
+          <b>Make it yours</b>
+          <i>{RULE}</i>
+        </div>
+        <button
+          type="button"
+          className="studio-side__close"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <X aria-hidden />
+        </button>
+      </div>
+
+      {shapeability === "editable" ? (
+        <span className="studio-flag studio-flag--live studio-side__note">
+          edits show live on the left
+        </span>
       ) : null}
 
-      <section className="osh-card studio-mine">
-        <CardHead
-          note={
-            shapeability === "editable" ? "edits show live above" : undefined
-          }
-        />
-
+      <div className="studio-side__body">
         {shapeability === "editable" ? (
           <EditableBody
             pattern={pattern}
@@ -234,8 +224,22 @@ export function MakeItYours({
             carriedInto={carriedInto}
           />
         )}
-      </section>
+      </div>
+    </aside>
+  );
+}
 
+/** The named failure modes a removal brought back, shown under the component. */
+export function RemovalNotes({
+  decision,
+}: {
+  decision: Decision | undefined;
+}) {
+  const removed = decision?.elementsRemoved ?? [];
+  const antiPatterns = removed.flatMap((id) => antiPatternsForElement(id));
+
+  return (
+    <>
       {antiPatterns.map((antiPattern) => (
         <aside key={antiPattern.id} className="studio-anti">
           <b>{antiPattern.name}</b>
@@ -247,21 +251,30 @@ export function MakeItYours({
           </p>
         </aside>
       ))}
-
-      {carriedInto.length > 0 ? (
-        <aside className="studio-carry">
-          <b>Carried out of this situation</b>
-          {carriedInto.map(({ entity }) => (
-            <p key={entity.id}>
-              {entity.label} is declared to matter again in{" "}
-              {entity.appearsInSituationIds.length - 1} other situation
-              {entity.appearsInSituationIds.length - 1 === 1 ? "" : "s"}. The
-              record says whether it survives there.{" "}
-              <Link href="?view=record">See the record</Link>
-            </p>
-          ))}
-        </aside>
-      ) : null}
     </>
+  );
+}
+
+/** What this situation writes that other situations are declared to need. */
+export function CarryNote({ patternId }: { patternId: string }) {
+  const carried = elementsForPattern(patternId)
+    .filter((element) => element.entityId)
+    .map((element) => entities.find((c) => c.id === element.entityId))
+    .filter((entity): entity is Entity => entity !== undefined);
+
+  if (carried.length === 0) return null;
+
+  return (
+    <aside className="studio-carry">
+      <b>Carried out of this situation</b>
+      {carried.map((entity) => (
+        <p key={entity.id}>
+          {entity.label} is declared to matter again in{" "}
+          {entity.appearsInSituationIds.length - 1} other situation
+          {entity.appearsInSituationIds.length - 1 === 1 ? "" : "s"}. The record
+          says whether it survives there.
+        </p>
+      ))}
+    </aside>
   );
 }
