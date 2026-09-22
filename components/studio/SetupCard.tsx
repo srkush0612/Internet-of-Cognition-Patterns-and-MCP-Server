@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { HeroOrbs } from "@/components/PatternTaxonomy";
 import { sampleScenario } from "@/lib/studio/content";
 import {
@@ -45,6 +44,7 @@ const ATTENDANCE_HINT: Record<Attendance, string> = {
  */
 export function SetupCard({
   onSubmit,
+  onOpenSample,
 }: {
   onSubmit: (input: {
     name: string;
@@ -53,6 +53,7 @@ export function SetupCard({
     attendance: string;
     irreversibility: string;
   }) => Promise<void>;
+  onOpenSample?: () => void;
 }) {
   const [description, setDescription] = useState("");
   const [answers, setAnswers] = useState<Answers>({
@@ -184,12 +185,14 @@ export function SetupCard({
           )}
         </div>
 
-        {sampleScenario ? (
+        {/* Opened in place rather than by its id, so it works the same whether
+            or not the scenario store is there. */}
+        {sampleScenario && onOpenSample ? (
           <p className="studio-setup__sample">
             Or open{" "}
-            <Link href={`/studio/${sampleScenario.id}`}>
+            <button type="button" onClick={onOpenSample}>
               {sampleScenario.name}
-            </Link>
+            </button>
             , the seeded read-only example.
           </p>
         ) : null}

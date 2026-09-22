@@ -28,6 +28,7 @@ import {
   visibleSituations,
 } from "@/lib/studio/content";
 import { acceptRemoval, restoreElement } from "@/lib/studio/pushback";
+import { sampleScenario } from "@/lib/studio/content";
 import type {
   AgentEffect,
   Decision,
@@ -95,6 +96,12 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
   scenarioRef.current = scenario;
   const viewRef = useRef<CanvasView>({ kind: "overview" });
   viewRef.current = view;
+  /**
+   * Whether the scenario store answers. It does not on the static export,
+   * which has no route handlers, and one failed write is enough to stop
+   * asking: the scenario is then held here for the rest of the session.
+   */
+  const storeReachable = useRef(true);
 
   const newId = useCallback(() => {
     nextId.current += 1;
@@ -149,18 +156,26 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
   const patchScenario = useCallback(
     async (updates: Record<string, unknown>) => {
       if (!scenario || scenario.readOnly) return;
+      // On a static host there is no store, and every edit would otherwise
+      // fire a request that fails. One is enough to learn that.
+      if (!storeReachable.current) return;
       try {
         const response = await fetch("/api/studio/scenarios", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "update", id: scenario.id, updates }),
         });
+        if (!response.ok) {
+          storeReachable.current = false;
+          return;
+        }
         const data = await response.json();
-        if (response.ok) setScenario(data.scenario as Scenario);
+        setScenario(data.scenario as Scenario);
       } catch {
         // The store is in memory and resets with the dev server. A failed
         // write leaves the local state alone rather than reverting the
         // person's work under them.
+        storeReachable.current = false;
       }
     },
     [scenario],
@@ -452,6 +467,16 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
 
   /* ---------------------------------------------------------------- setup */
 
+  /**
+   * Creates the scenario on the server where there is one, and in the browser
+   * where there is not.
+   *
+   * The static export served to reviewers has no API routes at all, so the
+   * POST cannot succeed there. Falling back to a scenario held in this
+   * component loses nothing that was being kept: the server store is itself an
+   * in-memory Map that empties on restart. What it costs is the URL, so a
+   * reload starts again from the setup card.
+   */
   async function createScenario(input: {
     name: string;
     description: string;
@@ -459,13 +484,42 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
     attendance: string;
     irreversibility: string;
   }) {
-    const response = await fetch("/api/studio/scenarios", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "create", ...input }),
+    try {
+      const response = await fetch("/api/studio/scenarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create", ...input }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        router.push(`/studio/${data.scenario.id}`);
+        return;
+      }
+    } catch {
+      // No API here. Carry on in the browser.
+    }
+
+    storeReachable.current = false;
+    const now = new Date().toISOString();
+    setScenario({
+      id: `local-${Date.now()}`,
+      name: input.name,
+      description: input.description,
+      topology: input.topology as Scenario["topology"],
+      attendance: input.attendance as Scenario["attendance"],
+      irreversibility: input.irreversibility as Scenario["irreversibility"],
+      decisions: [],
+      createdAt: now,
+      updatedAt: now,
     });
-    const data = await response.json();
-    if (response.ok) router.push(`/studio/${data.scenario.id}`);
+  }
+
+  /** The seeded example, opened in place rather than by its id. */
+  function openSample() {
+    if (!sampleScenario) return;
+    // Read-only, so nothing here writes to the store either way.
+    setScenario({ ...sampleScenario, isSample: true, readOnly: true });
+    setDrafts(sampleScenario.workspaces ?? {});
   }
 
   const answeredCount = scenario?.decisions.length ?? 0;
@@ -473,8 +527,10 @@ export function StudioApp({ scenarioId }: { scenarioId?: string }) {
 
   const workspaces = useMemo(() => drafts, [drafts]);
 
-  if (!scenarioId) {
-    return <SetupCard onSubmit={createScenario} />;
+  // The setup card shows until there is a scenario, whether it came from the
+  // store or was made here.
+  if (!scenarioId && !scenario) {
+    return <SetupCard onSubmit={createScenario} onOpenSample={openSample} />;
   }
 
   if (loadError) {
