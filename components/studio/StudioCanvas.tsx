@@ -204,75 +204,65 @@ function Bar({
 }
 
 /**
- * A situation card, not a pattern card.
+ * A situation card.
  *
- * It borrows the gallery's surface, because a pattern should look the same
- * wherever it appears, but it carries a situation's information rather than a
- * pattern's: which situation this is, what happens in it, what shaping it
- * answers, which pattern answers it, and how far you have got. No category and
- * no evidence strength, because both are ways of reading a pattern against the
- * other patterns, and this card is about a situation. They are both on the
- * pattern view, where the pattern is the subject.
+ * Every card is identical: same fields in the same order, one neutral surface,
+ * no per-card tint. It used to take the tint from the pattern's category, which
+ * meant one card was blue and the next purple for a reason the card no longer
+ * showed anywhere. Status is carried in words, by the group it sits in and by
+ * the chip in its footer.
  *
- * The tint still comes from the pattern's category, which is what keeps the
- * same pattern looking the same here and in the gallery. The pattern's name
- * sits in that colour in the foot, so the colour is accounted for on the card
- * rather than coding something the card never mentions.
+ * Nothing here truncates. The card grows to fit what it has to say, and hover
+ * only lifts it, so no text appears or disappears under the pointer. The
+ * surface is .osh-card, the site's own neutral card, rather than .osh-face,
+ * whose crossfade and colour belong to a card that carries a taxonomy.
  */
-function SituationFace({
+function SituationCard({
   situation,
   scenario,
-  index,
   onOpen,
 }: {
   situation: Situation;
   scenario: Scenario;
-  index: number;
   onOpen: (situationId: string) => void;
 }) {
   const pattern = getPattern(situation.patternIds[0] ?? "");
   const state = situationState(situation, scenario);
-  const color = pattern
-    ? PATTERN_CATEGORY_COLOR[pattern.category]
-    : "var(--color-text-muted)";
+  const detailComing = shapeabilityOfSituation(situation) === "matched_only";
 
   return (
     <button
       type="button"
-      className="osh-face studio-face"
-      data-facts="true"
-      data-state={state}
-      style={{ "--c": color, "--i": index } as CSSProperties}
+      className="osh-card studio-card"
       onClick={() => onOpen(situation.id)}
     >
-      <div className="osh-face-top">
-        <span className="studio-face__num">Situation {situation.number}</span>
-        <span className="studio-face__right">
-          {stateLabel(state) ? (
-            <span className="studio-face__state">{stateLabel(state)}</span>
-          ) : null}
-          <StateDot state={state} />
-        </span>
-      </div>
+      <span className="studio-card__label">Situation {situation.number}</span>
+      <h3 className="studio-card__title">{situation.title}</h3>
+      <p className="studio-card__moment">{situation.moment}</p>
 
-      <h3>{situation.title}</h3>
-
-      <div className="osh-face-swap">
-        <p className="osh-face-one">{situation.moment}</p>
-        <p className="osh-face-facts">
-          <b>answers</b> {situation.answers}
-        </p>
-      </div>
-
-      <div className="osh-face-foot">
-        <span className="studio-face__pattern">
+      <span className="studio-card__foot">
+        <span className="studio-card__pattern">
           {pattern ? pattern.title : "No pattern matched"}
         </span>
-      </div>
+        <span className="studio-card__chips">
+          {state === "answered_with_gap" ? (
+            <span className="studio-chipmark">with a gap</span>
+          ) : null}
+          {detailComing ? (
+            <span className="studio-chipmark">detail coming</span>
+          ) : null}
+        </span>
+      </span>
     </button>
   );
 }
 
+/**
+ * Grouped by how far the person has got, not by how far we have got.
+ * Readiness was the old split, which made a fact about our own build queue
+ * look like permanent structure and would leave a heading empty once every
+ * pattern has its detail written. Progress stays meaningful either way.
+ */
 function Overview({
   scenario,
   onOpen,
@@ -280,50 +270,43 @@ function Overview({
   scenario: Scenario;
   onOpen: (situationId: string) => void;
 }) {
-  const groups: Array<{ label: string; definition: string; color: string; items: Situation[] }> = [
+  const groups = [
     {
-      label: "Ready to shape here",
+      label: "Needs a decision",
       definition:
-        "The pattern has a reference design and element detail, so you can fill in your own case.",
-      color: "var(--color-accent-hover)",
+        "Nobody has chosen anything for these yet. They happen either way.",
       items: visibleSituations.filter(
-        (s) => shapeabilityOfSituation(s) !== "matched_only",
+        (situation) => situationState(situation, scenario) === "unanswered",
       ),
     },
     {
-      label: "Matched, element detail not published yet",
-      definition:
-        "The match stands and the pattern has its write-up and evidence, but there is nothing here to shape.",
-      color: "var(--color-warning)",
+      label: "Decided",
+      definition: null,
       items: visibleSituations.filter(
-        (s) => shapeabilityOfSituation(s) === "matched_only",
+        (situation) => situationState(situation, scenario) !== "unanswered",
       ),
     },
   ];
-
-  let index = 0;
 
   return (
     <>
       {groups.map((group) =>
         group.items.length === 0 ? null : (
           <section key={group.label} className="osh-group">
-            <div
-              className="osh-group-head"
-              style={{ "--c": group.color } as CSSProperties}
-            >
+            <div className="osh-group-head studio-group-head">
               <h2>{group.label}</h2>
               <span className="n">{group.items.length}</span>
             </div>
-            <p className="osh-group-def">{group.definition}</p>
+            {group.definition ? (
+              <p className="osh-group-def">{group.definition}</p>
+            ) : null}
 
-            <div className="osh-faces">
+            <div className="osh-faces studio-cards">
               {group.items.map((situation) => (
-                <SituationFace
+                <SituationCard
                   key={situation.id}
                   situation={situation}
                   scenario={scenario}
-                  index={index++}
                   onOpen={onOpen}
                 />
               ))}
