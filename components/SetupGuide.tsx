@@ -18,7 +18,7 @@ import { patterns } from "@/lib/patterns";
 import { PATTERN_READY_SLUGS } from "@/lib/pattern-ready";
 
 const PATTERN_COUNT = patterns.length;
-const PROJECT_PATH = "IoC-patterns-and-server";
+const PROJECT_PATH = "Internet-of-Cognition-Patterns-and-MCP-Server";
 
 const REQUIREMENTS = [
   { label: "Node.js v18 or higher", required: true },
@@ -38,7 +38,7 @@ const INSTALL_STEPS = [
   {
     title: "Navigate to the project",
     command: `cd "${PROJECT_PATH}"`,
-    body: "Run commands from the pattern-library folder — the same directory that contains package.json and server/mcp-server.ts.",
+    body: "Run commands from the repository root, the same directory that contains package.json and server/mcp-server.ts.",
   },
   {
     title: "Verify the MCP registry",
@@ -369,7 +369,7 @@ export function SetupGuide() {
                 Setup Guide
               </h1>
               <p className="mt-3 max-w-2xl text-lg text-muted">
-                Install and configure the MCP server that powers Human Agent IoC
+                Install and configure the MCP server that powers HAX 2.0
                 Patterns — pattern discovery, live instances, and agent coordination.
               </p>
             </div>
@@ -385,7 +385,7 @@ export function SetupGuide() {
               <div className="space-y-4 text-sm leading-relaxed text-muted sm:text-base">
                 <p>
                   The <strong className="font-semibold text-ink">Model Context Protocol (MCP) layer</strong> in
-                  this project is a pattern registry and tool runtime. It turns research-backed IoC patterns from{" "}
+                  this project is a pattern registry and tool runtime. It turns the research-backed HAX 2.0 patterns from{" "}
                   <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">lib/patterns.ts</code> into
                   structured components agents can discover, instantiate, and update.
                 </p>
@@ -454,7 +454,7 @@ export function SetupGuide() {
           <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
             <Checklist items={VERIFICATION_ITEMS} />
             <p className="mt-6 rounded-xl border border-success-line bg-success-bg px-4 py-3 text-sm font-medium text-success-ink">
-              If every item above checks out, you are ready to use Human Agent IoC Patterns.
+              If every item above checks out, you are ready to use HAX 2.0 Patterns.
             </p>
           </div>
         </Section>

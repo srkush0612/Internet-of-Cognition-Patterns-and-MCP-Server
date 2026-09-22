@@ -1,7 +1,7 @@
 import { AdvisorLauncher } from "@/components/AdvisorLauncher";
 
 export const metadata = {
-  title: "Chat · Human Agent IoC Patterns",
+  title: "Chat · HAX 2.0 Patterns",
   description: "Discover patterns through conversational recommendations",
 };
 

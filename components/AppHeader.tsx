@@ -32,7 +32,7 @@ export function AppHeader() {
       <div className="osh-container flex h-[4.5rem] items-center justify-between gap-4">
         <Link href="/" className="flex items-baseline gap-2" onClick={closeMenu}>
           <span className="text-lg font-semibold text-ink sm:text-xl">
-            Human Agent IoC
+            HAX 2.0
           </span>
           <span className="hidden text-xl font-extralight text-muted sm:inline">
             patterns

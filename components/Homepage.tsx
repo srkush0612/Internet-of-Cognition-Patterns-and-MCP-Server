@@ -104,14 +104,14 @@ function Hero() {
           className="font-heading text-5xl font-semibold tracking-tight text-ink sm:text-6xl lg:text-7xl animate-fade-in-up"
           style={{ animationDelay: "0.2s" }}
         >
-          Human Agent IoC Patterns
+          HAX 2.0 Patterns
         </h1>
 
         <p
           className="mx-auto mt-6 max-w-2xl text-lg text-muted sm:text-xl animate-fade-in-up"
           style={{ animationDelay: "0.35s" }}
         >
-          Discover inversion-of-control patterns for multi-agent collaboration
+          Research-grounded patterns for human-agent interaction
         </p>
 
         <div
@@ -163,11 +163,11 @@ function Features() {
     <section className="bg-white px-6 py-24 sm:px-12 lg:px-24">
       <RevealSection className="mx-auto max-w-6xl">
         <h2 className="font-heading text-center text-3xl font-bold text-ink sm:text-4xl">
-          What are Human Agent IoC Patterns?
+          What are HAX 2.0 Patterns?
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-muted">
           A research-backed system for discovering, recommending, and deploying
-          inversion-of-control patterns in multi-agent environments.
+          human-agent interaction patterns in multi-agent environments.
         </p>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2">

@@ -10,9 +10,9 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Human Agent IoC Patterns",
+  title: "HAX 2.0 Patterns",
   description:
-    "Discover research-grounded inversion-of-control patterns for human–agent collaboration",
+    "Research-grounded patterns for human-agent interaction",
 };
 
 export default function RootLayout({
