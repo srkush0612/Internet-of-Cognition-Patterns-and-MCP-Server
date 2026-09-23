@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { PATTERN_EDITABLE_FIELDS } from "@/lib/editable-fields";
-import { situations } from "@/lib/studio/content";
+import {
+  situations,
+  surfaceContent,
+  surfaceDefinitions,
+  surfacesForPattern,
+  surfaceState,
+  visibleSituations,
+} from "@/lib/studio/content";
 import {
   isShapeable,
   missingDetailReason,
@@ -79,3 +86,67 @@ describe("the seeded situations", () => {
   });
 });
 
+
+describe("surfaces", () => {
+  it("names every surface a pattern claims", () => {
+    const ids = surfaceDefinitions.map((surface) => surface.id);
+    for (const entry of surfaceContent.patterns) {
+      expect(ids, entry.patternId).toContain(entry.inContextSurface);
+      for (const surface of Object.keys(entry.notHere)) {
+        expect(ids, `${entry.patternId}: ${surface}`).toContain(surface);
+      }
+    }
+  });
+
+  it("covers every situation's pattern", () => {
+    for (const situation of visibleSituations) {
+      expect(
+        surfacesForPattern(situation.patternIds[0]),
+        situation.id,
+      ).toBeDefined();
+    }
+  });
+
+  it("calls the pattern's own surface built, and the others not built", () => {
+    for (const entry of surfaceContent.patterns) {
+      expect(
+        surfaceState(entry.patternId, entry.inContextSurface, true, true),
+      ).toBe("built");
+
+      const others = surfaceDefinitions
+        .map((surface) => surface.id)
+        .filter(
+          (id) => id !== "standalone" && id !== entry.inContextSurface,
+        );
+      for (const id of others) {
+        const expected = entry.notHere[id as "thread"] ? "not_here" : "not_built";
+        expect(
+          surfaceState(entry.patternId, id, true, true),
+          `${entry.patternId} on ${id}`,
+        ).toBe(expected);
+      }
+    }
+  });
+
+  it("does not call a surface built when the component is missing", () => {
+    const entry = surfaceContent.patterns[0];
+    expect(
+      surfaceState(entry.patternId, entry.inContextSurface, true, false),
+    ).toBe("not_built");
+    expect(surfaceState(entry.patternId, "standalone", false, true)).toBe(
+      "not_built",
+    );
+  });
+
+  it("gives a reason with every not-here, since that is a judgement", () => {
+    for (const entry of surfaceContent.patterns) {
+      for (const [surface, reason] of Object.entries(entry.notHere)) {
+        expect(reason, `${entry.patternId}: ${surface}`).toBeTruthy();
+      }
+    }
+  });
+
+  it("is marked unverified, like the rest of the seeded content", () => {
+    expect(surfaceContent.unverified).toBe(true);
+  });
+});

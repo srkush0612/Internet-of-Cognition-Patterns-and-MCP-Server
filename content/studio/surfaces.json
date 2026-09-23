@@ -1,0 +1,58 @@
+{
+  "unverified": true,
+  "note": "Where each pattern could show up. `inContextSurface` is the one surface that has a component built for it today, taken from PATTERN_INBOX in components/patterns/pattern-registry.tsx. The other two surfaces render as not built yet. To say a pattern does not belong on a surface at all, which is a different statement from not built yet, add it to `notHere` with a reason: that judgement is about where a pattern belongs in a product and is not derivable from the code.",
+  "surfaces": [
+    {
+      "id": "standalone",
+      "label": "Standalone",
+      "blurb": "The pattern on its own, with no host around it."
+    },
+    {
+      "id": "thread",
+      "label": "In a thread",
+      "blurb": "A conversation with the agent: who is speaking, what they said, and the pattern in the flow of it."
+    },
+    {
+      "id": "space",
+      "label": "In a shared space",
+      "blurb": "A space a team and its agents both work in, where the pattern sits among other people's activity."
+    },
+    {
+      "id": "console",
+      "label": "In the console",
+      "blurb": "Built into the tool the work already happens in: a ticket, a change record, a runbook, a settings surface."
+    }
+  ],
+  "patterns": [
+    {
+      "patternId": "presence-boundary",
+      "inContextSurface": "thread",
+      "notHere": {}
+    },
+    {
+      "patternId": "authority-gradient",
+      "inContextSurface": "space",
+      "notHere": {}
+    },
+    {
+      "patternId": "convergence-point",
+      "inContextSurface": "thread",
+      "notHere": {}
+    },
+    {
+      "patternId": "memory-commitment-review",
+      "inContextSurface": "console",
+      "notHere": {}
+    },
+    {
+      "patternId": "decision-ledger",
+      "inContextSurface": "console",
+      "notHere": {}
+    },
+    {
+      "patternId": "deferred-detail",
+      "inContextSurface": "console",
+      "notHere": {}
+    }
+  ]
+}

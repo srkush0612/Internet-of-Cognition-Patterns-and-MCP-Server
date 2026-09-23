@@ -3,9 +3,15 @@ import patternElementsJson from "@/content/studio/pattern-elements.json";
 import antiPatternsJson from "@/content/studio/anti-patterns.json";
 import entitiesJson from "@/content/studio/entities.json";
 import sampleScenarioJson from "@/content/studio/sample-scenario.json";
+import surfacesJson from "@/content/studio/surfaces.json";
 import { isPatternReady } from "@/lib/pattern-ready";
 import type {
   AntiPattern,
+  PatternSurfaces,
+  StudioSurface,
+  SurfaceContent,
+  SurfaceDefinition,
+  SurfaceState,
   Entity,
   PatternElement,
   Scenario,
@@ -114,4 +120,54 @@ export function displayNumber(situation: Situation): number {
     (candidate) => candidate.id === situation.id,
   );
   return index === -1 ? situation.order : index + 1;
+}
+
+/* ----------------------------- surfaces ----------------------------- */
+
+export const surfaceContent: SurfaceContent = surfacesJson as SurfaceContent;
+
+export const surfaceDefinitions: SurfaceDefinition[] = surfaceContent.surfaces;
+
+export function getSurface(id: StudioSurface): SurfaceDefinition | undefined {
+  return surfaceDefinitions.find((surface) => surface.id === id);
+}
+
+export function surfacesForPattern(
+  patternId: string,
+): PatternSurfaces | undefined {
+  return surfaceContent.patterns.find(
+    (entry) => entry.patternId === patternId,
+  );
+}
+
+/**
+ * What Studio can show for a pattern on a surface.
+ *
+ * Standalone is built wherever the library has a component at all, which the
+ * caller knows and passes in. Of the three host surfaces, one has a component
+ * today; the rest are either declared as somewhere the pattern does not belong,
+ * or simply not built, and the two say different things on screen.
+ */
+export function surfaceState(
+  patternId: string,
+  surface: StudioSurface,
+  hasStandalone: boolean,
+  hasInContext: boolean,
+): SurfaceState {
+  if (surface === "standalone") return hasStandalone ? "built" : "not_built";
+
+  const entry = surfacesForPattern(patternId);
+  if (!entry) return "not_built";
+  if (entry.notHere[surface]) return "not_here";
+  if (entry.inContextSurface === surface && hasInContext) return "built";
+  return "not_built";
+}
+
+/** The reason a pattern was declared not to belong on a surface, if any. */
+export function notHereReason(
+  patternId: string,
+  surface: StudioSurface,
+): string | null {
+  if (surface === "standalone") return null;
+  return surfacesForPattern(patternId)?.notHere[surface] ?? null;
 }

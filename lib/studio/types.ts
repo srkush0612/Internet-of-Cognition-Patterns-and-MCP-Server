@@ -301,3 +301,46 @@ export type Shapeability =
   | "annotated"
   /** In the library with its write-up, but no element detail to shape. */
   | "matched_only";
+
+/* ------------------------------------------------------------------------ *
+ * Surfaces: where a pattern could show up
+ *
+ * Three host surfaces plus the bare component. Content lives in
+ * content/studio/surfaces.json.
+ * ------------------------------------------------------------------------ */
+
+export type StudioSurface = "standalone" | "thread" | "space" | "console";
+
+export type SurfaceDefinition = {
+  id: StudioSurface;
+  label: string;
+  blurb: string;
+};
+
+export type PatternSurfaces = {
+  patternId: string;
+  /** The one surface with a component built for it today. */
+  inContextSurface: Exclude<StudioSurface, "standalone">;
+  /**
+   * Surfaces this pattern deliberately does not belong on, with the reason.
+   * Different from not built yet, and not derivable from the code: it is a
+   * judgement about where a pattern belongs in a product.
+   */
+  notHere: Partial<Record<Exclude<StudioSurface, "standalone">, string>>;
+};
+
+export type SurfaceContent = {
+  unverified: boolean;
+  note: string;
+  surfaces: SurfaceDefinition[];
+  patterns: PatternSurfaces[];
+};
+
+/** What Studio can show for one pattern on one surface. */
+export type SurfaceState =
+  /** A component exists and renders. */
+  | "built"
+  /** Plausible, but nothing has been built or written for it. */
+  | "not_built"
+  /** Someone decided the pattern does not belong here. */
+  | "not_here";

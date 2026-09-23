@@ -67,6 +67,22 @@ export const PATTERN_INBOX: Partial<Record<string, ComponentType<PatternPreviewP
   "memory-commitment-review": MemoryCommitmentInContext,
 };
 
+/**
+ * In-context variants that accept `live`, so an edit reaches them.
+ *
+ * The rest take no props and render fixed content, which matters wherever a
+ * pattern is shown in context next to an editor: the editor has to say that
+ * its edits land on the standalone view instead of pretending otherwise.
+ * Established by reading each component's signature.
+ */
+export const PATTERN_INBOX_LIVE: ReadonlySet<string> = new Set([
+  "background-work-ledger",
+  "convergence-point",
+  "credential-boundary",
+  "decision-ledger",
+  "deferred-detail",
+]);
+
 export function hasDesignReady(slug: string): boolean {
   return isPatternReady(slug);
 }

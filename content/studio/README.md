@@ -36,6 +36,31 @@ Three patterns have no `whatItSolves` of their own and so nothing to fall back
 to: Presence Boundary, Certainty Boundary and Convergence Point. Writing that
 field is library work.
 
+## `surfaces.json`: where a pattern shows up
+
+Four tabs above the pattern on the canvas: **Standalone**, **In a thread**,
+**In a shared space**, **In the console**. The three host surfaces come from
+shells the repo already has: `PatternInboxShell` for a thread, the Acme renewal
+demo for a shared space, and `PatternIncidentShell`, `PatternChangeShell` or
+the platform runbook for the console.
+
+Each pattern has exactly one host surface with a component built for it today,
+named as `inContextSurface`, and the canvas opens on it. The other two are
+**not built yet**, shown as unavailable.
+
+To say a pattern does not belong on a surface at all, add it to that pattern's
+`notHere` with a reason. That renders struck through, which reads differently
+from unavailable on purpose: not built yet is a gap in the work, somewhere a
+pattern does not belong is a finding. Nothing seeds those, because deciding
+where a pattern belongs in a product is not derivable from the code.
+
+Three of the in-context variants take no props and render fixed content, so an
+edit cannot reach them: presence-boundary, authority-gradient and
+memory-commitment-review. `PATTERN_INBOX_LIVE` in
+`components/patterns/pattern-registry.tsx` records which do, checked against
+every component signature, and the canvas says plainly that edits show on the
+standalone view instead.
+
 ## The situation list is a placeholder, and the shape of it is a finding
 
 Nine situations, each mapped to exactly one pattern. A one-to-one mapping means the situation layer is

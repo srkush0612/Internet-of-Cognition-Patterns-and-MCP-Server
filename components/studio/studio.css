@@ -643,6 +643,71 @@
   flex-wrap: wrap;
 }
 
+/*
+ * Where a pattern could show up. One surface has a component, the others say
+ * which kind of absence they are: nothing built yet reads as unavailable,
+ * while somewhere a pattern does not belong is struck through, because that is
+ * a finding rather than a gap.
+ */
+.studio-surfaces {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  max-width: 44rem;
+  margin: 0 auto 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.studio-surface {
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  padding: 0.28rem 0.7rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.studio-surface:hover:not(:disabled) {
+  border-color: var(--color-border-medium);
+  color: var(--color-text);
+}
+
+.studio-surface[aria-selected="true"] {
+  background: var(--color-tag-bg);
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+.studio-surface:disabled {
+  cursor: default;
+  color: var(--color-text-faint);
+}
+
+.studio-surface[data-state="not_here"] {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.studio-surface:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1280px) {
+  .studio-surfaces {
+    max-width: none;
+  }
+}
+
 /* The stage's own header row: what this view is showing, and the way in. */
 .studio-stage__top {
   display: flex;
@@ -759,7 +824,8 @@
   flex: 1;
 }
 
-.studio-canvas__body[data-side="true"] .studio-stage__top {
+.studio-canvas__body[data-side="true"] .studio-stage__top,
+.studio-canvas__body[data-side="true"] .studio-surfaces {
   max-width: none;
 }
 

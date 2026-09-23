@@ -14,7 +14,11 @@ import {
   CategoryLabel,
   HeroOrbs,
 } from "@/components/PatternTaxonomy";
-import { PATTERN_STANDALONE } from "@/components/patterns/pattern-registry";
+import {
+  PATTERN_INBOX,
+  PATTERN_INBOX_LIVE,
+  PATTERN_STANDALONE,
+} from "@/components/patterns/pattern-registry";
 import {
   CarryNote,
   MakeItYoursPanel,
@@ -34,7 +38,11 @@ import {
   elementsForPattern,
   entities,
   patternElements,
+  notHereReason,
   situations,
+  surfaceDefinitions,
+  surfaceState,
+  surfacesForPattern,
   visibleSituations,
 } from "@/lib/studio/content";
 import { findContinuityGaps } from "@/lib/studio/continuity";
@@ -49,6 +57,7 @@ import type {
   Situation,
   SituationState,
   SituationTension,
+  StudioSurface,
 } from "@/lib/studio/types";
 
 export type CanvasView =
@@ -449,6 +458,57 @@ function Record({ scenario }: { scenario: Scenario }) {
   );
 }
 
+/**
+ * Where a pattern could show up, as a strip of surfaces above it.
+ *
+ * Every pattern has one host surface built today, and the other two say which
+ * kind of absence they are: nothing built yet, or a decision that the pattern
+ * does not belong there. The two read differently on purpose, because one is
+ * a gap in the work and the other is a finding.
+ */
+function SurfaceStrip({
+  patternId,
+  current,
+  hasStandalone,
+  hasInContext,
+  onPick,
+}: {
+  patternId: string;
+  current: StudioSurface;
+  hasStandalone: boolean;
+  hasInContext: boolean;
+  onPick: (surface: StudioSurface) => void;
+}) {
+  return (
+    <div className="studio-surfaces" role="tablist" aria-label="Where it shows up">
+      {surfaceDefinitions.map((surface) => {
+        const state = surfaceState(
+          patternId,
+          surface.id,
+          hasStandalone,
+          hasInContext,
+        );
+        const reason = notHereReason(patternId, surface.id);
+        return (
+          <button
+            key={surface.id}
+            type="button"
+            role="tab"
+            className="studio-surface"
+            aria-selected={current === surface.id}
+            data-state={state}
+            disabled={state !== "built"}
+            title={reason ?? surface.blurb}
+            onClick={() => onPick(surface.id)}
+          >
+            {surface.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function PatternBody({
   pattern,
   shapeability,
@@ -479,10 +539,29 @@ function PatternBody({
   onRestoreElement: (element: PatternElement) => void;
 }) {
   const Component = PATTERN_STANDALONE[pattern.slug];
+  const InContext = PATTERN_INBOX[pattern.slug];
   const elements = elementsForPattern(pattern.slug);
   const removed = decision?.elementsRemoved ?? [];
 
-  if (shapeability === "matched_only") {
+  // Opens on the surface the pattern actually has a component for, and falls
+  // back to the bare component where it has none.
+  const inContextSurface = surfacesForPattern(pattern.slug)?.inContextSurface;
+  const [surface, setSurface] = useState<StudioSurface>(
+    InContext && inContextSurface ? inContextSurface : "standalone",
+  );
+
+  const showingInContext = surface !== "standalone";
+  // The three in-context variants that take no props render fixed content, so
+  // an edit cannot reach them. Saying so beats an editor that looks connected.
+  const surfaceTakesEdits =
+    !showingInContext || PATTERN_INBOX_LIVE.has(pattern.slug);
+
+  // Nothing to shape is not the same as nothing to show. A pattern with no
+  // element detail still has a reference design and still has somewhere it
+  // shows up, and seeing that is most of what this view is for.
+  const nothingToShape = shapeability === "matched_only";
+
+  if (nothingToShape && !Component) {
     return (
       <div className="studio-stage">
         <div className="studio-empty">
@@ -490,7 +569,7 @@ function PatternBody({
           <p>
             {pattern.title} is in the library with its write-up and its
             evidence, and it is the answer to this situation.{" "}
-            {missingDetailReason(pattern.slug, Boolean(Component))}
+            {missingDetailReason(pattern.slug, false)}
           </p>
           <p>
             What the library does say about it is worth reading before you build
@@ -512,23 +591,44 @@ function PatternBody({
       <div className="studio-stage">
         {/* The control that opens the shaping panel belongs with the thing it
             shapes, not up in the bar with identity and navigation. */}
+        <SurfaceStrip
+          patternId={pattern.slug}
+          current={surface}
+          hasStandalone={Boolean(Component)}
+          hasInContext={Boolean(InContext)}
+          onPick={setSurface}
+        />
+
         {customising ? null : (
           <div className="studio-stage__top">
             <p>
-              {shapeability === "annotated"
-                ? "The elements this pattern requires are numbered on it."
-                : "Fill in your own case and this updates as you type."}
+              {nothingToShape
+                ? "This is where it shows up. No element detail has been published for it, so there is nothing to fill in yet."
+                : shapeability === "annotated"
+                  ? "The elements this pattern requires are numbered on it."
+                  : surfaceTakesEdits
+                    ? "Fill in your own case and this updates as you type."
+                    : "This surface renders fixed content, so your edits show on the standalone view rather than here."}
             </p>
-            <button
-              type="button"
-              className="osh-cta-solid studio-customise"
-              aria-expanded={false}
-              aria-controls="studio-make-it-yours"
-              onClick={onOpenCustomise}
-            >
-              <SlidersHorizontal aria-hidden />
-              Customise
-            </button>
+            {nothingToShape ? (
+              <Link
+                href={`/patterns/${pattern.slug}`}
+                className="osh-cta-outline studio-customise"
+              >
+                Read {pattern.title}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className="osh-cta-solid studio-customise"
+                aria-expanded={false}
+                aria-controls="studio-make-it-yours"
+                onClick={onOpenCustomise}
+              >
+                <SlidersHorizontal aria-hidden />
+                Customise
+              </button>
+            )}
           </div>
         )}
 
@@ -545,7 +645,11 @@ function PatternBody({
               } as CSSProperties
             }
           >
-            {shapeability === "annotated" ? (
+            {showingInContext && InContext ? (
+              <InContext
+                live={resolveLivePreview(pattern.slug, { workspace: draft })}
+              />
+            ) : shapeability === "annotated" ? (
               <PatternEmbed
                 Component={Component}
                 elements={elements}
@@ -563,10 +667,10 @@ function PatternBody({
         <CarryNote patternId={pattern.slug} />
       </div>
 
-      {customising ? (
+      {customising && !nothingToShape ? (
         <MakeItYoursPanel
           pattern={pattern}
-          shapeability={shapeability}
+          shapeability={shapeability as "editable" | "annotated"}
           persisted={persisted}
           decision={decision}
           onClose={onCloseCustomise}
