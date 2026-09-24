@@ -20,7 +20,7 @@ type ChipKey = "topology" | "attendance" | "irreversibility";
 
 const CHIP_QUESTION: Record<ChipKey, string> = {
   topology: "How many agents, and do they work together?",
-  attendance: "Is someone watching while it works?",
+  attendance: "How far in the loop is a person while it works?",
   irreversibility: "Can it do things you cannot take back?",
 };
 

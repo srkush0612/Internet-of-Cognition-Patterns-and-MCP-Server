@@ -31,7 +31,10 @@ function scenarioName(description: string): string {
   return source.length > 60 ? `${source.slice(0, 57).trimEnd()}…` : source;
 }
 
-/** Shown under the answer, so the wording is not the only thing carrying it. */
+/**
+ * In, on and out of the loop are terms of art, so every option carries a hint
+ * underneath: the label names the position, the hint says what it means.
+ */
 const ATTENDANCE_HINT: Record<Attendance, string> = {
   watched: "approves before it acts",
   sometimes: "can see it and step in",
@@ -129,7 +132,7 @@ export function SetupCard({
         </fieldset>
 
         <fieldset className="studio-q">
-          <legend>Is someone watching while it works?</legend>
+          <legend>How far in the loop is a person while it works?</legend>
           {(Object.keys(ATTENDANCE_LABEL) as Attendance[]).map((value) => (
             <button
               key={value}

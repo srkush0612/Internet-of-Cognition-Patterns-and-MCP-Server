@@ -10,7 +10,14 @@ export type { BackingStrength };
  * risk than ten unattended seconds at 3am.
  */
 export type Topology = "single" | "handoff" | "orchestrated";
-/** "Is someone watching while it works?" */
+/**
+ * "How far in the loop is a person while it works?"
+ *
+ * The three answers are the human-in-the-loop positions: in the loop approves
+ * before the agent acts, on the loop can see it and step in, out of the loop
+ * finds out afterwards. The stored values are unchanged, so nothing that reads
+ * a saved scenario has to migrate.
+ */
 export type Attendance = "watched" | "sometimes" | "unattended";
 /** "Can it do things you cannot take back?" */
 export type Irreversibility = "no" | "some" | "yes";
@@ -22,9 +29,9 @@ export const TOPOLOGY_LABEL: Record<Topology, string> = {
 };
 
 export const ATTENDANCE_LABEL: Record<Attendance, string> = {
-  watched: "Yes, they are in it",
-  sometimes: "Sometimes",
-  unattended: "No, they find out afterwards",
+  watched: "In the loop",
+  sometimes: "On the loop",
+  unattended: "Out of the loop",
 };
 
 export const IRREVERSIBILITY_LABEL: Record<Irreversibility, string> = {
