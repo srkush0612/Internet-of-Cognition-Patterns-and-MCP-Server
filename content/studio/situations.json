@@ -28,7 +28,7 @@
         "attendances": [
           "unattended"
         ],
-        "label": "waits for a person, and yours is out of the loop",
+        "label": "waits for a person, and yours only reads it afterwards",
         "cites": "signal-to-intent-handshake.interactionModel: 'Nothing irreversible happens until you respond.'"
       }
     ],

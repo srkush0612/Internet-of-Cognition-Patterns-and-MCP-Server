@@ -32,16 +32,6 @@ function scenarioName(description: string): string {
 }
 
 /**
- * In, on and out of the loop are terms of art, so every option carries a hint
- * underneath: the label names the position, the hint says what it means.
- */
-const ATTENDANCE_HINT: Record<Attendance, string> = {
-  watched: "approves before it acts",
-  sometimes: "can see it and step in",
-  unattended: "finds out afterwards",
-};
-
-/**
  * Shown once. After this it collapses into the three chips at the top of the
  * agent pane, which stay editable.
  */
@@ -132,7 +122,7 @@ export function SetupCard({
         </fieldset>
 
         <fieldset className="studio-q">
-          <legend>How far in the loop is a person while it works?</legend>
+          <legend>What does a person do while it works?</legend>
           {(Object.keys(ATTENDANCE_LABEL) as Attendance[]).map((value) => (
             <button
               key={value}
@@ -144,7 +134,6 @@ export function SetupCard({
               }
             >
               {ATTENDANCE_LABEL[value]}
-              <i>{ATTENDANCE_HINT[value]}</i>
             </button>
           ))}
         </fieldset>

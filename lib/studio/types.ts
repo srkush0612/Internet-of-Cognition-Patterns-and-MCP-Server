@@ -11,12 +11,13 @@ export type { BackingStrength };
  */
 export type Topology = "single" | "handoff" | "orchestrated";
 /**
- * "How far in the loop is a person while it works?"
+ * "What does a person do while it works?"
  *
- * The three answers are the human-in-the-loop positions: in the loop approves
- * before the agent acts, on the loop can see it and step in, out of the loop
- * finds out afterwards. The stored values are unchanged, so nothing that reads
- * a saved scenario has to migrate.
+ * The human-in-the-loop positions, named by what the person actually does
+ * rather than by where they sit relative to a loop. In, on and out of the loop
+ * are terms of art, and the middle one does not survive contact with a reader
+ * who has not met it before. The stored values are unchanged, so nothing that
+ * reads a saved scenario has to migrate.
  */
 export type Attendance = "watched" | "sometimes" | "unattended";
 /** "Can it do things you cannot take back?" */
@@ -29,9 +30,9 @@ export const TOPOLOGY_LABEL: Record<Topology, string> = {
 };
 
 export const ATTENDANCE_LABEL: Record<Attendance, string> = {
-  watched: "In the loop",
-  sometimes: "On the loop",
-  unattended: "Out of the loop",
+  watched: "Approves each action",
+  sometimes: "Watches and steps in",
+  unattended: "Reads it afterwards",
 };
 
 export const IRREVERSIBILITY_LABEL: Record<Irreversibility, string> = {
