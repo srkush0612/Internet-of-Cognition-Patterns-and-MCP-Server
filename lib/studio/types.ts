@@ -316,7 +316,12 @@ export type Shapeability =
  * content/studio/surfaces.json.
  * ------------------------------------------------------------------------ */
 
-export type StudioSurface = "standalone" | "thread" | "space" | "console";
+/**
+ * Every view is the pattern inside a host. There is no bare-component view:
+ * seeing where a pattern shows up is the whole point of the canvas, and a
+ * component floating on its own answers a different question.
+ */
+export type StudioSurface = "thread" | "space" | "console";
 
 export type SurfaceDefinition = {
   id: StudioSurface;
@@ -327,13 +332,13 @@ export type SurfaceDefinition = {
 export type PatternSurfaces = {
   patternId: string;
   /** The one surface with a component built for it today. */
-  inContextSurface: Exclude<StudioSurface, "standalone">;
+  inContextSurface: StudioSurface;
   /**
    * Surfaces this pattern deliberately does not belong on, with the reason.
    * Different from not built yet, and not derivable from the code: it is a
    * judgement about where a pattern belongs in a product.
    */
-  notHere: Partial<Record<Exclude<StudioSurface, "standalone">, string>>;
+  notHere: Partial<Record<StudioSurface, string>>;
 };
 
 export type SurfaceContent = {

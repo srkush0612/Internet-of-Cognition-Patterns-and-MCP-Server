@@ -1,12 +1,7 @@
 {
   "unverified": true,
-  "note": "Where each pattern could show up. `inContextSurface` is the one surface that has a component built for it today, taken from PATTERN_INBOX in components/patterns/pattern-registry.tsx. The other two surfaces render as not built yet. To say a pattern does not belong on a surface at all, which is a different statement from not built yet, add it to `notHere` with a reason: that judgement is about where a pattern belongs in a product and is not derivable from the code.",
+  "note": "Where each pattern shows up. Every view here is the pattern inside a host: there is no bare-component view, because the point is where it appears. `inContextSurface` is the one surface that has a component built for it today, taken from PATTERN_INBOX in components/patterns/pattern-registry.tsx. The other two render as not built yet. To say a pattern does not belong on a surface at all, which is a different statement from not built yet, add it to `notHere` with a reason: that judgement is about where a pattern belongs in a product and is not derivable from the code.",
   "surfaces": [
-    {
-      "id": "standalone",
-      "label": "Standalone",
-      "blurb": "The pattern on its own, with no host around it."
-    },
     {
       "id": "thread",
       "label": "In a thread",
@@ -25,23 +20,18 @@
   ],
   "patterns": [
     {
-      "patternId": "presence-boundary",
-      "inContextSurface": "thread",
-      "notHere": {}
-    },
-    {
       "patternId": "authority-gradient",
       "inContextSurface": "space",
       "notHere": {}
     },
     {
-      "patternId": "convergence-point",
+      "patternId": "background-work-ledger",
       "inContextSurface": "thread",
       "notHere": {}
     },
     {
-      "patternId": "memory-commitment-review",
-      "inContextSurface": "console",
+      "patternId": "convergence-point",
+      "inContextSurface": "thread",
       "notHere": {}
     },
     {
@@ -52,6 +42,21 @@
     {
       "patternId": "deferred-detail",
       "inContextSurface": "console",
+      "notHere": {}
+    },
+    {
+      "patternId": "memory-commitment-review",
+      "inContextSurface": "console",
+      "notHere": {}
+    },
+    {
+      "patternId": "presence-boundary",
+      "inContextSurface": "thread",
+      "notHere": {}
+    },
+    {
+      "patternId": "signal-to-intent-handshake",
+      "inContextSurface": "thread",
       "notHere": {}
     }
   ]

@@ -143,19 +143,15 @@ export function surfacesForPattern(
 /**
  * What Studio can show for a pattern on a surface.
  *
- * Standalone is built wherever the library has a component at all, which the
- * caller knows and passes in. Of the three host surfaces, one has a component
- * today; the rest are either declared as somewhere the pattern does not belong,
- * or simply not built, and the two say different things on screen.
+ * One of the three has a component today; the rest are either declared as
+ * somewhere the pattern does not belong, or simply not built, and the two say
+ * different things on screen.
  */
 export function surfaceState(
   patternId: string,
   surface: StudioSurface,
-  hasStandalone: boolean,
   hasInContext: boolean,
 ): SurfaceState {
-  if (surface === "standalone") return hasStandalone ? "built" : "not_built";
-
   const entry = surfacesForPattern(patternId);
   if (!entry) return "not_built";
   if (entry.notHere[surface]) return "not_here";
@@ -168,6 +164,5 @@ export function notHereReason(
   patternId: string,
   surface: StudioSurface,
 ): string | null {
-  if (surface === "standalone") return null;
   return surfacesForPattern(patternId)?.notHere[surface] ?? null;
 }

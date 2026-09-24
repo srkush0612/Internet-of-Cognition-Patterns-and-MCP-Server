@@ -17,7 +17,6 @@ import {
 import {
   PATTERN_INBOX,
   PATTERN_INBOX_LIVE,
-  PATTERN_STANDALONE,
 } from "@/components/patterns/pattern-registry";
 import {
   CarryNote,
@@ -47,7 +46,7 @@ import {
 } from "@/lib/studio/content";
 import { findContinuityGaps } from "@/lib/studio/continuity";
 import { whyThisPattern } from "@/lib/studio/agent";
-import { missingDetailReason, shapeabilityOf } from "@/lib/studio/shapeability";
+import { shapeabilityOf } from "@/lib/studio/shapeability";
 import type { CSSProperties } from "react";
 import type {
   Decision,
@@ -79,7 +78,9 @@ export function situationState(
 export function shapeabilityOfSituation(situation: Situation): Shapeability {
   const patternId = situation.patternIds[0];
   if (!patternId) return "matched_only";
-  return shapeabilityOf(patternId, Boolean(PATTERN_STANDALONE[patternId]));
+  // The host component is what the canvas renders now, so that is what decides
+  // whether there is anything here to shape.
+  return shapeabilityOf(patternId, Boolean(PATTERN_INBOX[patternId]));
 }
 
 /** Only the tensions whose condition this scenario actually meets. */
@@ -469,25 +470,18 @@ function Record({ scenario }: { scenario: Scenario }) {
 function SurfaceStrip({
   patternId,
   current,
-  hasStandalone,
   hasInContext,
   onPick,
 }: {
   patternId: string;
   current: StudioSurface;
-  hasStandalone: boolean;
   hasInContext: boolean;
   onPick: (surface: StudioSurface) => void;
 }) {
   return (
     <div className="studio-surfaces" role="tablist" aria-label="Where it shows up">
       {surfaceDefinitions.map((surface) => {
-        const state = surfaceState(
-          patternId,
-          surface.id,
-          hasStandalone,
-          hasInContext,
-        );
+        const state = surfaceState(patternId, surface.id, hasInContext);
         const reason = notHereReason(patternId, surface.id);
         return (
           <button
@@ -538,38 +532,37 @@ function PatternBody({
   onRemoveElement: (element: PatternElement) => void;
   onRestoreElement: (element: PatternElement) => void;
 }) {
-  const Component = PATTERN_STANDALONE[pattern.slug];
   const InContext = PATTERN_INBOX[pattern.slug];
   const elements = elementsForPattern(pattern.slug);
   const removed = decision?.elementsRemoved ?? [];
 
-  // Opens on the surface the pattern actually has a component for, and falls
-  // back to the bare component where it has none.
+  // Opens on the surface the pattern has a component for. There is no bare
+  // view to fall back to, so a pattern with no in-context component has
+  // nowhere to be shown, and says so.
   const inContextSurface = surfacesForPattern(pattern.slug)?.inContextSurface;
   const [surface, setSurface] = useState<StudioSurface>(
-    InContext && inContextSurface ? inContextSurface : "standalone",
+    inContextSurface ?? "thread",
   );
 
-  const showingInContext = surface !== "standalone";
   // The three in-context variants that take no props render fixed content, so
   // an edit cannot reach them. Saying so beats an editor that looks connected.
-  const surfaceTakesEdits =
-    !showingInContext || PATTERN_INBOX_LIVE.has(pattern.slug);
+  const surfaceTakesEdits = PATTERN_INBOX_LIVE.has(pattern.slug);
 
   // Nothing to shape is not the same as nothing to show. A pattern with no
   // element detail still has a reference design and still has somewhere it
   // shows up, and seeing that is most of what this view is for.
   const nothingToShape = shapeability === "matched_only";
 
-  if (nothingToShape && !Component) {
+  if (!InContext) {
     return (
       <div className="studio-stage">
         <div className="studio-empty">
           <b>The match stands. The detail does not.</b>
           <p>
             {pattern.title} is in the library with its write-up and its
-            evidence, and it is the answer to this situation.{" "}
-            {missingDetailReason(pattern.slug, false)}
+            evidence, and it is the answer to this situation. What it does not
+            have is a component showing it inside a host, so there is nowhere
+            here to put it.
           </p>
           <p>
             What the library does say about it is worth reading before you build
@@ -594,7 +587,6 @@ function PatternBody({
         <SurfaceStrip
           patternId={pattern.slug}
           current={surface}
-          hasStandalone={Boolean(Component)}
           hasInContext={Boolean(InContext)}
           onPick={setSurface}
         />
@@ -608,7 +600,7 @@ function PatternBody({
                   ? "The elements this pattern requires are numbered on it."
                   : surfaceTakesEdits
                     ? "Fill in your own case and this updates as you type."
-                    : "This surface renders fixed content, so your edits show on the standalone view rather than here."}
+                    : "This host renders fixed content, so what you fill in is kept on the record but does not change what you see here."}
             </p>
             {nothingToShape ? (
               <Link
@@ -636,32 +628,27 @@ function PatternBody({
             category colour. The component inside is untouched: the frame is a
             wrapper, never padding on the annotated embed, whose overlay is
             measured against the component's own box. */}
-        {Component ? (
-          <div
-            className="studio-frame"
-            style={
-              {
-                "--c": PATTERN_CATEGORY_COLOR[pattern.category],
-              } as CSSProperties
-            }
-          >
-            {showingInContext && InContext ? (
-              <InContext
-                live={resolveLivePreview(pattern.slug, { workspace: draft })}
-              />
-            ) : shapeability === "annotated" ? (
-              <PatternEmbed
-                Component={Component}
-                elements={elements}
-                removedElementIds={removed}
-              />
-            ) : (
-              <Component
-                live={resolveLivePreview(pattern.slug, { workspace: draft })}
-              />
-            )}
-          </div>
-        ) : null}
+        <div
+          className="studio-frame"
+          style={
+            { "--c": PATTERN_CATEGORY_COLOR[pattern.category] } as CSSProperties
+          }
+        >
+          {/* The annotated overlay goes over the host component now that there
+              is no bare view. Its markers are found by matching the text each
+              element authored, which the host renders the same way. */}
+          {shapeability === "annotated" ? (
+            <PatternEmbed
+              Component={InContext}
+              elements={elements}
+              removedElementIds={removed}
+            />
+          ) : (
+            <InContext
+              live={resolveLivePreview(pattern.slug, { workspace: draft })}
+            />
+          )}
+        </div>
 
         <RemovalNotes decision={decision} />
         <CarryNote patternId={pattern.slug} />

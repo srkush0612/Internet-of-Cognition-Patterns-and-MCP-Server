@@ -38,9 +38,10 @@ field is library work.
 
 ## `surfaces.json`: where a pattern shows up
 
-Four tabs above the pattern on the canvas: **Standalone**, **In a thread**,
-**In a shared space**, **In the console**. The three host surfaces come from
-shells the repo already has: `PatternInboxShell` for a thread, the Acme renewal
+Three tabs above the pattern on the canvas: **In a thread**, **In a shared
+space**, **In the console**. There is no bare-component view: every view is the
+pattern inside a host, because where it appears is the point. The shells come
+from ones the repo already has: `PatternInboxShell` for a thread, the Acme renewal
 demo for a shared space, and `PatternIncidentShell`, `PatternChangeShell` or
 the platform runbook for the console.
 
@@ -54,12 +55,14 @@ from unavailable on purpose: not built yet is a gap in the work, somewhere a
 pattern does not belong is a finding. Nothing seeds those, because deciding
 where a pattern belongs in a product is not derivable from the code.
 
-Three of the in-context variants take no props and render fixed content, so an
-edit cannot reach them: presence-boundary, authority-gradient and
+Three of the host variants take no props and render fixed content, so an edit
+cannot reach them: presence-boundary, authority-gradient and
 memory-commitment-review. `PATTERN_INBOX_LIVE` in
 `components/patterns/pattern-registry.tsx` records which do, checked against
-every component signature, and the canvas says plainly that edits show on the
-standalone view instead.
+every component signature. With no bare view left to fall back to, the canvas
+says that what you fill in is kept on the record but does not change what you
+see. Making those three take `live` is the fix, and it is work in components
+the pattern pages share.
 
 ## The situation list is a placeholder, and the shape of it is a finding
 
