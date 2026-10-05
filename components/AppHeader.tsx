@@ -8,7 +8,7 @@ const NAV = [
   { href: "/gallery", label: "Patterns" },
   { href: "/advisor", label: "Chat" },
   { href: "/studio", label: "Studio" },
-  { href: "/setup", label: "Setup" },
+  { href: "/setup", label: "MCP server" },
 ] as const;
 
 export function AppHeader() {

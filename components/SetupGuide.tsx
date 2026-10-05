@@ -366,11 +366,12 @@ export function SetupGuide() {
                 Developer guide
               </p>
               <h1 className="mt-1 font-heading text-4xl font-bold tracking-tight text-ink sm:text-5xl">
-                Setup Guide
+                MCP server
               </h1>
               <p className="mt-3 max-w-2xl text-lg text-muted">
                 Install and configure the MCP server that powers HAX 2.0
-                Patterns — pattern discovery, live instances, and agent coordination.
+                Patterns: pattern discovery, live instances, and agent
+                coordination.
               </p>
             </div>
           </div>
