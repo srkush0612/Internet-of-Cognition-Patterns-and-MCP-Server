@@ -335,7 +335,7 @@
     height: 200px;
     right: 4%;
     bottom: -70%;
-    background: rgba(245, 179, 92, 0.09);
+    background: rgba(255, 109, 46, 0.1);
     animation: osh-drift-c 14s ease-in-out infinite;
   }
 
@@ -1132,3 +1132,19 @@
       transform: none;
     }
   }
+
+/* The version marker in the v1 header. v2 has its own, in v2.css, because the
+   two trees do not share a stylesheet beyond this one. */
+.v1-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-medium);
+  background: var(--color-hover);
+  padding: 0.1rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}

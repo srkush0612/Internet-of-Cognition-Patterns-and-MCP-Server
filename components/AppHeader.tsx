@@ -19,7 +19,7 @@ export function AppHeader() {
     if (href === "/gallery") {
       return pathname.startsWith("/gallery") || pathname.startsWith("/patterns/");
     }
-    if (href === "/") return pathname === "/";
+    if (href === "/v1") return pathname === "/v1";
     return pathname.startsWith(href);
   }
 
@@ -30,13 +30,16 @@ export function AppHeader() {
   return (
     <header className="osh-site-header sticky top-0 z-50">
       <div className="osh-container flex h-[4.5rem] items-center justify-between gap-4">
-        <Link href="/" className="flex items-baseline gap-2" onClick={closeMenu}>
+        {/* The wordmark goes to v1's own front page. `/` is the version
+            picker now, and "Switch version" on the right is the way back. */}
+        <Link href="/v1" className="flex items-baseline gap-2" onClick={closeMenu}>
           <span className="text-lg font-semibold text-ink sm:text-xl">
             HAX 2.0
           </span>
           <span className="hidden text-xl font-extralight text-muted sm:inline">
             patterns
           </span>
+          <span className="v1-badge ml-1">v1</span>
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
@@ -53,7 +56,15 @@ export function AppHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link href="/advisor" className="osh-cta-solid hidden text-sm sm:inline-flex">
+          {/* Shown from the same breakpoint as the nav, so there is never a
+              width where v1 has a header but no way back to the picker. */}
+          <Link href="/" className="osh-cta-outline hidden text-sm md:inline-flex">
+            Switch version
+          </Link>
+          <Link
+            href="/advisor"
+            className="osh-cta-solid hidden text-sm sm:inline-flex md:hidden lg:inline-flex"
+          >
             Chat with Agent
           </Link>
 
@@ -95,13 +106,20 @@ export function AppHeader() {
                 </Link>
               </li>
             ))}
-            <li className="pt-2">
+            <li className="flex flex-col gap-2 pt-2">
               <Link
                 href="/advisor"
                 className="osh-cta-solid w-full text-sm"
                 onClick={closeMenu}
               >
                 Chat with Agent
+              </Link>
+              <Link
+                href="/"
+                className="osh-cta-outline w-full text-sm"
+                onClick={closeMenu}
+              >
+                Switch version
               </Link>
             </li>
           </ul>
