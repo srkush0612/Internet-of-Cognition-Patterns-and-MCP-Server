@@ -288,7 +288,7 @@ export default async function V2PatternPage({
                 : pattern.id === "disclosure-gradient"
                   ? "Follow the same Payments API incident in the agent’s chat turn or its shared incident workspace. Open each layer to reveal more of the result’s rationale and history."
               : pattern.id === "lineage-view"
-                ? "Follow the disputed RCA to the remediation plan and status page draft, then see the production change that follows from the plan. Only the RCA is highlighted; the impact summary shows who needs to review their reliance."
+                ? "Trace the Triage agent’s disputed RCA through the Remediation agent’s plan to the Change agent’s ticket, alongside the Comms agent’s draft. Only the RCA is highlighted; the impact summary shows who needs to review their reliance."
               : "Explore the exchange in each place it can appear."}
           </p>
           <div className="v2-pattern-preview__body">

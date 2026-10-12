@@ -8,7 +8,7 @@
     "dev:restart": "for port in 3000 3001 3002 3006 3007; do pids=$(lsof -ti:$port 2>/dev/null); [ -n \"$pids\" ] && kill -9 $pids 2>/dev/null; done; pkill -f 'next dev' 2>/dev/null; rm -rf .next && next dev",
     "build": "next build",
     "build:reviewa": "node scripts/build-reviewa.mjs",
-    "deploy:reviewa": "node scripts/build-reviewa.mjs && curl -fsSL https://reviewa.work/cli.mjs -o /tmp/reviewa.mjs && node /tmp/reviewa.mjs update epbhm84q out",
+    "deploy:reviewa": "node scripts/build-reviewa.mjs && curl -fsSL https://reviewa.work/cli.mjs -o /tmp/reviewa.mjs && node /tmp/reviewa.mjs update epbhm84q .next-reviewa",
     "start": "next start",
     "lint": "next lint",
     "verify:themes": "npx tsx scripts/verify-gallery-themes.ts",

@@ -118,7 +118,7 @@ const DISCLOSURE_GRADIENT_NOTES = {
 const LINEAGE_VIEW_NOTES = {
   shared_ui: [
     { title: "Root output", text: "The disputed RCA is identified with its author and last verified time." },
-    { title: "Dependency paths", text: "The remediation plan leads to the change ticket; the status page draft cites the RCA directly." },
+    { title: "Agent contributions", text: "Each decision and artifact names its producing agent; arrows show whether it cites the RCA or follows the remediation plan." },
     { title: "Shared impact", text: "The incident view summarizes affected teams and decisions for review." },
   ],
 } as const;

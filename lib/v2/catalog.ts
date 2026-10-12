@@ -976,7 +976,7 @@ export const patterns: Pattern[] = [
       { title: "Assess the impact", description: "Count affected teams and decisions so they can verify the source and reassess dependent work." },
     ],
     example:
-      "In the INC-2231 incident workspace, an RCA summary for edge-router-7 is under dispute. The view traces its remediation plan, production change ticket, and status page draft, and shows that three teams still rely on the summary.",
+      "In the INC-2231 incident workspace, the Triage agent's RCA summary for edge-router-7 is under dispute. The Remediation agent's rollback plan leads to a change ticket from the Change agent; a Comms agent's status page draft also cites the RCA. Three teams still rely on the summary.",
     factChips: ["Citation graph", "Disputed source", "Cross-team blast radius"],
     source: "ioc",
     merged_from: ["Dependency and Lineage View (IOC), renamed"],

@@ -70,4 +70,4 @@ try {
   restore();
 }
 
-console.log("\n✓ Reviewa static export ready in out/");
+console.log("\n✓ Reviewa static export ready in .next-reviewa/");

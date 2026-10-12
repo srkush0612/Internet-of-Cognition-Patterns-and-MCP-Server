@@ -3,7 +3,7 @@ export function LineageViewPreview() {
     <section className="v2-lineage" aria-labelledby="v2-lineage-title">
       <header className="v2-lineage__header">
         <div>
-          <p className="v2-lineage__eyebrow">INC-2231 · edge-router-7 outage · updated 3 min ago</p>
+          <p className="v2-lineage__eyebrow">INC-2231 · edge-router-7 outage · assembled by Lineage agent</p>
           <h3 id="v2-lineage-title">RCA summary · dependency lineage</h3>
           <p className="v2-lineage__count">2 decisions and 1 artifact depend on this source</p>
         </div>
@@ -16,7 +16,7 @@ export function LineageViewPreview() {
             <span className="v2-lineage__flag">Under dispute</span>
           </div>
           <h4>Root cause summary</h4>
-          <p>Authored by Triage agent · last verified 14:12</p>
+          <p>Produced by Triage agent · last verified 14:12</p>
         </article>
 
         <div className="v2-lineage__connector" aria-hidden="true"><span>is cited by</span></div>
@@ -25,13 +25,13 @@ export function LineageViewPreview() {
           <section className="v2-lineage__branch" aria-label="Remediation decision and dependent change">
             <article className="v2-lineage__dependency">
               <span className="v2-lineage__edge-label">Cites RCA summary</span>
-              <span className="v2-lineage__kind">Decision · remediation</span>
+              <span className="v2-lineage__kind">Remediation agent · decision</span>
               <h4>Remediation plan</h4>
               <p>Rollback firmware to 4.11 after draining traffic</p>
             </article>
             <div className="v2-lineage__nested-connector" aria-hidden="true"><span>leads to</span></div>
             <article className="v2-lineage__dependency v2-lineage__dependency--nested">
-              <span className="v2-lineage__kind">Decision · change</span>
+              <span className="v2-lineage__kind">Change agent · decision</span>
               <h4>CHG-2231 · production rollback</h4>
               <p>Scheduled for the 22:00 maintenance window</p>
             </article>
@@ -40,7 +40,7 @@ export function LineageViewPreview() {
           <section className="v2-lineage__branch" aria-label="Dependent status page artifact">
             <article className="v2-lineage__dependency">
               <span className="v2-lineage__edge-label">Cites RCA summary</span>
-              <span className="v2-lineage__kind">Artifact · communications</span>
+              <span className="v2-lineage__kind">Comms agent · artifact</span>
               <h4>Status page draft</h4>
               <p>Customer update held until the cause is verified</p>
             </article>

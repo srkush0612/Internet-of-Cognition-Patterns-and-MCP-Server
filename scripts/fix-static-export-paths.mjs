@@ -13,13 +13,17 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outDir = path.join(__dirname, "..", "out");
+// The Reviewa build points `distDir` at `.next-reviewa` (see next.config.ts) so
+// it never shares `.next` with a `next dev` server that might be running at
+// the same time. With `output: "export"`, Next writes the exported static
+// site directly into that distDir rather than a separate `out/`.
+const outDir = path.join(__dirname, "..", ".next-reviewa");
 
 if (!fs.existsSync(outDir)) {
   // No static export present — this step only applies to `build:reviewa`
-  // (output: "export"). A plain `next build` produces `.next/`, not `out/`,
-  // so treat the absence as a no-op instead of failing the build.
-  console.log("out/ not found — skipping static-export path fixes (not an export build).");
+  // (output: "export"). A plain `next build` produces `.next/`, not this
+  // directory, so treat the absence as a no-op instead of failing the build.
+  console.log(".next-reviewa/ not found — skipping static-export path fixes (not an export build).");
   process.exit(0);
 }
 
@@ -96,7 +100,7 @@ walkFiles(outDir, (filePath) => {
   }
 });
 
-console.log(`patched ${patched} files in out/`);
+console.log(`patched ${patched} files in .next-reviewa/`);
 
 // ------------------------------------------------------------------- routes
 
@@ -127,7 +131,7 @@ const redirectLines = [
   ]),
 ];
 fs.writeFileSync(path.join(outDir, "_redirects"), `${redirectLines.join("\n")}\n`);
-console.log("wrote out/_redirects for static route fallbacks");
+console.log("wrote .next-reviewa/_redirects for static route fallbacks");
 
 // Hosts without _redirects (Reviewa) need index.html inside the route folder.
 for (const route of routes) {
