@@ -10,6 +10,7 @@ export type ComponentMetadata = {
   triggers: string[];
   description: string;
   category?: string;
+  reasoning?: string;
   backingStrength?: BackingStrength;
   participants?: string;
   evidence_count?: number;
@@ -46,6 +47,8 @@ export function buildComponentFromPattern(pattern: Pattern): ComponentDefinition
       version: "1.0.0",
       triggers,
       description: pattern.explanation,
+      category: pattern.category,
+      reasoning: pattern.reasoning,
       backingStrength: pattern.backingStrength,
       participants: pattern.participants
         ? anonymizeParticipants(pattern.participants)

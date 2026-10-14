@@ -1,9 +1,9 @@
 import { SetupGuide } from "@/components/SetupGuide";
 
 export const metadata = {
-  title: "Setup Guide · Human Agent IoC Patterns",
+  title: "MCP server · HAX 2.0 Patterns",
   description:
-    "Install and configure the MCP pattern registry for Human Agent IoC Patterns.",
+    "Install and configure the MCP pattern registry for HAX 2.0 Patterns.",
 };
 
 export default function SetupPage() {

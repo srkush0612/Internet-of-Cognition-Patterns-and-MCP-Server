@@ -1,5 +1,5 @@
 /**
- * IoC Pattern Library MCP Server (No Anthropic Dependency)
+ * HAX 2.0 Pattern Library MCP Server (No Anthropic Dependency)
  *
  * Registry logic lives in lib/pattern-registry-core.ts (shared with static/Reviewa).
  * This module adds in-memory instance storage for dev and API routes.

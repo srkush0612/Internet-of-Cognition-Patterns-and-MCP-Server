@@ -25,9 +25,9 @@
 }
 
 .app-toast--error {
-  background: color-mix(in srgb, var(--text-error, #dc2626) 10%, var(--surface-1, #fff));
-  color: var(--text-error, #dc2626);
-  border: 0.5px solid color-mix(in srgb, var(--text-error, #dc2626) 35%, var(--border));
+  background: color-mix(in srgb, var(--text-error, var(--color-danger)) 10%, var(--surface-1, #fff));
+  color: var(--text-error, var(--color-danger));
+  border: 0.5px solid color-mix(in srgb, var(--text-error, var(--color-danger)) 35%, var(--border));
 }
 
 .app-toast__icon {
@@ -49,7 +49,7 @@
 }
 
 .app-toast--error .app-toast__icon {
-  background: var(--text-error, #dc2626);
+  background: var(--text-error, var(--color-danger));
   color: #fff;
 }
 

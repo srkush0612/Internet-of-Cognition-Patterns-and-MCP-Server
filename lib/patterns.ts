@@ -12,6 +12,61 @@ export type EvidenceItem = {
   attribution: string;
 };
 
+/**
+ * What kind of design problem the pattern answers. Orthogonal to `reasoning`
+ * below: a pattern's category doesn't predict whether it surfaces cognition.
+ */
+export type PatternCategory = "Autonomy" | "Legibility" | "Commitment" | "Reporting";
+
+/**
+ * Whether the pattern requires the agent's reasoning to be surfaced.
+ * "ioc": built for agents exposing thought (the Internet of Cognition
+ * cognition engine). "non-ioc": about acting, coordinating, or being
+ * scoped, without surfacing reasoning.
+ */
+export type ReasoningMode = "ioc" | "non-ioc";
+
+export const PATTERN_CATEGORY_ORDER: PatternCategory[] = [
+  "Autonomy",
+  "Legibility",
+  "Commitment",
+  "Reporting",
+];
+
+export const PATTERN_CATEGORY_DEFINITIONS: Record<PatternCategory, string> = {
+  Autonomy: "Bounding what the agent can reach, see, or decide.",
+  Legibility:
+    "Making it visible where humans and agents, or agents and agents, hold different states.",
+  Commitment: "The moment something is about to become real: action, decision, or memory.",
+  Reporting: "Reading back what happened, live or after.",
+};
+
+/**
+ * Category reads as colour across the site; reasoning reads as shape. The two
+ * stay separate visual systems so a card can carry both without ambiguity.
+ */
+export const PATTERN_CATEGORY_COLOR: Record<PatternCategory, string> = {
+  Autonomy: "#187adc",
+  Legibility: "#9345e1",
+  Commitment: "#00a3cc",
+  Reporting: "#5a9c37",
+};
+
+/** The violet the IoC tag and reasoning grouping use everywhere. */
+export const IOC_COLOR = "#6d28d9";
+
+export const REASONING_MODE_ORDER: ReasoningMode[] = ["ioc", "non-ioc"];
+
+export const REASONING_MODE_LABEL: Record<ReasoningMode, string> = {
+  ioc: "IoC",
+  "non-ioc": "non-IoC",
+};
+
+export const REASONING_MODE_DEFINITIONS: Record<ReasoningMode, string> = {
+  ioc: "Requires the agent's reasoning to be surfaced: built for agents on the Internet of Cognition cognition engine, exposing thought.",
+  "non-ioc": "About acting, coordinating, or being scoped, without surfacing reasoning.",
+};
+
 export type Pattern = {
   slug: string;
   title: string;
@@ -33,6 +88,13 @@ export type Pattern = {
   backingStrength?: BackingStrength;
   participants?: string;
   researchNote?: string;
+  // Not yet authored for any pattern (see content/studio/README.md).
+  // Additive fields, undefined everywhere today.
+  composesWith?: string[];
+  conflictsWith?: string[];
+  // The gallery's two orthogonal taxonomies (see PatternCategory/ReasoningMode above).
+  category: PatternCategory;
+  reasoning: ReasoningMode;
 };
 
 // A GTM / positioning finding from the synthesis that is not itself a UI
@@ -49,6 +111,8 @@ export type PositioningFinding = {
 export const patterns: Pattern[] = [
   {
     slug: "presence-boundary",
+    category: "Autonomy",
+    reasoning: "non-ioc",
     hasReferenceDesign: true,
     title: "Presence Boundary",
     backingStrength: "Moderate",
@@ -71,6 +135,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "signal-to-intent-handshake",
+    category: "Commitment",
+    reasoning: "ioc",
     pairsWith: "convergence-point",
     title: "Signal-to-Intent Handshake",
     whatItSolves:
@@ -105,6 +171,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "background-work-ledger",
+    category: "Reporting",
+    reasoning: "non-ioc",
     evidenceStatus: "pending",
     title: "Background Work Ledger",
     whatItSolves:
@@ -131,6 +199,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "assumption-surface",
+    category: "Legibility",
+    reasoning: "ioc",
     pairsWith: "convergence-point",
     title: "Assumption Surface",
     whatItSolves:
@@ -168,6 +238,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "memory-commitment-review",
+    category: "Commitment",
+    reasoning: "ioc",
     hasReferenceDesign: true,
     title: "Memory Commitment Review",
     whatItSolves:
@@ -207,6 +279,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "concurrent-workspace-awareness",
+    category: "Legibility",
+    reasoning: "non-ioc",
     evidenceStatus: "pending",
     title: "Concurrent Workspace Awareness",
     backingStrength: "None",
@@ -222,6 +296,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "review-as-dialogue",
+    category: "Commitment",
+    reasoning: "ioc",
     evidenceStatus: "pending",
     title: "Review as Dialogue",
     backingStrength: "Moderate",
@@ -237,6 +313,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "dependency-and-lineage-view",
+    category: "Reporting",
+    reasoning: "non-ioc",
     evidenceStatus: "pending",
     title: "Dependency and Lineage View",
     whatItSolves:
@@ -259,6 +337,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "authority-gradient",
+    category: "Autonomy",
+    reasoning: "non-ioc",
     hasReferenceDesign: true,
     title: "Authority Gradient",
     whatItSolves:
@@ -292,6 +372,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "shared-cognitive-state",
+    category: "Legibility",
+    reasoning: "ioc",
     hasReferenceDesign: true,
     title: "Shared Cognitive State",
     backingStrength: "Moderate",
@@ -324,6 +406,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "credential-boundary",
+    category: "Autonomy",
+    reasoning: "non-ioc",
     hasReferenceDesign: true,
     pairsWith: "shared-cognitive-state",
     title: "Credential Boundary",
@@ -352,6 +436,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "disclosure-gradient",
+    category: "Reporting",
+    reasoning: "ioc",
     pairsWith: "presence-boundary",
     title: "Disclosure Gradient",
     backingStrength: "Strong",
@@ -379,6 +465,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "decision-ledger",
+    category: "Commitment",
+    reasoning: "ioc",
     pairsWith: "proposed-commits",
     title: "Decision Ledger",
     whatItSolves:
@@ -418,6 +506,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "proposed-commits",
+    category: "Commitment",
+    reasoning: "ioc",
     pairsWith: "decision-ledger",
     title: "Proposed Commits",
     backingStrength: "None",
@@ -432,6 +522,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "deferred-detail",
+    category: "Reporting",
+    reasoning: "non-ioc",
     pairsWith: "disclosure-gradient",
     title: "Deferred Detail",
     whatItSolves:
@@ -470,6 +562,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "convergence-point",
+    category: "Legibility",
+    reasoning: "ioc",
     pairsWith: "signal-to-intent-handshake",
     title: "Convergence Point",
     backingStrength: "Moderate",
@@ -492,6 +586,8 @@ export const patterns: Pattern[] = [
   },
   {
     slug: "certainty-boundary",
+    category: "Autonomy",
+    reasoning: "non-ioc",
     evidenceStatus: "pending",
     title: "Certainty Boundary",
     backingStrength: "Thin",

@@ -5,6 +5,7 @@ import { StatusBadge } from "./StatusBadge";
 import { hasDesignReady } from "@/components/patterns/pattern-registry";
 import type { Pattern } from "@/lib/patterns";
 import { getPatternReadyCompanionTags } from "@/lib/pattern-ready";
+import { CategoryLabel, ReasoningTag } from "@/components/PatternTaxonomy";
 
 export function PatternCard({
   pattern,
@@ -45,10 +46,12 @@ export function PatternCard({
         <StatusBadge pattern={pattern} />
         {pattern.hasReferenceDesign ? <ReferenceDesignChip /> : null}
       </div>
+      <CategoryLabel category={pattern.category} />
       <h3 className="token-card__title">{pattern.title}</h3>
       <p className="token-card__body">{pattern.oneliner}</p>
       <div className="token-card__footer">
         <EvidenceSignal pattern={pattern} />
+        <ReasoningTag reasoning={pattern.reasoning} />
       </div>
     </Link>
   );

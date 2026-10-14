@@ -7,6 +7,12 @@ import { PatternPager } from "@/components/PatternPager";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import {
+  BackingSignal,
+  CategoryLabel,
+  HeroOrbs,
+  ReasoningTag,
+} from "@/components/PatternTaxonomy";
+import {
   getPattern,
   isEvidencePending,
   type Pattern,
@@ -294,34 +300,47 @@ export function PatternDetailShell({
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="osh-container pt-8 sm:pt-10">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <Breadcrumb
-            items={
-              themed
-                ? [
-                    { label: "Patterns", href: "/design-system" },
-                    { label: "Design system", href: "/design-system" },
-                    { label: pattern.title },
-                  ]
-                : [
-                    { label: "Patterns", href: "/gallery" },
-                    { label: pattern.title },
-                  ]
-            }
-          />
-          {themed ? <ThemeSwitcher /> : null}
-        </div>
+      {/* Same hero surface as the gallery, so a pattern page reads as the
+          gallery card opened up rather than a different site. */}
+      <header className={themed ? undefined : "osh-hero"}>
+        {themed ? null : <HeroOrbs />}
 
-        <div className="mt-4">
-          <StatusBadge pattern={pattern} />
-        </div>
+        <div className="osh-container pt-8 sm:pt-10">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <Breadcrumb
+              items={
+                themed
+                  ? [
+                      { label: "Patterns", href: "/design-system" },
+                      { label: "Design system", href: "/design-system" },
+                      { label: pattern.title },
+                    ]
+                  : [
+                      { label: "Patterns", href: "/gallery" },
+                      { label: pattern.title },
+                    ]
+              }
+            />
+            {themed ? <ThemeSwitcher /> : null}
+          </div>
 
-        <h1 className="mt-4 font-heading text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-          {pattern.title}
-        </h1>
-        <p className="mt-2 max-w-3xl pb-6 text-lg text-muted">{pattern.oneliner}</p>
-      </div>
+          {/* The two taxonomies and the evidence signal, in the same shapes and
+              colours the gallery card used to get here. */}
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <CategoryLabel category={pattern.category} />
+            <ReasoningTag reasoning={pattern.reasoning} />
+            <BackingSignal pattern={pattern} />
+            <StatusBadge pattern={pattern} />
+          </div>
+
+          <h1 className="mt-4 font-heading text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+            {pattern.title}
+          </h1>
+          <p className="mt-2 max-w-3xl pb-6 text-lg text-muted">
+            {pattern.oneliner}
+          </p>
+        </div>
+      </header>
 
       <div
         className={`sticky ${stickyTop} z-40 border-b border-line bg-bg/95 backdrop-blur-md`}

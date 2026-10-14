@@ -1,0 +1,1851 @@
+/**
+ * Studio.
+ *
+ * Everything here is built from the tokens in app/outshift-theme.css: the ink
+ * ramp, the border and surface colours, the accent, the radii, the tint and
+ * shadow variables, and the type stack. Nothing declares a colour of its own.
+ * Where a component already exists it is used rather than restyled:
+ *   .osh-card, .osh-cta-solid, .osh-cta-outline, .osh-hero, .osh-face-cat,
+ *   .osh-bars / .osh-evidence, .chat-message, .chat-avatar,
+ *   .advisor-chat-input, .advisor-scenario-pill, .advisor-bubble.
+ *
+ * Colour semantics, kept apart on purpose:
+ *   progress  grey to green, and the three states differ in form as well as
+ *             hue, so "answered with a gap" survives grayscale.
+ *   risk      amber. Used for scenario tension and for content the library
+ *             has not published. Never for progress.
+ *   reasoning violet, only where the site already uses it.
+ */
+
+/* ============================== shell ============================== */
+
+.studio-shell {
+  display: flex;
+  min-height: 0;
+  height: calc(100vh - 4.5rem);
+  background: var(--color-bg);
+}
+
+.studio-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 4.5rem);
+  text-align: center;
+  padding-inline: 1.5rem;
+}
+
+.studio-muted {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+/* ============================ agent pane ============================ */
+
+.studio-agent {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 27rem;
+  flex: none;
+  background: var(--color-bg);
+  border-right: 1px solid var(--color-border);
+}
+
+.studio-agent__head {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid var(--color-border);
+  background-image: linear-gradient(
+    118deg,
+    rgba(210, 194, 255, 0.13) 0%,
+    rgba(255, 255, 255, 1) 60%
+  );
+}
+
+/* What the person wrote, in full and wrapping. It used to be trimmed to its
+   first clause and shown as a name, which lost the context the
+   recommendations are made against. */
+.studio-agent__brief {
+  margin: 0;
+  font-size: 0.79rem;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.studio-agent__brief--empty {
+  color: var(--color-text-faint);
+}
+
+.studio-agent__answers {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.studio-chipwrap {
+  position: relative;
+}
+
+.studio-chip {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-hover);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.studio-chip:hover,
+.studio-chip[aria-expanded="true"] {
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+.studio-chipmenu {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.4rem);
+  z-index: 30;
+  width: 17rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-face);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-hover);
+}
+
+.studio-chipmenu p {
+  margin: 0 0 0.2rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.studio-thread {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.studio-answer {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--color-text-subtle);
+}
+
+.studio-answer__open {
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.9rem;
+}
+
+.studio-cite {
+  margin: 0.45rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--color-text-faint);
+}
+
+.studio-cite button {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-accent-hover);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.studio-cite span {
+  display: block;
+  margin-top: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+/* ---- why a pattern is the match: four parts, caveats set apart ---- */
+
+.studio-expl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+/* The chip follows the sentence in the same flow, so it sits on the line with
+   it where the pane is wide enough and wraps like text where it is not. */
+.studio-expl__verdict {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.studio-expl__verdict b {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.studio-expl__backing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.45rem;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+.studio-expl__count {
+  font-size: 0.68rem;
+  color: var(--color-text-faint);
+  white-space: nowrap;
+}
+
+.studio-expl__why {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--color-text-subtle);
+}
+
+/* Reference, not argument: this text is already on the pattern page. */
+.studio-expl__more summary {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-accent-hover);
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.studio-expl__more summary::-webkit-details-marker {
+  display: none;
+}
+
+.studio-expl__more summary::before {
+  content: "▸";
+  font-size: 0.6rem;
+  transition: transform 0.15s ease;
+}
+
+.studio-expl__more[open] summary::before {
+  content: "▾";
+}
+
+.studio-expl__more summary:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+.studio-expl__more p {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+/*
+ * The caveats qualify everything above them, so they sit on their own surface
+ * rather than at the end of the prose. Amber, which on this page means a
+ * limit in what the library holds rather than an error.
+ */
+.studio-expl__caveats {
+  border-left: 2.5px solid var(--color-warning);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: color-mix(in srgb, var(--color-warning) 7%, white);
+  padding: 0.55rem 0.7rem 0.6rem 0.75rem;
+}
+
+.studio-expl__kind {
+  margin: 0 0 0.3rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-warning);
+}
+
+.studio-expl__caveats ul {
+  margin: 0;
+  padding-left: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.studio-expl__caveats li {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--color-text-subtle);
+}
+
+/* ------ recommendation and refusal: one shape, no apply button ------ */
+
+.studio-prop {
+  border-radius: var(--radius-face);
+  padding: 0.85rem 0.95rem;
+  background: color-mix(in srgb, var(--color-accent) 7%, white);
+}
+
+.studio-prop--refusal {
+  background: color-mix(in srgb, var(--color-warning) 8%, white);
+}
+
+.studio-prop__kind {
+  margin: 0 0 0.35rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent-hover);
+}
+
+.studio-prop--refusal .studio-prop__kind {
+  color: var(--color-warning);
+}
+
+.studio-prop__head {
+  margin: 0 0 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.studio-prop__why {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--color-text-subtle);
+}
+
+.studio-prop__opts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+
+.studio-opt {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-mini);
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.studio-opt:has(.studio-opt__btn:hover:not(:disabled)) {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-lift);
+}
+
+.studio-opt--best {
+  border-color: var(--color-accent);
+}
+
+/* Once one option is taken the rest recede, rather than disappearing. */
+.studio-opt--spent {
+  opacity: 0.45;
+}
+
+.studio-opt--taken {
+  opacity: 1;
+  border: 1.5px solid var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.studio-opt__btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.studio-opt__btn:disabled {
+  cursor: default;
+}
+
+.studio-opt__reason {
+  display: block;
+  padding: 0 0.7rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.studio-opt__reason textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-hover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  padding: 0.4rem 0.5rem;
+  resize: vertical;
+}
+
+.studio-opt__reason textarea:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+.studio-opt__label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.studio-opt__flag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  vertical-align: 1px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.studio-opt__commits {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.studio-confirm {
+  border-radius: var(--radius-mini);
+  padding: 0.55rem 0.75rem;
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+}
+
+.studio-confirm__kind {
+  margin: 0 0 0.15rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-success-text);
+}
+
+.studio-confirm p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--color-success-text);
+}
+
+/* ----------------------------- composer ----------------------------- */
+
+.studio-composer {
+  flex: none;
+  border-top: 1px solid var(--color-border);
+  padding: 0.8rem 1rem 0.9rem;
+  background: var(--color-bg);
+}
+
+.studio-suggestions {
+  margin: 0 0 0.6rem;
+  gap: 0.35rem;
+  max-width: none;
+}
+
+.studio-suggestions .advisor-scenario-pill {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.studio-suggestions__spent {
+  margin: 0 0 0.6rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--color-text-faint);
+}
+
+.studio-input {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  border-radius: var(--radius-face);
+  padding: 0.6rem 0.8rem;
+  resize: none;
+  max-height: 7rem;
+}
+
+.studio-composer .advisor-chat-send {
+  padding: 0.55rem 1rem;
+  font-size: 0.82rem;
+  align-self: flex-end;
+}
+
+/* ============================== canvas ============================== */
+
+.studio-canvas {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+/* The same gradient and drifting orbs as the gallery's hero, so the top of the
+   canvas belongs to the same page. .osh-hero supplies both; this only sets the
+   shape of the band. */
+.studio-bar {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1.35rem;
+}
+
+.studio-bar__title {
+  min-width: 0;
+}
+
+.studio-bar__trail {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.15rem;
+  font-size: 0.73rem;
+  color: var(--color-text-muted);
+  min-width: 0;
+}
+
+.studio-bar__sep {
+  color: var(--color-border-medium);
+}
+
+.studio-bar__here {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studio-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-accent-hover);
+  background: none;
+  border: none;
+  padding: 0.1rem 0.25rem 0.1rem 0;
+  margin-left: -0.25rem;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.studio-back svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.15s ease;
+}
+
+.studio-back:hover svg {
+  transform: translateX(-2px);
+}
+
+.studio-back:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+}
+
+.studio-bar h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.studio-bar h2 svg {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-faint);
+}
+
+.studio-switch {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.studio-switch:hover h2,
+.studio-switch:hover h2 svg {
+  color: var(--color-accent-hover);
+}
+
+.studio-bar__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.45rem;
+}
+
+.studio-bar__ctrls {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+/*
+ * Where a pattern could show up. One surface has a component, the others say
+ * which kind of absence they are: nothing built yet reads as unavailable,
+ * while somewhere a pattern does not belong is struck through, because that is
+ * a finding rather than a gap.
+ */
+.studio-surfaces {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  max-width: 44rem;
+  margin: 0 auto 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.studio-surface {
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  padding: 0.28rem 0.7rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.studio-surface:hover:not(:disabled) {
+  border-color: var(--color-border-medium);
+  color: var(--color-text);
+}
+
+.studio-surface[aria-selected="true"] {
+  background: var(--color-tag-bg);
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+.studio-surface:disabled {
+  cursor: default;
+  color: var(--color-text-faint);
+}
+
+.studio-surface[data-state="not_here"] {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.studio-surface:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1280px) {
+  .studio-surfaces {
+    max-width: none;
+  }
+}
+
+/* The stage's own header row: what this view is showing, and the way in. */
+.studio-stage__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 44rem;
+  margin: 0 auto 0.9rem;
+}
+
+.studio-stage__top p {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.studio-customise {
+  flex: none;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.9rem;
+  gap: 0.35rem;
+}
+
+.studio-customise svg {
+  width: 13px;
+  height: 13px;
+}
+
+.studio-nb {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.studio-nb:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+.studio-nb[aria-pressed="true"] {
+  background: var(--color-tag-bg);
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+.studio-nb:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.studio-nb--sq {
+  padding: 0.35rem 0.5rem;
+}
+
+.studio-nb--sq svg {
+  width: 14px;
+  height: 14px;
+}
+
+.studio-steps {
+  display: flex;
+}
+
+.studio-steps .studio-nb:first-child {
+  border-radius: var(--radius-control) 0 0 var(--radius-control);
+}
+
+.studio-steps .studio-nb:last-child {
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  margin-left: -1px;
+}
+
+.studio-count {
+  font-size: 0.74rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.studio-canvas__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.35rem;
+}
+
+/* Customise opens beside the pattern, not under it: the component stays in
+   view while a field is edited, which is the only way the live update can be
+   seen as it is typed. The body stops scrolling as one column and hands each
+   side its own scroll. */
+.studio-canvas__body[data-side="true"] {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem;
+  overflow: hidden;
+}
+
+.studio-stage {
+  min-width: 0;
+  flex: 1;
+}
+
+.studio-canvas__body[data-side="true"] .studio-stage__top,
+.studio-canvas__body[data-side="true"] .studio-surfaces {
+  max-width: none;
+}
+
+.studio-canvas__body[data-side="true"] .studio-stage {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.4rem;
+}
+
+/* A panel sitting in the canvas alongside the pattern, inside the same
+   padding, so it reads as part of the work surface rather than a drawer
+   pinned to the window. */
+.studio-side {
+  flex: none;
+  width: 24rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-face);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-lift);
+  overflow: hidden;
+  animation: studio-side-in 0.22s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+}
+
+@keyframes studio-side-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.studio-side__head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.85rem 0.9rem 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-accent) 5%, white),
+    var(--color-bg)
+  );
+}
+
+.studio-side__kind {
+  display: block;
+  margin: 0 0 0.15rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-hover);
+}
+
+.studio-side__head b {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.studio-side__head i {
+  display: block;
+  font-style: normal;
+  font-size: 0.73rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  margin-top: 0.15rem;
+}
+
+.studio-side__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.studio-side__close svg {
+  width: 13px;
+  height: 13px;
+}
+
+.studio-side__close:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+.studio-side__note {
+  flex: none;
+  align-self: flex-start;
+  margin: 0.7rem 0 0 1rem;
+}
+
+.studio-side__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.9rem 1rem 1.1rem;
+}
+
+.studio-side__close:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+}
+
+.studio-recordbtn {
+  position: absolute;
+  right: 1.35rem;
+  bottom: 1.1rem;
+  z-index: 15;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-lift);
+}
+
+.studio-recordbtn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+/* ------------------------- situation switcher ------------------------- */
+
+.studio-navdrop {
+  position: absolute;
+  left: 1.35rem;
+  top: 4.3rem;
+  z-index: 25;
+  width: 26rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0.3rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-face);
+  box-shadow: var(--shadow-hover);
+}
+
+.studio-navitem {
+  display: grid;
+  grid-template-columns: 0.75rem 1fr;
+  gap: 0 0.55rem;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  border-radius: var(--radius-mini);
+  padding: 0.5rem 0.55rem;
+  cursor: pointer;
+}
+
+.studio-navitem:hover {
+  background: var(--color-hover);
+}
+
+.studio-navitem[aria-selected="true"] {
+  background: var(--color-tag-bg);
+}
+
+.studio-navitem .studio-dot {
+  grid-row: 1 / 3;
+  margin-top: 0.3rem;
+}
+
+.studio-navitem__title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.studio-navitem__pattern {
+  font-size: 0.71rem;
+  color: var(--color-text-muted);
+}
+
+/* The record's sections group with the gallery's .osh-group and
+   .osh-group-head, coloured rail included. Only the first section's top margin
+   differs, since the canvas already has padding above it. */
+.studio-canvas__body .osh-group:first-child {
+  margin-top: 0;
+}
+
+/* ---------------------------- situation rows ---------------------------- */
+
+.studio-overview {
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.studio-overview__lede {
+  margin: 0 0 1.1rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  max-width: 64ch;
+}
+
+.studio-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/*
+ * One row per situation, full width, one column. The wash is the same subtle
+ * blue on every row: identical, so it cannot be read as a signal, and drawn
+ * from the accent the rest of the site uses.
+ *
+ * Nothing in here clamps, truncates or caps a height. Hover and focus change
+ * the border, the shadow and the lift, and nothing else.
+ */
+.studio-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.85rem 1.1rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-face);
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--color-accent) 7%, white),
+    var(--color-bg) 62%
+  );
+  transition:
+    transform 0.18s cubic-bezier(0.2, 0.85, 0.25, 1),
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.studio-row:hover,
+.studio-row:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--color-border-medium);
+  box-shadow: var(--shadow-hover);
+}
+
+.studio-row:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+}
+
+.studio-row__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.studio-row__label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  flex: none;
+}
+
+.studio-row__title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.012em;
+  color: var(--color-text);
+}
+
+.studio-row__chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+/* What happens in the situation, in its own words and at length. */
+.studio-row__what {
+  margin-top: 0.3rem;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--color-text-subtle);
+  max-width: 68ch;
+}
+
+.studio-row__foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.studio-row__pattern {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+/* Says what the name is, so it is not mistaken for part of the situation. */
+.studio-row__patternlabel {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  flex: none;
+}
+
+.studio-row__patternname {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-accent-hover);
+}
+
+/* The question and its answer, apart from the pattern name and from each
+   other, so the row can be read as: this happens, this pattern, and here is
+   why that pattern. */
+.studio-row__why {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.studio-row__question {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.studio-row__reason {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+  max-width: 68ch;
+}
+
+/* Where the library has no problem statement for the pattern, the line says so
+   and is marked as an absence rather than passed off as an answer. */
+.studio-row__reason[data-unsourced="true"] {
+  color: var(--color-warning);
+}
+
+.studio-row__answers {
+  margin-top: 0.3rem;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--color-text-faint);
+  max-width: 68ch;
+}
+
+/* Status in words, with no colour semantics of its own. */
+.studio-chipmark {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.63rem;
+  font-weight: 600;
+  padding: 0.16rem 0.45rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+}
+
+/* -------------------------- progress and flags -------------------------- */
+
+.studio-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--color-border-medium);
+}
+
+.studio-dot[data-state="answered"] {
+  background: var(--color-success);
+}
+
+/* Same hue, hollow: the gap state reads without relying on colour. */
+.studio-dot[data-state="answered_with_gap"] {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--color-success);
+}
+
+.studio-flag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.64rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0.18rem 0.45rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+}
+
+.studio-flag--quiet {
+  color: var(--color-text-faint);
+}
+
+.studio-flag--ready {
+  border-color: var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.studio-flag--warn {
+  border-color: color-mix(in srgb, var(--color-warning) 35%, white);
+  background: color-mix(in srgb, var(--color-warning) 10%, white);
+  color: var(--color-warning);
+}
+
+.studio-flag--live {
+  border-color: var(--color-tag-border);
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
+}
+
+/* --------------------------- pattern canvas --------------------------- */
+
+/* The gallery's card treatment around a pattern component: the category tint,
+   the corner bloom, the same border and radius. No padding on this element in
+   the annotated case would be wrong either way, since the frame wraps the
+   embed rather than boxing it. */
+.studio-frame {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  max-width: 44rem;
+  margin: 0 auto 1.1rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-face);
+  background: linear-gradient(
+    158deg,
+    color-mix(in srgb, var(--c) var(--tint-soft), white),
+    var(--color-bg) 58%
+  );
+}
+
+.studio-frame::after {
+  content: "";
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  right: -60px;
+  bottom: -80px;
+  border-radius: 999px;
+  z-index: -1;
+  background: color-mix(in srgb, var(--c) var(--glow), transparent);
+  filter: blur(36px);
+  opacity: 0.5;
+}
+
+.studio-mine__fields {
+  font-size: 0.85rem;
+}
+
+.studio-mine__caveat {
+  margin: 0 0 0.85rem;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.studio-els {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.studio-el {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-mini);
+  padding: 0.6rem 0.7rem;
+  background: var(--color-bg);
+}
+
+.studio-el--removed {
+  border: 1.5px dashed var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 6%, white);
+}
+
+.studio-el__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.studio-el__flags {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin: 0.35rem 0 0 1.5rem;
+}
+
+.studio-el__flags:empty {
+  display: none;
+}
+
+.studio-el__foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--color-border-soft);
+}
+
+.studio-el__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.05rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.studio-el--removed .studio-el__num {
+  background: var(--color-warning);
+}
+
+.studio-el__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.studio-el__act {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+}
+
+.studio-el__act:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+.studio-el__hint,
+.studio-el__evidence,
+.studio-el__reason {
+  margin: 0.35rem 0 0 1.5rem;
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.studio-el__hint {
+  color: var(--color-text-subtle);
+}
+
+.studio-el__evidence {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--color-text-faint);
+}
+
+.studio-el__reason {
+  color: var(--color-warning);
+}
+
+.studio-anti,
+.studio-carry {
+  max-width: 44rem;
+  margin: 0.85rem auto 0;
+  border-radius: var(--radius-mini);
+  padding: 0.7rem 0.85rem;
+}
+
+.studio-anti {
+  border: 1.5px solid var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 6%, white);
+}
+
+.studio-anti b {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-warning);
+  margin-bottom: 0.2rem;
+}
+
+.studio-anti p,
+.studio-carry p {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  color: var(--color-text-subtle);
+}
+
+.studio-anti__src {
+  margin-top: 0.4rem !important;
+  font-family: var(--font-mono);
+  font-size: 0.67rem !important;
+  color: var(--color-text-faint) !important;
+}
+
+.studio-carry {
+  border: 1px solid var(--color-tag-border);
+  background: var(--color-tag-bg);
+}
+
+.studio-carry b {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-tag-text);
+  margin-bottom: 0.2rem;
+}
+
+.studio-carry a {
+  font-weight: 600;
+  color: var(--color-accent-hover);
+}
+
+/* --------------------------- honest empty state --------------------------- */
+
+.studio-empty {
+  max-width: 34rem;
+  margin: 0 auto;
+  border-radius: var(--radius-face);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, white);
+  background: color-mix(in srgb, var(--color-warning) 7%, white);
+  padding: 1.15rem 1.3rem;
+}
+
+.studio-empty b {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.studio-empty p {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--color-text-subtle);
+}
+
+.studio-empty__link {
+  font-size: 0.82rem;
+  padding: 0.45rem 1rem;
+}
+
+/* ================================ record ================================ */
+
+.studio-record {
+  max-width: 44rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.studio-record h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.studio-rrow {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.studio-rrow b {
+  font-size: 0.86rem;
+}
+
+.studio-rrow p {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.studio-rrow__why {
+  color: var(--color-text-subtle) !important;
+}
+
+.studio-rrow__gap {
+  color: var(--color-warning) !important;
+}
+
+.studio-open {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.studio-open b {
+  display: block;
+  color: var(--color-text);
+}
+
+/* ================================ setup ================================ */
+
+.studio-setup {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: calc(100vh - 4.5rem);
+  padding: 2.5rem 1.5rem 3rem;
+}
+
+.studio-setup__card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 38rem;
+  padding: 1.6rem 1.75rem 1.75rem;
+  background: var(--color-bg);
+}
+
+.studio-setup__card h1 {
+  margin: 0 0 0.4rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.studio-setup__sub {
+  margin: 0 0 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+.studio-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.studio-text {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-hover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  padding: 0.55rem 0.7rem;
+  margin-bottom: 0.9rem;
+  resize: vertical;
+}
+
+.studio-text:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+.studio-q {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 0;
+  padding: 0.85rem 0 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.studio-q legend {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 0.5rem;
+}
+
+.studio-q__note {
+  flex-basis: 100%;
+  margin: 0.45rem 0 0;
+  font-size: 0.72rem;
+  color: var(--color-text-faint);
+}
+
+.studio-radio {
+  text-align: left;
+  font-size: 0.79rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-mini);
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.studio-radio:hover {
+  border-color: var(--color-accent);
+}
+
+.studio-radio i {
+  display: block;
+  font-style: normal;
+  font-size: 0.68rem;
+  color: var(--color-text-faint);
+  margin-top: 0.1rem;
+}
+
+.studio-radio[aria-pressed="true"] {
+  border: 1.5px solid var(--color-accent);
+  background: var(--color-tag-bg);
+  color: var(--color-accent-hover);
+  font-weight: 600;
+}
+
+.studio-radio[aria-pressed="true"] i {
+  color: var(--color-accent-hover);
+}
+
+.studio-setup__go {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1.1rem;
+}
+
+.studio-setup__sample {
+  margin: 0.9rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.studio-setup__sample button {
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-accent-hover);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.studio-setup__sample button:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+}
+
+/* ============================== embed overlay ============================== */
+
+.studio-embed {
+  position: relative;
+}
+
+.studio-embed__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.studio-embed__marker-box {
+  position: absolute;
+  border-radius: var(--radius-control);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+.studio-embed__marker-box--removed {
+  box-shadow: inset 0 0 0 1.5px var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+}
+
+.studio-embed__marker-number {
+  position: absolute;
+  left: -0.6rem;
+  top: -0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.studio-embed__marker-box--removed .studio-embed__marker-number {
+  background: var(--color-warning);
+}
+
+.studio-embed__marker-removed-label {
+  position: absolute;
+  right: 0.25rem;
+  top: -0.7rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-warning);
+  color: #fff;
+}
+
+/* ============================== narrow ============================== */
+
+@media (max-width: 1450px) {
+  .studio-side {
+    width: 21rem;
+  }
+}
+
+/*
+ * Two columns only when the stage still has room to show a pattern component
+ * properly: the agent pane (23rem) plus a usable stage plus the panel. Below
+ * that the panel goes back under the pattern and both scroll together, which
+ * is worse than side by side but better than squeezing the component into a
+ * column narrower than it was designed for.
+ */
+@media (max-width: 1280px) {
+  .studio-canvas__body[data-side="true"] {
+    display: block;
+    overflow-y: auto;
+    padding-right: 1.35rem;
+  }
+
+  .studio-canvas__body[data-side="true"] .studio-stage {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .studio-side {
+    width: auto;
+    max-width: 44rem;
+    max-height: none;
+    margin: 1.1rem auto 0;
+    animation: none;
+  }
+
+  .studio-side__body {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 1100px) {
+  .studio-agent {
+    width: 23rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .studio-shell {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 4.5rem);
+  }
+
+  .studio-agent {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    max-height: 60vh;
+  }
+
+  .studio-canvas {
+    min-height: 70vh;
+  }
+
+  .studio-navdrop {
+    width: calc(100% - 2.7rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-row:hover,
+  .studio-row:focus-visible {
+    transform: none;
+  }
+}

@@ -625,7 +625,7 @@ export function PatternAdvisor({ initialPrompt }: { initialPrompt?: string }) {
           {isLanding ? (
             <header className="advisor-page-header advisor-chat-inner shrink-0 pt-8">
               <h1 className="advisor-page-header__title font-heading">
-                Human Agent IoC patterns
+                HAX 2.0 patterns
               </h1>
             </header>
           ) : null}

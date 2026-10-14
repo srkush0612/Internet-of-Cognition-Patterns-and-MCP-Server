@@ -24,8 +24,10 @@ export function HeroBackground() {
           className="absolute right-0 top-1/3 h-96 w-96 animate-float-slow rounded-full bg-[rgba(210,194,255,0.2)] blur-3xl"
           style={{ animationDelay: "1s" }}
         />
+        {/* Warm third orb, matching .osh-orb--c in the theme, so the homepage
+            hero and the gallery hero are the same surface at two intensities. */}
         <div
-          className="absolute bottom-0 left-1/3 h-64 w-64 animate-pulse-glow rounded-full bg-cyan-400/20 blur-3xl"
+          className="absolute bottom-0 left-1/3 h-64 w-64 animate-pulse-glow rounded-full bg-[rgba(245,179,92,0.18)] blur-3xl"
           style={{ animationDelay: "2s" }}
         />
       </div>

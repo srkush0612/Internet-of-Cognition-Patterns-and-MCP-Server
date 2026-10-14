@@ -4,6 +4,7 @@ const config: Config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./vendor/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -12,6 +13,7 @@ const config: Config = {
         ink: "var(--color-text)",
         muted: "var(--color-text-muted)",
         subtle: "var(--color-text-subtle)",
+        faint: "var(--color-text-faint)",
         line: "var(--color-border)",
         "line-md": "var(--color-border-medium)",
         surface: "var(--color-surface)",
@@ -19,8 +21,34 @@ const config: Config = {
         accent: "var(--color-accent)",
         "accent-h": "var(--color-accent-hover)",
         success: "var(--color-success)",
+        "success-bg": "var(--color-success-bg)",
+        "success-line": "var(--color-success-border)",
+        "success-ink": "var(--color-success-text)",
         warning: "var(--color-warning)",
+        danger: "var(--color-danger)",
+        ioc: "var(--color-ioc)",
+        evidence: "var(--color-evidence)",
         page: "#F3F4F6",
+        // HAX SDK bridge: shadcn-style token names the vendored artifacts use.
+        // Additive only — `muted`/`accent` above keep their v1 meaning; these
+        // supply the names v1 lacks, each routed to an --sh-* var (app/v2.css).
+        background: "var(--sh-background)",
+        foreground: "var(--sh-foreground)",
+        card: "var(--sh-card)",
+        "card-foreground": "var(--sh-card-foreground)",
+        popover: "var(--sh-popover)",
+        "popover-foreground": "var(--sh-popover-foreground)",
+        primary: "var(--sh-primary)",
+        "primary-foreground": "var(--sh-primary-foreground)",
+        secondary: "var(--sh-secondary)",
+        "secondary-foreground": "var(--sh-secondary-foreground)",
+        "muted-foreground": "var(--sh-muted-foreground)",
+        "accent-foreground": "var(--sh-accent-foreground)",
+        destructive: "var(--sh-destructive)",
+        "destructive-foreground": "var(--sh-destructive-foreground)",
+        border: "var(--sh-border)",
+        input: "var(--sh-input)",
+        ring: "var(--sh-ring)",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

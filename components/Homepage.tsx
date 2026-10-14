@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   ArrowRight,
   Bot,
@@ -14,29 +14,26 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { patterns, type BackingStrength, type Pattern } from "@/lib/patterns";
+import {
+  patterns,
+  PATTERN_CATEGORY_COLOR,
+  type Pattern,
+} from "@/lib/patterns";
 import {
   HOMEPAGE_PATTERN_SNAPSHOT,
   PATTERN_READY_SLUGS,
 } from "@/lib/pattern-ready";
 import { HeroBackground } from "@/components/HeroBackground";
+import {
+  BackingSignal,
+  CategoryLabel,
+  factsLine,
+  ReasoningTag,
+} from "@/components/PatternTaxonomy";
 
 const BTN_PRIMARY = "osh-cta-solid px-8 py-4 text-base";
 
 const BTN_SECONDARY = "osh-cta-outline px-8 py-4 text-base";
-
-function backingBadgeClass(strength?: BackingStrength): string {
-  switch (strength) {
-    case "Strong":
-      return "bg-emerald-100 text-emerald-700 ring-emerald-200";
-    case "Moderate":
-      return "bg-amber-100 text-amber-800 ring-amber-200";
-    case "Thin":
-      return "bg-slate-100 text-muted ring-slate-200";
-    default:
-      return "bg-[var(--color-tag-bg)] text-accent-h ring-[var(--color-tag-border)]";
-  }
-}
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -107,14 +104,14 @@ function Hero() {
           className="font-heading text-5xl font-semibold tracking-tight text-ink sm:text-6xl lg:text-7xl animate-fade-in-up"
           style={{ animationDelay: "0.2s" }}
         >
-          Human Agent IoC Patterns
+          HAX 2.0 Patterns
         </h1>
 
         <p
           className="mx-auto mt-6 max-w-2xl text-lg text-muted sm:text-xl animate-fade-in-up"
           style={{ animationDelay: "0.35s" }}
         >
-          Discover inversion-of-control patterns for multi-agent collaboration
+          Research-grounded patterns for human-agent interaction
         </p>
 
         <div
@@ -166,11 +163,11 @@ function Features() {
     <section className="bg-white px-6 py-24 sm:px-12 lg:px-24">
       <RevealSection className="mx-auto max-w-6xl">
         <h2 className="font-heading text-center text-3xl font-bold text-ink sm:text-4xl">
-          What are Human Agent IoC Patterns?
+          What are HAX 2.0 Patterns?
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-muted">
           A research-backed system for discovering, recommending, and deploying
-          inversion-of-control patterns in multi-agent environments.
+          human-agent interaction patterns in multi-agent environments.
         </p>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2">
@@ -195,43 +192,38 @@ function Features() {
   );
 }
 
+/** The gallery's card, unchanged: the same face a pattern has everywhere. */
 function PatternShowcaseCard({ pattern }: { pattern: Pattern }) {
-  const [hovered, setHovered] = useState(false);
+  const facts = factsLine(pattern);
 
   return (
     <Link
       href={`/patterns/${pattern.slug}`}
-      className="group osh-card relative flex h-full flex-col p-6"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className="osh-face h-full"
+      data-facts={Boolean(facts)}
+      style={
+        { "--c": PATTERN_CATEGORY_COLOR[pattern.category] } as CSSProperties
+      }
     >
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="font-heading text-lg font-bold text-ink">
-          {pattern.title}
-        </h3>
-        <span
-          className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ${backingBadgeClass(pattern.backingStrength)}`}
-        >
-          {pattern.backingStrength ?? "None"}
-        </span>
+      <div className="osh-face-top">
+        <CategoryLabel category={pattern.category} />
       </div>
 
-      <div
-        className={`mt-3 flex-1 rounded-xl border px-3.5 py-3 ${
-          hovered
-            ? "border-yellow-200 bg-yellow-50"
-            : "border-line bg-hover"
-        }`}
-      >
-        <p className="text-sm leading-relaxed text-muted">
-          {hovered ? pattern.explanation : pattern.oneliner}
-        </p>
+      <h3>{pattern.title}</h3>
+
+      <div className="osh-face-swap">
+        <p className="osh-face-one">{pattern.oneliner}</p>
+        {facts ? (
+          <p className="osh-face-facts">
+            <b>facts</b> {facts}
+          </p>
+        ) : null}
       </div>
 
-      <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent transition group-hover:gap-2">
-        Learn more
-        <ArrowRight className="h-4 w-4" />
-      </span>
+      <div className="osh-face-foot">
+        <ReasoningTag reasoning={pattern.reasoning} />
+        <BackingSignal pattern={pattern} />
+      </div>
     </Link>
   );
 }
@@ -249,8 +241,8 @@ function PatternShowcase() {
             Pattern snapshot
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-center text-muted">
-            A few ready patterns to start with — {PATTERN_READY_SLUGS.length} live
-            in the library today.
+            A few ready patterns to start with. {PATTERN_READY_SLUGS.length} of{" "}
+            {patterns.length} are live in the library today.
           </p>
         </RevealSection>
 
@@ -375,7 +367,7 @@ function CallToAction() {
         className="absolute inset-0 animate-gradient-shift bg-[length:200%_200%]"
         style={{
           backgroundImage:
-            "linear-gradient(135deg, #ede9fe 0%, #f5f3ff 50%, #fce7f3 100%)",
+            "linear-gradient(135deg, rgba(210,194,255,0.28) 0%, rgba(255,255,255,0.92) 48%, rgba(0,188,235,0.14) 100%)",
         }}
       />
 
