@@ -64,7 +64,7 @@ const MODE_TESTS = [
   },
   {
     test: "It holds regardless of who is talking.",
-    body: "Agent to person, person to agent, agent to agent, at any level. A mode that only works in one direction is a surface, not a mode.",
+    body: "Agent to person, person to agent, agent to agent, across participant dimensions. A mode that only works in one direction is a surface, not a mode.",
   },
 ];
 
@@ -160,12 +160,12 @@ export default function MethodologyPage() {
         </p>
 
         <h3 className="mt-8 text-base font-semibold text-ink">
-          Levels: who is in the exchange
+          Dimensions of participation: who is in the exchange
         </h3>
         <p className="mt-2 max-w-[62ch] text-sm leading-relaxed text-muted">
-          Participant structure, not seniority. Each level inherits the
-          problems of the ones below it, so a pattern native to one may reach
-          others, and its behavior shifts when it does.
+          Participant structure, not seniority. Each dimension adds
+          participants to the exchange. A pattern may apply across several
+          dimensions, with its behavior changing as the participants change.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {LEVEL_ORDER.map((level) => (
@@ -186,8 +186,8 @@ export default function MethodologyPage() {
         </h3>
         <p className="mt-2 max-w-[62ch] text-sm leading-relaxed text-muted">
           A pattern is a design. An interaction is one instance of it, carrying
-          the level, channel and audience from the spec plus a slot for the
-          reply that came back.
+          the participant dimension, channel and audience from the spec plus a
+          slot for the reply that came back.
         </p>
       </section>
 
@@ -196,7 +196,7 @@ export default function MethodologyPage() {
         <h2 className="text-[1.75rem] font-extralight text-ink">
           What counts as a mode
         </h2>
-        <p className="v2-lede mt-3">
+          <p className="v2-lede mt-3">
           A candidate has to pass all three tests. Responses live inside the
           mode, which is what keeps the list at nine instead of growing one
           entry per thing a receiver can say.
@@ -270,9 +270,9 @@ export default function MethodologyPage() {
           ))}
         </div>
         <p className="mt-4 text-sm leading-relaxed text-muted">
-          Everything else maps one to one. Co-Editing Surface is one pattern
-          with content-type variants, each pointing at its own component, rather
-          than six peers.
+          Everything else maps one to one. Co-Editing Surface draws on six SDK
+          entries, while its pattern page demonstrates the shared-document
+          interaction.
         </p>
       </section>
 
@@ -310,11 +310,12 @@ export default function MethodologyPage() {
           Where the gaps cluster
         </h2>
         <p className="v2-lede mt-3">
-          Most of what is missing sits on the engaging side of the mode list, {" "}
-          {MODE_LABEL.request} and {MODE_LABEL.delegate} have no pattern at all
-, and at the agents-only level, where only Source Attribution does any
-          work, and only as provenance. That is the part of the thesis with the
-          least behind it, which makes it the part worth building next.
+          Most of what is missing sits on the engaging side of the mode list.
+          {" "}
+          {MODE_LABEL.request} and {MODE_LABEL.delegate} have no pattern at all,
+          and within the dimension with many agents and no person, only Source Attribution
+          does any work, and only as provenance. That is the part of the thesis
+          with the least behind it, which makes it worth building next.
         </p>
       </section>
     </main>

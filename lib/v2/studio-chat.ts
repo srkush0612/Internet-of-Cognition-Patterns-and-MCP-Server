@@ -90,7 +90,7 @@ export function answerAboutPattern(
     };
   }
 
-  if (/\b(who|involved|level|people|agents?)\b/.test(text)) {
+  if (/\b(who|involved|dimension|level|people|agents?)\b/.test(text)) {
     const reach = (["L1", "L2", "L3", "L4"] as Level[]).filter(
       (l) => l === pattern.level.primary || l in pattern.level.notes,
     );
@@ -125,7 +125,7 @@ export function answerAboutPattern(
     reply:
       "I can tell you what this pattern solves, how it works, when it happens, who's involved, or what you can do back, or change it: try \"remove " +
       (current[0] ?? "a response") +
-      '" or "show it agents only".',
+      '" or "show it with many agents and no person".',
   };
 }
 

@@ -10,7 +10,7 @@ import type { Container, ISourceOptions } from "@tsparticles/engine";
  *
  * The field is the model, not decoration: circles are agents, squares are
  * people, and a link is an exchange between them. It is the same vocabulary as
- * the participant icons on the level cards, in the same colour, so the two read
+ * the participant icons on the dimension cards, in the same colour, so the two read
  * as one system.
  *
  * It stays quiet on purpose, low count, low opacity, slow drift, masked away

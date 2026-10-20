@@ -117,7 +117,7 @@ export function buildTimelineModel(
   const positions = getUniqueAgentPositions(workspace);
   const agents: TimelineAgentMeta[] = positions.map((position, index) => ({
     key: position.agent.trim(),
-    color: getAgentColor(position.agent),
+    color: AGENT_PALETTE[index % AGENT_PALETTE.length]!,
     phase: positions.length > 1 ? (index * Math.PI) / 2 : 0,
   }));
 

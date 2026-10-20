@@ -1013,7 +1013,7 @@ function Canvas({
           </dl>
         </div>
         <p className="mt-3 text-xs leading-relaxed text-faint">
-          At agents-only, the pattern is the exchange, open Agent messages to
+          With many agents and no person, the pattern is the exchange. Open Agent messages to
           watch it; this is the record it leaves.
         </p>
       </div>

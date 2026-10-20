@@ -3,7 +3,7 @@
  *
  * A pattern is a behaviour spec; the canvas is an agent running against it. This
  * module is the deterministic interpreter: given a pattern and the spec as the
- * user has shaped it, it produces the run, the cast the level implies, the
+ * user has shaped it, it produces the run, the cast the participant dimension implies, the
  * ordered steps the agent moves through, and, when the edit takes the spec
  * somewhere the pattern cannot go, the break and the way out.
  *
@@ -35,7 +35,7 @@ export type RunStep = {
 export type BreakKind =
   /** A required response was removed; the mode can no longer do its job. */
   | "incoherent"
-  /** The level changed to one this pattern does not serve. */
+  /** The participant dimension changed to one this pattern does not serve. */
   | "wrong-level";
 
 export type RunBreak = {
@@ -57,7 +57,7 @@ export type Run = {
   break?: RunBreak;
 };
 
-/** The levels a pattern actually serves, read from its notes plus its primary. */
+/** The participant dimensions a pattern serves, read from its notes plus its primary. */
 export function reachableLevels(pattern: Pattern): Level[] {
   const set = new Set<Level>([pattern.level.primary]);
   for (const level of Object.keys(pattern.level.notes) as Level[]) set.add(level);
@@ -69,7 +69,7 @@ export function reachesLevel(pattern: Pattern, level: Level): boolean {
 }
 
 /**
- * Other patterns that serve the spec's current mode at the given level, the
+ * Other patterns that serve the spec's current mode at the given participant dimension, the
  * alternates to offer when the current pattern no longer fits. Driven by the
  * catalog, never a hardcoded list.
  */
@@ -127,7 +127,7 @@ export function buildRun(
     };
   }
 
-  // --- break 2: the level is one this pattern does not serve -------------------
+  // --- break 2: the participant dimension is one this pattern does not serve ---
   if (level === "L4" || !reachesLevel(pattern, level)) {
     const alternates = alternatesFor(draft, level, catalog, pattern.id);
     const where = LEVEL_LABEL[level].toLowerCase();
@@ -354,8 +354,9 @@ export function markdownExport(pattern: Pattern, draft: SpecDraft): string {
 
 /**
  * Whether the draft was actually reshaped, i.e. responses were taken away or
- * put back differently. The level is a read-only view, not an edit, so moving
- * between the levels a pattern reaches is not "shaping"; only the responses are.
+ * put back differently. The participant dimension is a read-only view, not an
+ * edit, so moving between dimensions a pattern reaches is not "shaping"; only
+ * the responses are.
  */
 export function isShaped(pattern: Pattern, draft: SpecDraft): boolean {
   const defaults = pattern.responses ?? getMode(pattern.mode.primary).responses;

@@ -1,5 +1,5 @@
 import { AUDIENCE_LABEL, CHANNEL_LABEL, LEVEL_LABEL } from "./levels";
-import { MODE_LABEL } from "./modes";
+import { MODE_LABEL, getMode } from "./modes";
 import { buildStudioGeneratedUi } from "./studio-generated-ui";
 import { composeSpec, type SpecDraft } from "./spec";
 import type { Pattern } from "./types";
@@ -12,6 +12,33 @@ export type StudioExportState = {
 
 export function studioMarkdown(pattern: Pattern, state: StudioExportState): string {
   const { draft, behaviorNotes, changes } = state;
+  if (!changes.length && !behaviorNotes.length) {
+    return [
+      `# ${pattern.name}`,
+      "",
+      pattern.summary,
+      "",
+      "## Behavior spec",
+      "",
+      pattern.spec,
+      "",
+      "## How it works",
+      "",
+      pattern.interactionModel ?? pattern.summary,
+      "",
+      "## Pattern facts",
+      "",
+      `- **When:** ${pattern.triggers.join("; ")}`,
+      `- **Agent move:** ${MODE_LABEL[pattern.mode.primary]}`,
+      `- **Receiver:** ${pattern.audience.map((audience) => AUDIENCE_LABEL[audience]).join(", ")}`,
+      `- **Participants:** ${LEVEL_LABEL[pattern.level.primary]}`,
+      `- **Surface:** ${pattern.channels.map((channel) => CHANNEL_LABEL[channel]).join(", ")}`,
+      `- **Receiver choices:** ${(pattern.responses ?? getMode(pattern.mode.primary).responses).join(", ")}`,
+      "",
+      `Catalog pattern: /v2/patterns/${pattern.id}`,
+      "",
+    ].join("\n");
+  }
   const shapedSpec = composeSpec(draft).sentence ?? "Complete the missing behavior details in Studio.";
   return [
     `# ${pattern.name} — behavior for your UI`,
@@ -72,8 +99,9 @@ function textLines(value: string, x: number, y: number, maxChars: number, maxLin
   return `<text x="${x}" y="${y}" fill="#20313d" font-family="Arial, Helvetica, sans-serif" font-size="${size}" font-weight="${weight}">${wrapped(value, maxChars, maxLines).map((line, index) => `<tspan x="${x}" dy="${index ? lineHeight : 0}">${xml(line)}</tspan>`).join("")}</text>`;
 }
 
-/** A vector rendering of the adapted interaction that can be opened in Figma. */
+/** A schematic vector rendering that can be opened in Figma. */
 export function studioSvg(pattern: Pattern, state: StudioExportState): string {
+  const adapted = Boolean(state.changes.length || state.behaviorNotes.length);
   const model = buildStudioGeneratedUi(pattern, state.draft, state.behaviorNotes);
   const evidenceY = model.order === "evidence_first" ? 277 : 468;
   const outputY = model.order === "evidence_first" ? 410 : 272;
@@ -87,10 +115,10 @@ export function studioSvg(pattern: Pattern, state: StudioExportState): string {
     return `<rect x="${x}" y="612" width="156" height="42" rx="7" fill="#ffffff" stroke="#bfcdd3"/><text x="${x + 16}" y="638" fill="#20313d" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="600">${xml(action.slice(0, 18))}</text>`;
   }).join("");
   const surface = state.draft.channel ? CHANNEL_LABEL[state.draft.channel] : CHANNEL_LABEL[model.channel];
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-label="${xml(pattern.name)} adapted interaction">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-label="${xml(pattern.name)} ${adapted ? "adapted interaction" : "catalog behavior diagram"}">
 <rect width="1200" height="720" fill="#f7fafb"/>
 <rect x="0" y="0" width="1200" height="66" fill="#ffffff"/><path d="M0 66H1200" stroke="#dce5e8"/>
-<text x="45" y="42" fill="#20313d" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700">HAX</text><text x="114" y="41" fill="#71808a" font-family="Arial, Helvetica, sans-serif" font-size="14">Studio · adapted pattern UI</text>
+<text x="45" y="42" fill="#20313d" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700">HAX</text><text x="114" y="41" fill="#71808a" font-family="Arial, Helvetica, sans-serif" font-size="14">Studio · ${adapted ? "adapted pattern UI" : "catalog behavior diagram"}</text>
 <text x="48" y="115" fill="#71808a" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" letter-spacing="1.8">${xml(pattern.name.toUpperCase())} / ${xml(surface.toUpperCase())}</text>
 <rect x="48" y="145" width="1104" height="535" rx="15" fill="#ffffff" stroke="#dce5e8"/>
 <rect x="70" y="167" width="1060" height="490" rx="10" fill="#f9fbfc" stroke="#dce5e8"/>
@@ -106,6 +134,6 @@ ${textLines(model.output, 106, outputY + 82, 95, 2, 17, 22)}
 ${textLines(model.rationale, 104, explanationY + 42, 112, 1, 16, 20)}
 ${evidence}
 ${actions}
-<text x="1120" y="639" text-anchor="end" fill="#71808a" font-family="Arial, Helvetica, sans-serif" font-size="12">${xml(model.approval ? "Agent waits for a decision" : "Interactive choices in Studio")}</text>
+<text x="1120" y="639" text-anchor="end" fill="#71808a" font-family="Arial, Helvetica, sans-serif" font-size="12">${xml(model.approval ? "Agent waits for a decision" : adapted ? "Interactive choices in Studio" : "Catalog interaction diagram")}</text>
 </svg>`;
 }

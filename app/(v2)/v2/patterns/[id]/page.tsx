@@ -106,7 +106,7 @@ export default async function V2PatternPage({
   const sectionNav = [
     ...(pattern.whatItSolves ? [{ id: "overview", label: "Overview" }] : []),
     ...(pattern.interactionModel || pattern.interactionSteps?.length ? [{ id: "interaction", label: "Interaction" }] : []),
-    { id: "levels", label: "Who is involved" },
+    { id: "dimensions", label: "Who is involved" },
     { id: "behavior-spec", label: "Behavior spec" },
     { id: "preview", label: "How it looks" },
   ];
@@ -178,7 +178,7 @@ export default async function V2PatternPage({
           </section>
         ) : null}
 
-        <section id="levels" className="v2-pattern-levels">
+        <section id="dimensions" className="v2-pattern-levels">
           <div className="v2-pattern-section-head">
             <h2>Who is involved</h2>
             <p>Where the pattern applies as agents and people take part.</p>
@@ -203,6 +203,10 @@ export default async function V2PatternPage({
                       ? level === "L1"
                         ? "A lone agent has no agent coordination to hide, so there is no disclosure gradient to apply."
                         : "Agent-only exchanges need their operational details directly; an outcome-first view for a person does not apply."
+                      : pattern.id === "co-editing-surface"
+                        ? level === "L1"
+                          ? "This exchange needs several agents contributing to the same document with a person."
+                          : "The operator's edits and comments are part of the exchange, so a setting with many agents and no person does not apply."
                       : "Does not apply here."}</p>
                   </div>
                 </li>
@@ -241,10 +245,18 @@ export default async function V2PatternPage({
                   <p>The agent signals its current activity and declares what it may observe or change. It updates both when its state or access changes.</p>
                 ) : pattern.id === "capability-manifest" ? (
                   <p>The agent declares its capabilities and limits, then signals changes to its connection or availability.</p>
+                ) : pattern.id === "pre-action-handshake" ? (
+                  <p><b>Proposes</b> the next consequential action and <b>explains</b> the observation and interpretation behind it. It holds the action until a response arrives; a correction or new evidence updates the handoff and requires a fresh decision.</p>
                 ) : pattern.id === "deferred-detail" ? (
                   <p>The agent signals what each phase can decide, what remains open and why, and which new evidence makes the next decision possible. It updates the gate and owner when responsibility moves to another phase.</p>
                 ) : pattern.id === "lineage-view" ? (
-                  <p>The agent explains how claims, artifacts, and decisions cite the upstream output, and updates the dependency view when that source is disputed or stale.</p>
+                  <p>The agent shows why a source is questioned, how decisions and artifacts depend on it, and updates the view when new evidence changes its status.</p>
+                ) : pattern.id === "co-editing-surface" ? (
+                  <p>One agent drafts the document. Another reads the operator&apos;s edits and comments, then adds to that same document while preserving those contributions. Each change remains attributed to its author.</p>
+                ) : pattern.id === "certainty-boundary" ? (
+                  <p>The agent declares how each workflow step runs: fixed, agent-selected, or generated. It signals when the path or review gate changes during a run.</p>
+                ) : pattern.id === "review-as-dialogue" ? (
+                  <p>The agent <b>proposes</b> a draft for review. It uses a decline reason to ask a focused question when needed, then returns a revision with changes marked. A revised version waits for a fresh decision.</p>
                 ) : (
                   <p><b>{MODE_LABEL[pattern.mode.primary]}</b>, {mode.definition}</p>
                 )}
@@ -258,16 +270,33 @@ export default async function V2PatternPage({
                   <p>Check the agent&apos;s activity and scope, pause or resume it, narrow its reach, or explicitly widen it.</p>
                 ) : pattern.id === "capability-manifest" ? (
                   <p>Check what is available, seek approval for a pending capability, or adjust the agent&apos;s access in settings.</p>
+                ) : pattern.id === "pre-action-handshake" ? (
+                  <p>Consent to the proposal, correct the agent&apos;s interpretation or plan, decline the action, or defer it while gathering more evidence.</p>
                 ) : pattern.id === "deferred-detail" ? (
                   <p>See why a decision is still open, inspect the evidence that unlocks it, and decide whether the next phase can begin.</p>
                 ) : pattern.id === "lineage-view" ? (
                   <p>Inspect dependent work, verify the questioned source, and reassess or hold decisions that rely on it with the teams involved.</p>
+                ) : pattern.id === "co-editing-surface" ? (
+                  <p>Edit the document, comment on a specific part, review the agent&apos;s next revision, and decide whether the shared draft is ready to use.</p>
+                ) : pattern.id === "certainty-boundary" ? (
+                  <p>Inspect a step&apos;s input, output, and method; check generated work at its review gate; or revise the workflow configuration. The preview illustrates these boundaries but does not run the workflow.</p>
+                ) : pattern.id === "review-as-dialogue" ? (
+                  <p>Accept the current draft, correct it, decline with a reason, or defer. Answer the agent&apos;s clarification when it asks; review each returned version before using it.</p>
                 ) : (
                   <div className="v2-responses">
                     {responses.map((response) => <span key={response} className="v2-tag">{response}</span>)}
                   </div>
                 )}
               </FactRow>
+              {pattern.id === "review-as-dialogue" ? (
+                <FactRow title="Adjacent patterns">
+                  <ul>
+                    <li><b>Co-editing Surface:</b> edits and comments live in the shared artifact; this pattern handles the review turn and resulting revision.</li>
+                    <li><b>Pre-Action Handshake:</b> holds a consequential action until a decision; use it when a reviewed draft is about to trigger that action.</li>
+                    <li><b>Decision Record:</b> preserves the rationale when an action is committed; it does not run the feedback loop.</li>
+                  </ul>
+                </FactRow>
+              ) : null}
             </div>
           </details>
         </section>
@@ -281,6 +310,8 @@ export default async function V2PatternPage({
               ? "Explore the same boundary in a conversation, an operations workspace, and an agent-readable signal."
               : pattern.id === "capability-manifest"
               ? "Explore the manifest in setup, conversation, and an agent-readable signal."
+              : pattern.id === "pre-action-handshake"
+                ? "Review the Reliability agent’s incident evidence and proposed rollback in its conversation. Try each response to see how the pending handoff changes."
               : pattern.id === "deferred-detail"
                 ? "Follow one capacity decision through evaluation, pilot, and rollout. Select a phase to see what was known, what had to wait, and which evidence unlocked the next gate."
               : pattern.id === "authority-gradient"
@@ -288,7 +319,13 @@ export default async function V2PatternPage({
                 : pattern.id === "disclosure-gradient"
                   ? "Follow the same Payments API incident in the agent’s chat turn or its shared incident workspace. Open each layer to reveal more of the result’s rationale and history."
               : pattern.id === "lineage-view"
-                ? "Trace the Triage agent’s disputed RCA through the Remediation agent’s plan to the Change agent’s ticket, alongside the Comms agent’s draft. Only the RCA is highlighted; the impact summary shows who needs to review their reliance."
+                ? "See why a warehouse recount challenges the Inventory agent’s stock count, then review the sale decisions and draft that rely on it. Select an item to trace its path."
+              : pattern.id === "co-editing-surface"
+                ? "Edit or comment on the Incident agent’s restart-plan document in the conversation or shared workspace. Then ask the Reliability agent to continue."
+              : pattern.id === "certainty-boundary"
+                ? "Inspect the same workflow as a settings map or structured state signal. Select a step to see how it runs and where review happens."
+              : pattern.id === "review-as-dialogue"
+                ? "Review the Marketing agent’s launch email. Decline with a reason, answer its clarification, and inspect the revised draft; the controls simulate this conversation locally."
               : "Explore the exchange in each place it can appear."}
           </p>
           <div className="v2-pattern-preview__body">

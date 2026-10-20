@@ -185,7 +185,7 @@ export function SpecBuilder() {
           <Field
             slot="level"
             label="…in"
-            note="Picking a level filters the audiences and the channels. An agents-only exchange has no person in it, so the human-facing channels go."
+            note="Choosing a participant dimension filters the audiences and channels. In an exchange with many agents and no person, human-facing channels do not apply."
           >
             <div className="flex flex-wrap gap-2">
               {LEVEL_ORDER.map((id) => (
@@ -228,7 +228,7 @@ export function SpecBuilder() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-faint">Pick a level first.</p>
+              <p className="text-sm text-faint">Choose a participant dimension first.</p>
             )}
           </Field>
 
@@ -254,7 +254,7 @@ export function SpecBuilder() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-faint">Pick a level first.</p>
+              <p className="text-sm text-faint">Choose a participant dimension first.</p>
             )}
           </Field>
 
@@ -329,7 +329,7 @@ export function SpecBuilder() {
 
           {matches === null ? (
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Pick a mode or a level and the catalog narrows here.
+              Pick a mode or participant dimension and the catalog narrows here.
             </p>
           ) : matches.length === 0 ? (
             <div className="v2-gap mt-3">

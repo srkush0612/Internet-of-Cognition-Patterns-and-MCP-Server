@@ -37,11 +37,11 @@ const EXPECTED_MODE_COUNTS: Record<Mode, number> = {
   commit: 2,
 };
 
-/** Section 7 counts, with Capability Manifest moved to One agent to match its SDK definition. */
+/** Section 7 counts, with Capability Manifest at its simplest participant setting. */
 const EXPECTED_LEVEL_COUNTS: Record<Level, number> = {
   L1: 9,
-  L2: 2,
-  L3: 9,
+  L2: 0,
+  L3: 11,
   L4: 3,
 };
 
@@ -144,10 +144,10 @@ describe("v2 catalog", () => {
     }
   });
 
-  it("gives SDK-sourced patterns a component and IOC-only patterns none", () => {
+  it("gives SDK-sourced patterns a component when an upstream component renders their preview", () => {
     for (const pattern of patterns) {
       const hasComponent = Boolean(pattern.implementation?.sdk_component);
-      expect(hasComponent, pattern.id).toBe(pattern.source !== "ioc");
+      expect(hasComponent, pattern.id).toBe(pattern.source !== "ioc" && pattern.id !== "co-editing-surface");
     }
   });
 
@@ -166,7 +166,7 @@ describe("v2 catalog", () => {
     expect(claimed.sort()).toEqual(v1Patterns.map((p) => p.slug).sort());
   });
 
-  it("keeps the six Co-Editing components as variants of one pattern", () => {
+  it("preserves the six source entries behind Co-Editing Surface", () => {
     const coEditing = patterns.find((p) => p.id === "co-editing-surface");
     expect(coEditing?.merged_from).toHaveLength(CO_EDITING_VARIANTS.length);
   });
@@ -355,7 +355,6 @@ describe("merged pattern variants", () => {
   it("gives every merged pattern an axis and exactly one default", () => {
     expect(merged.map((p) => p.id).sort()).toEqual([
       "activity-record",
-      "co-editing-surface",
       "decision-record",
       "inline-rationale",
       "structured-finding",

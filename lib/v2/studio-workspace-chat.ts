@@ -34,9 +34,9 @@ const AUDIENCE_WORDS: Array<[RegExp, Audience]> = [
 ];
 const LEVEL_WORDS: Array<[RegExp, Level]> = [
   [/\b(many people|several people|multiple teams)\b/, "L4"],
-  [/\b(agents only|no person|headless)\b/, "L2"],
+  [/\b(many agents only|agents only|no person|headless)\b/, "L2"],
   [/\b(one agent|single agent)\b/, "L1"],
-  [/\b(agent and a person|with a person|human in the loop)\b/, "L3"],
+  [/\b(many agents \+ one person|agent and a person|with a person|human in the loop)\b/, "L3"],
 ];
 
 function cleaned(value: string): string {

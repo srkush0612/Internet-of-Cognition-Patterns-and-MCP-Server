@@ -5,23 +5,32 @@ import { useSearchParams } from "next/navigation";
 import { GapCard, PatternCard } from "@/components/v2/primitives";
 import { patterns } from "@/lib/v2/catalog";
 import {
+  MODE_FAMILY_DEFINITION,
+  MODE_FAMILY_LABEL,
+  MODE_FAMILY_ORDER,
+  MODE_LABEL,
+  MODE_ORDER,
+  MODE_PLAIN,
+  getMode,
+} from "@/lib/v2/modes";
+import {
   CHANNEL_LABEL,
   CHANNEL_ORDER,
   LEVEL_LABEL,
   LEVEL_LONG,
   LEVEL_ORDER,
 } from "@/lib/v2/levels";
-import { MODE_LABEL, MODE_ORDER, MODE_PLAIN, getMode } from "@/lib/v2/modes";
 import type { Channel, Level, Mode } from "@/lib/v2/types";
 
-type GroupBy = "mode" | "level" | "none";
+type GroupBy = "family" | "mode" | "dimension" | "none";
 
 export function CatalogBrowser() {
-  // The homepage's two ways in, a mode, or a level, arrive as a query
-  // string and land the reader on a filtered catalog rather than on all 23.
+  // The homepage's two ways in, a mode or participant dimension, arrive as a
+  // query string and land the reader on a filtered catalog rather than all 23.
   const params = useSearchParams();
   const initialMode = params.get("mode");
-  const initialLevel = params.get("level");
+  // Accept the earlier query key so existing shared links keep working.
+  const initialLevel = params.get("dimension") ?? params.get("level");
 
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<Mode | "all">(
@@ -33,7 +42,7 @@ export function CatalogBrowser() {
       : "all",
   );
   const [channel, setChannel] = useState<Channel | "all">("all");
-  const [groupBy, setGroupBy] = useState<GroupBy>("mode");
+  const [groupBy, setGroupBy] = useState<GroupBy>("dimension");
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -68,8 +77,26 @@ export function CatalogBrowser() {
     setChannel("all");
   }
 
-  const groups: Array<{ key: string; label: string; note: string; rows: typeof patterns; gap?: string }> =
+  const groups: Array<{
+    key: string;
+    label: string;
+    note: string;
+    rows: typeof patterns;
+    gap?: string;
+    gapDescription?: string;
+  }> =
     useMemo(() => {
+      if (groupBy === "family") {
+        return MODE_FAMILY_ORDER.map((family) => ({
+          key: family,
+          label: MODE_FAMILY_LABEL[family],
+          note: MODE_FAMILY_DEFINITION[family],
+          rows: filtered.filter(
+            (pattern) => getMode(pattern.mode.primary).family === family,
+          ),
+        })).filter((group) => group.rows.length > 0);
+      }
+
       if (groupBy === "mode") {
         return MODE_ORDER.map((id) => {
           const rows = filtered.filter((p) => p.mode.primary === id);
@@ -90,13 +117,25 @@ export function CatalogBrowser() {
         }).filter((group) => group.rows.length > 0 || group.gap);
       }
 
-      if (groupBy === "level") {
-        return LEVEL_ORDER.map((id) => ({
-          key: id,
-          label: LEVEL_LABEL[id],
-          note: LEVEL_LONG[id],
-          rows: filtered.filter((p) => p.level.primary === id),
-        })).filter((group) => group.rows.length > 0);
+      if (groupBy === "dimension") {
+        return LEVEL_ORDER.map((id) => {
+          const rows = filtered.filter((p) => p.level.primary === id);
+          const total = patterns.filter((p) => p.level.primary === id).length;
+          const isEmptyCategory = total === 0 && (level === "all" || level === id);
+          return {
+            key: id,
+            label: LEVEL_LABEL[id],
+            note: LEVEL_LONG[id],
+            rows,
+            gap: isEmptyCategory
+              ? "No patterns are primarily designed for this setting yet."
+              : undefined,
+            gapDescription:
+              isEmptyCategory && id === "L2"
+                ? "Credential Boundary and Convergence Point also support peer-agent coordination without a person in the loop, but their primary setting includes an operator."
+                : undefined,
+          };
+        }).filter((group) => group.rows.length > 0 || group.gap);
       }
 
       return [{ key: "all", label: "", note: "", rows: filtered }];
@@ -164,8 +203,9 @@ export function CatalogBrowser() {
           value={groupBy}
           onChange={(event) => setGroupBy(event.target.value as GroupBy)}
         >
+          <option value="family">By interaction family</option>
           <option value="mode">By what it does</option>
-          <option value="level">By who's involved</option>
+          <option value="dimension">By who’s interacting</option>
           <option value="none">No grouping</option>
         </select>
       </div>
@@ -213,8 +253,8 @@ export function CatalogBrowser() {
             {group.gap ? (
               <GapCard title={group.gap}>
                 <p className="text-sm leading-relaxed">
-                  This is a way an agent could open, with its replies already
-                  fixed. Nothing has been designed for it yet.
+                  {group.gapDescription ??
+                    "This is a way an agent could open, with its replies already fixed. Nothing has been designed for it yet."}
                 </p>
               </GapCard>
             ) : (

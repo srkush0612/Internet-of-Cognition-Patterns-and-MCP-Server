@@ -16,7 +16,7 @@ import { LEVEL_LABEL } from "@/lib/v2/levels";
  *
  * Two things stay off it deliberately. The behavior-spec sentence is the
  * mechanic inside Studio and on the pattern pages, not the pitch. And the
- * model's own words, mode, level, interaction, appear here only in plain
+ * model's own words, mode, participation dimension, interaction, appear here only in plain
  * language: "what the agent needs to do", "who is involved".
  */
 
@@ -38,17 +38,14 @@ export default function V2Home() {
               apart, so the hero arrives rather than appearing. */}
           <Rise>
             <h1 className="v2-display">
-              Design how agents work with people
-              <span className="v2-turn">
-                and with each other.
-              </span>
+              Make collaboration between people and agents
+              <span className="v2-turn">work at scale.</span>
             </h1>
           </Rise>
           <Rise delay={0.12}>
             <p className="v2-sub mt-7">
-              HAX is a research-grounded library of interaction patterns and
-              behavior specs for agent systems. Use it to make actions clear,
-              disagreements legible, and handoffs predictable.
+              Design how agents ask, hand off work, resolve disagreements, and
+              involve people as systems grow.
             </p>
           </Rise>
           <Rise delay={0.24} className="mt-8 flex flex-wrap items-center gap-4">
@@ -86,7 +83,9 @@ export default function V2Home() {
       {/* ---------------------------------------------------------- setups */}
       <Reveal className="v2-sec">
         <div className="osh-container">
-          <h2 className="v2-h2">The same patterns work across four levels.</h2>
+          <h2 className="v2-h2">
+            The same patterns work across four dimensions of participation.
+          </h2>
           <p className="v2-sub">
             Choose the simplest setup that fits the exchange. As more agents
             and people join, make responsibilities and decision rights clear.
@@ -96,7 +95,7 @@ export default function V2Home() {
             {SETUPS.map(({ level, line }) => (
               <Link
                 key={level}
-                href={`/v2/patterns?level=${level}`}
+                href={`/v2/patterns?dimension=${level}`}
                 className="v2-setup"
               >
                 <SetupScene level={level} />

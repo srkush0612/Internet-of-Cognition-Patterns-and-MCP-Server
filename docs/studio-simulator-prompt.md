@@ -8,8 +8,8 @@ Use what already exists: the **16 pattern UIs** you have built, and the **existi
 
 1. A **spec** — the behaviour-spec sentence, with its slots live and editable.
 2. An **agent that runs against whatever the spec currently says** — it hits the trigger, performs the mode, and waits for exactly the responses the spec allows.
-3. The run is shown as **the cast the spec's level implies** (see below).
-4. **Editing the spec changes the behaviour on the next step.** Drag a response out and the agent can no longer offer it — in every view. Change the level and the cast transforms.
+3. The run is shown as **the cast the spec's participant dimension implies** (see below).
+4. **Editing the spec changes the behaviour on the next step.** Drag a response out and the agent can no longer offer it — in every view. Change the participant dimension and the cast transforms.
 
 The feeling to reach: you are not filling a form and seeing a preview. You are reshaping a running agent and watching it obey the new rules.
 
@@ -17,7 +17,7 @@ The feeling to reach: you are not filling a form and seeing a preview. You are r
 
 Both edit the one underlying spec:
 
-- **A chip palette.** Draggable slot-chips — modes, levels, responses, channels. Drag a mode onto the sentence to swap it; drag a response chip in or out; drag the level up or down. The sentence is the readable form of the program.
+- **A chip palette.** Draggable slot-chips — modes, participant dimensions, responses, channels. Drag a mode onto the sentence to swap it; drag a response chip in or out; choose a different participant dimension. The sentence is the readable form of the program.
 - **Direct manipulation of the running view.** Remove a response on the agent's own card and it leaves the spec too. The preview is not read-only; touching it edits the spec.
 
 Keep the sentence and the run in sync at all times. An edit in either place re-derives the other.
@@ -26,9 +26,9 @@ Keep the sentence and the run in sync at all times. An edit in either place re-d
 
 Step-based, with a play button that auto-steps. Each step animates so it is legible but still moves. The agent progresses through the moment: reach the trigger, perform the mode, surface the responses, settle on the one the user (or a simulated peer) picks. Stepping is the default because it is readable; play is for letting it run in a demo.
 
-## The cast changes with the level — this is the heart of it
+## The cast changes with the participant dimension — this is the heart of it
 
-The level slot decides who is in the exchange, and the canvas shows a **different cast** for each. Dragging the level transforms the cast live. This transformation is the whole thesis made physical.
+The participant-dimension slot decides who is in the exchange, and the canvas shows a **different cast** for each. Changing the dimension transforms the cast live. This transformation is the whole thesis made physical.
 
 - **L1 — one agent.** A single agent and the person using it. The pattern's UI (one of your 16) is what the person sees. One surface.
 - **L3 — agents and one person.** The agent acts, the person is in the loop. The pattern UI is the surface the person responds on. The person is a participant you can act as.
@@ -42,7 +42,7 @@ Hold **L4 (agents and many people)** for later. Build L1, L2, L3.
 
 The simulator breaking is more instructive than it succeeding, so make the failures legible rather than preventing them:
 
-- Drag the level to **agents only** on a pattern that needs a person, and the agent cannot run it — the exchange cannot form because a required participant is missing. Say so, in place.
+- Choose the **agents only** participant dimension on a pattern that needs a person, and the agent cannot run it. The exchange cannot form because a required participant is missing. Say so, in place.
 - Drag a **required response** out and the mode is now incoherent — the agent flags that it can no longer do what the mode is for. (Example: take `correct` out of a Propose pattern and confirm/decline collapse into one real choice; the agent should say the checkpoint now carries no information.)
 - These are the behaviour pushback made literal. Do not block the edit — let it happen and let the agent react to it. That reaction is the point.
 
@@ -52,11 +52,11 @@ A break is a fork, not a wall. But the right response depends on which kind of b
 
 - **The same pattern is now incoherent** (a required response dragged out, a required element removed). The pattern is still the right one; it is just broken. Offer: restore what was removed, or accept it as a recorded gap. Do NOT suggest a different pattern here — switching patterns is the wrong fix for a self-inflicted hole.
 
-- **The pattern no longer fits what you asked for** (the level changed to one the pattern cannot serve, the mode effectively changed under it). This pattern is now wrong for the spec. Here is where alternates belong: look up other patterns that serve the new mode-and-level, and offer them. "You moved this to agents-only. Pre-Action Handshake needs a person. Convergence Point and Credential Boundary live here instead — switch to one?" Switching carries over whatever slots still apply.
+- **The pattern no longer fits what you asked for** (the participant dimension changed to one the pattern cannot serve, so the mode effectively changed under it). This pattern is now wrong for the spec. Here is where alternates belong: look up other patterns that serve the new mode and dimension, and offer them. "You moved this to agents-only. Pre-Action Handshake needs a person. Convergence Point and Credential Boundary live here instead — switch to one?" Switching carries over whatever slots still apply.
 
-- **Nothing else fits.** If the new mode-and-level is a genuine gap — Request, Delegate, or any combination the catalog does not cover — say so plainly and do not manufacture a near-miss. "Nothing in the library serves a Request at agents-only yet. This is one of the gaps. You can keep shaping it as a spec for a pattern that does not exist, and export that." The empty result is a real finding, and the Markdown export of a gap spec (above) is the thing to point them at.
+- **Nothing else fits.** If the new mode and participant dimension are a genuine gap — Request, Delegate, or any combination the catalog does not cover — say so plainly and do not manufacture a near-miss. "Nothing in the library serves a Request at agents-only yet. This is one of the gaps. You can keep shaping it as a spec for a pattern that does not exist, and export that." The empty result is a real finding, and the Markdown export of a gap spec (above) is the thing to point them at.
 
-Use `conflicts_with` and `composes_with` from the catalog to drive this — they have been in the schema doing nothing, and this is what they are for. An alternate is a pattern that serves the spec's current mode and level; a compose suggestion is a pattern the current one pairs with when the user is adding capability rather than replacing it.
+Use `conflicts_with` and `composes_with` from the catalog to drive this — they have been in the schema doing nothing, and this is what they are for. An alternate is a pattern that serves the spec's current mode and participant dimension; a compose suggestion is a pattern the current one pairs with when the user is adding capability rather than replacing it.
 
 Make the alternates checkable in place: show them as options the user can preview before committing, not a forced switch. And always keep the restore-the-break path visible alongside — leaving the pattern broken on purpose, as a recorded gap, is a legitimate choice the user is allowed to make.
 
@@ -64,17 +64,17 @@ Make the alternates checkable in place: show them as options the user can previe
 ## Scope
 
 - **One pattern at a time.** No composition surface, no second pattern on the canvas yet. One pattern, fully simulatable, is the whole build.
-- Pick a pattern that exists at more than one level so the cast-change is demonstrable. **Convergence Point** (resolve, native L2, reaches L3) and **Pre-Action Handshake** (propose, L3) are the two to get working first; Convergence Point is the one that proves the L2 exchange.
+- Pick a pattern that exists at more than one participant dimension so the cast-change is demonstrable. **Convergence Point** (resolve, native L2, reaches L3) and **Pre-Action Handshake** (propose, L3) are the two to get working first; Convergence Point is the one that proves the agents-only exchange.
 
 ## The data behind it
 
-Drive everything from the pattern data you already have — modes, levels, channels, responses, triggers. The responses a mode allows, the levels a pattern reaches, its channels: all of it comes from the catalog, not from hardcoded strings in the simulator. The simulator is a renderer over the spec; changing the spec is the only way behaviour changes.
+Drive everything from the pattern data you already have — modes, participant dimensions, channels, responses, triggers. The responses a mode allows, the dimensions a pattern reaches, its channels: all of it comes from the catalog, not from hardcoded strings in the simulator. The simulator is a renderer over the spec; changing the spec is the only way behaviour changes.
 
 Reuse the 16 built pattern UIs as the L1/L3 surfaces. The L2 exchange is new and has to be built, but it should be built from the same components and tokens.
 
 ## Rules that still hold
 
-- Nothing on screen is authored by you. Pattern content, responses, evidence, level notes come from the catalog. Where something is not in the data, show the honest gap, do not invent it.
+- Nothing on screen is authored by you. Pattern content, responses, evidence, participant-dimension notes come from the catalog. Where something is not in the data, show the honest gap, do not invent it.
 - The spec sentence is assembled from the slot fields; keep them consistent, both directions.
 - No model calls in this build. The agent's "behaviour" is the spec being interpreted deterministically — it is a simulation driven by data, not a model generating responses.
 - Plain-language section and slot labels, per the agreed taxonomy (what the agent does, who's involved, when it happens, who sees it and where, what you can do back).
@@ -94,17 +94,17 @@ A simulator nobody can act on is a toy. The payoff is that you shape a pattern h
 
 Four targets, because people build in different places. Offer them from the pattern, each one copy-to-clipboard or download, no account or save step:
 
-1. **The MCP call.** The `discover`/`fetch` call that fetches this pattern, with the current spec's mode, level, channel and responses as the arguments. This is the real one — it points the user's own agents at the server. Copy to clipboard.
+1. **The MCP call.** The `discover`/`fetch` call that fetches this pattern, with the current spec's mode, participant dimension (`level` in the payload), channel and responses as the arguments. This is the real one — it points the user's own agents at the server. Copy to clipboard.
 
-2. **The component code.** The built pattern UI as a component the user can paste into a React/Vue project — the same one of the 16 UIs shown on the canvas, with the shaped props filled in (the responses that remain, the level, the channel). For Cursor and Claude Code this is what they paste. Copy to clipboard.
+2. **The component code.** The built pattern UI as a component the user can paste into a React/Vue project — the same one of the 16 UIs shown on the canvas, with the shaped props filled in (the responses that remain, the participant dimension, the channel). For Cursor and Claude Code this is what they paste. Copy to clipboard.
 
-3. **A Markdown spec file.** A `.md` that describes the pattern as the user shaped it — the one-sentence spec, the mode, level, triggers, the responses that remain, and the behaviour rules (what each response does, what happens on no response). This is the file you hand to Claude Code or Cursor as context so the agent builds the pattern correctly. It is instructions-for-an-agent, not prose for a human. Download.
+3. **A Markdown spec file.** A `.md` that describes the pattern as the user shaped it — the one-sentence spec, the mode, participant dimension, triggers, the responses that remain, and the behaviour rules (what each response does, what happens on no response). This is the file you hand to Claude Code or Cursor as context so the agent builds the pattern correctly. It is instructions-for-an-agent, not prose for a human. Download.
 
 4. **Figma.** Push the pattern UI into a Figma file as frames, using the existing Figma integration if one is wired up; otherwise a copyable frame or an image export as a fallback. This is for the designers who will lay it out, not wire it up.
 
 Rules for all four:
 
-- **Carry the shaping.** Removed responses, chosen level, chosen channel, edited trigger text — all of it is in every export. The export is a snapshot of the spec on screen, not a link to the catalog entry.
+- **Carry the shaping.** Removed responses, chosen participant dimension, chosen channel, edited trigger text — all of it is in every export. The export is a snapshot of the spec on screen, not a link to the catalog entry.
 - **Stamp the provenance.** Each export names the pattern and that it came from HAX Studio, and whether it is a catalog pattern or a shaped variant of one. So when it turns up in a repo later, someone can trace it back.
 - **Say what is carried and what is not.** The MCP call carries behaviour; the component carries rendering; the Markdown carries both as instructions; Figma carries only the look. Label each so nobody ships a Figma frame thinking it includes the behaviour.
 - **The gap case still exports.** If the user shaped a pattern for a mode the library has no pattern for (Request, Delegate), the Markdown export still works — it describes the behaviour they specified, as a brief for building something that does not exist yet. That is the most valuable export of all, because it is a spec for a missing pattern.

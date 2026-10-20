@@ -10,11 +10,16 @@ export function PatternSectionNav({ items }: { items: Item[] }) {
   useEffect(() => {
     function updateActive() {
       const nav = document.querySelector<HTMLElement>(".v2-pattern-jump");
-      const threshold = (nav?.getBoundingClientRect().bottom ?? 0) + 24;
+      const threshold = (nav?.getBoundingClientRect().bottom ?? 0) + 48;
       let current = items[0]?.id ?? "";
 
       for (const item of items) {
         const section = document.getElementById(item.id);
+        // Anchor jumps can pass a pending section without ever intersecting
+        // it. Mark passed sections visible so their content never stays hidden.
+        if (section && section.getBoundingClientRect().top <= threshold) {
+          section.dataset.scrollReveal = "entered";
+        }
         if (section && section.getBoundingClientRect().top <= threshold) {
           current = item.id;
         }

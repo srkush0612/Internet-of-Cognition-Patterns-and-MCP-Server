@@ -10,29 +10,29 @@ the MCP server, and every pattern page read.
 
 | File | What it holds |
 | --- | --- |
-| `types.ts` | `Level`, `Mode`, `Channel`, `Audience`, `Evidence`, `ModeDef`, `Pattern`, `Interaction` — section 6, field names unchanged because the MCP server will expose them |
+| `types.ts` | `Level` (the participant dimension), `Mode`, `Channel`, `Audience`, `Evidence`, `ModeDef`, `Pattern`, `Interaction` — section 6, field names unchanged because the MCP server will expose them |
 | `modes.ts` | The nine modes, their families, responses, and the four rejected candidates — section 4 |
-| `levels.ts` | Levels, channels, audiences, their labels and sentence forms, and which of them each level allows — sections 3 and 10 |
+| `levels.ts` | Participant dimensions, channels, audiences, their labels and sentence forms, and which channels and audiences each dimension allows — sections 3 and 10 |
 | `catalog.ts` | The 23 patterns — section 7 |
-| `gaps.ts` | Empty modes, missing patterns, thin levels, judgment calls — sections 8 and 9 |
+| `gaps.ts` | Empty modes, missing patterns, thin participant dimensions, judgment calls — sections 8 and 9 |
 | `spec.ts` | The behavior-spec sentence: slots, composition, matching, `instantiate` — section 5 |
-| `catalog.test.ts` | Validation, including the per-mode and per-level counts the document states |
+| `catalog.test.ts` | Validation, including the per-mode and per-dimension counts the document states |
 
 ## What is grounded and what is synthesis
 
-**Grounded.** Pattern names, `source`, `merged_from`, `evidence`, level notes, and
+**Grounded.** Pattern names, `source`, `merged_from`, `evidence`, participant-dimension notes, and
 the triggers and channels of the research-sourced entries. Those come from the
 published pattern pages. Summaries for research-sourced entries are their v1
 one-liners, trimmed.
 
-**Synthesis.** Primary and secondary modes, primary levels, every spec sentence,
+**Synthesis.** Primary and secondary modes, primary participant dimensions, every spec sentence,
 audiences, and the channels of the SDK entries. Five spec sentences are the
 document's own worked examples, verbatim; the other eighteen were written to its
 template. Section 9's list of calls that need validating is carried in
 `JUDGMENT_CALLS` and rendered on the pattern pages that each one touches, so
 nothing in the UI presents a synthesised decision as a finding.
 
-The counts in `catalog.test.ts` are the guard. Change a pattern's mode or level by
+The counts in `catalog.test.ts` are the guard. Change a pattern's mode or participant dimension by
 hand and a test fails rather than the catalog quietly disagreeing with the
 document it came from.
 

@@ -22,6 +22,7 @@ type ConvergencePointVisualizationSelectorProps = {
   compact?: boolean;
   contextLabel?: string;
   saveReveal?: ConvergenceSaveRevealState;
+  timelineTitle?: string;
 };
 
 type ViewCardConfig = {
@@ -65,6 +66,7 @@ function VisualizationCard({
   contextLabel,
   compact,
   sectionRef,
+  title,
   fadeIn = false,
   selected = false,
   children,
@@ -73,6 +75,7 @@ function VisualizationCard({
   contextLabel: string;
   compact?: boolean;
   sectionRef?: RefObject<HTMLDivElement | null>;
+  title?: string;
   fadeIn?: boolean;
   selected?: boolean;
   children: ReactNode;
@@ -94,7 +97,7 @@ function VisualizationCard({
       <PatternComponentCard
         patternKey={config.patternKey}
         dotColor={config.dotColor}
-        title={config.title}
+        title={title ?? config.title}
         contextLabel={contextLabel}
         icon={config.renderIcon(compact)}
         footerLeft={config.footerLeft}
@@ -113,6 +116,7 @@ export function ConvergencePointVisualizationSelector({
   compact = false,
   contextLabel = "Convergence Point",
   saveReveal,
+  timelineTitle,
 }: ConvergencePointVisualizationSelectorProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const networkRef = useRef<HTMLDivElement>(null);
@@ -235,6 +239,7 @@ export function ConvergencePointVisualizationSelector({
       view,
       contextLabel,
       compact,
+      title: view === "timeline" ? timelineTitle : undefined,
       fadeIn,
       selected,
     };

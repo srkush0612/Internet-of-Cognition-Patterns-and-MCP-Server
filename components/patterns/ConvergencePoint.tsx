@@ -17,10 +17,12 @@ export function ConvergencePoint({
   compact = false,
   live,
   saveReveal,
+  timelineTitle,
 }: {
   compact?: boolean;
   live?: PatternLivePreviewInput;
   saveReveal?: ConvergenceSaveRevealState;
+  timelineTitle?: string;
 }) {
   const workspace = live
     ? asConvergence(live.workspace)
@@ -42,6 +44,7 @@ export function ConvergencePoint({
         isDemoData={isDemoData}
         contextLabel={contextLabel}
         saveReveal={saveReveal}
+        timelineTitle={timelineTitle}
       />
     </div>
   );

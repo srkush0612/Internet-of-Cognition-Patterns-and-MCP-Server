@@ -47,7 +47,7 @@ export default function VersionPicker() {
             </p>
             <ul className="v2-pick__list">
               <li>Sorted by mode: what the opening asks of the receiver</li>
-              <li>Four levels, from one agent to many people</li>
+              <li>Four dimensions of participation, from one agent to many people</li>
               <li>Studio writes a behavior spec slot by slot</li>
               <li>Gaps in the catalog shown rather than hidden</li>
             </ul>
@@ -84,6 +84,27 @@ export default function VersionPicker() {
               </Link>
               <Link href="/gallery" className="osh-cta-outline text-sm">
                 Straight to the patterns
+              </Link>
+            </div>
+          </div>
+
+          <div className="v2-pick__card">
+            <div className="flex items-center gap-2">
+              <span className="v2-badge">IoC</span>
+              <span className="text-xs text-faint">illustrative demo</span>
+            </div>
+            <h2>IoC integration examples</h2>
+            <p>
+              See the IoC/L9 signal, the HAX pattern it would open, and what
+              happens after a person responds. Both version demos use the same
+              examples and clearly mark the proposed handoff.
+            </p>
+            <div className="mt-auto flex flex-wrap gap-2.5 pt-2">
+              <Link href="/ioc-demo/v1" className="osh-cta-outline text-sm">
+                Open v1 demo
+              </Link>
+              <Link href="/ioc-demo/v2" className="osh-cta-outline text-sm">
+                Open v2 demo
               </Link>
             </div>
           </div>
