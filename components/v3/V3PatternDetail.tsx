@@ -18,6 +18,7 @@ import {
   type NucleuxCluster,
   type NucleuxStage,
 } from "@/lib/v3/catalog";
+import { getNewAgenticPreview } from "./NewAgenticPreviews";
 
 type Theme = "shadcn" | "material";
 
@@ -257,6 +258,7 @@ function ThemedPreview({
   theme: Theme;
   onChange: (theme: Theme) => void;
 }) {
+  const authored = getNewAgenticPreview(pattern.id) !== null;
   return (
     <div className="v3-themed-preview">
       <div className="v3-theme-toggle" role="radiogroup" aria-label="Preview theme">
@@ -280,15 +282,25 @@ function ThemedPreview({
       <div className="v3-preview" data-theme={theme}>
         <PreviewFrame pattern={pattern} />
       </div>
-      <p className="v3-pattern-detail__note">
-        A generic preview rendered in two theme systems. A pattern-specific preview,
-        with the authored UI for this exchange, is coming next.
-      </p>
+      {!authored && (
+        <p className="v3-pattern-detail__note">
+          A generic preview rendered in two theme systems. A pattern-specific preview,
+          with the authored UI for this exchange, is coming next.
+        </p>
+      )}
     </div>
   );
 }
 
 function PreviewFrame({ pattern }: { pattern: Pattern }) {
+  const AuthoredPreview = getNewAgenticPreview(pattern.id);
+  if (AuthoredPreview) {
+    return (
+      <div className="v3-preview__authored">
+        <AuthoredPreview />
+      </div>
+    );
+  }
   return (
     <div className="v3-preview__frame">
       <div className="v3-preview__bar">
