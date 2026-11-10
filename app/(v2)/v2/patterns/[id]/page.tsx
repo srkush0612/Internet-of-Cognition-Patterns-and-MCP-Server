@@ -8,6 +8,7 @@ import { AuthoredSpec } from "@/components/v2/primitives";
 import { getV2Pattern, patterns } from "@/lib/v2/catalog";
 import { LEVEL_LABEL, LEVEL_ORDER } from "@/lib/v2/levels";
 import { MODE_LABEL, getMode } from "@/lib/v2/modes";
+import { getHaxPrinciple, getPatternPrinciples } from "@/lib/v2/principles";
 import { SPEC_SLOT_LABEL, SPEC_SLOT_MEANING, SPEC_SLOT_ORDER, SPEC_SLOT_VAR } from "@/lib/v2/spec";
 
 export function generateStaticParams() {
@@ -40,6 +41,31 @@ function FactRow({
       <h3>{title}</h3>
       <div>{children}</div>
     </div>
+  );
+}
+
+function PrinciplesCallout({ patternId }: { patternId: string }) {
+  const assignment = getPatternPrinciples(patternId);
+  const connections = [assignment.primary, ...(assignment.secondary ? [assignment.secondary] : [])];
+
+  return (
+    <aside className="v2-pattern-principles" aria-label="Principles at work">
+      <div className="v2-pattern-principles__heading">
+        <span>Guiding principles</span>
+        <h3>Principles at work</h3>
+      </div>
+      <div className="v2-pattern-principles__list">
+        {connections.map(({ id, why }, index) => (
+          <div className="v2-pattern-principles__row" key={id}>
+            <span>{index === 0 ? "Primary" : "Also supports"}</span>
+            <div>
+              <Link href={`/v3#principle-${id}`}>{getHaxPrinciple(id).name} <span aria-hidden="true">↗</span></Link>
+              <p>{why}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </aside>
   );
 }
 
@@ -89,6 +115,7 @@ export default async function V2PatternPage({
               It is in the catalog, but its behaviour spec and design are not
               ready to show yet. Check back soon.
             </p>
+            <PrinciplesCallout patternId={pattern.id} />
             <Link
               href="/v2/patterns"
               className="v2-btn v2-btn--secondary mt-5"
@@ -153,6 +180,7 @@ export default async function V2PatternPage({
           >
             <h2>What it solves</h2>
             <p>{pattern.whatItSolves}</p>
+            <PrinciplesCallout patternId={pattern.id} />
           </section>
         ) : null}
 

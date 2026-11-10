@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agora: bring your agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF0F5; --surface:#FFFFFF; --surface-2:#F6F7FA; --line:#DCDFE8;
+  --ink:#1C2033; --muted:#5E6478; --faint:#8A90A3;
+  --me:#5B4BDB; --me-soft:#ECE9FC; --ent:#0F7B6C; --ent-soft:#E2F3F0;
+  --ask:#9A6412; --ask-soft:#FBF1DF; --bad:#B4382F; --bad-soft:#FBE7E5;
+  --work:#3B6FD4; --work-soft:#E6EEFC; --person:#7A6A58;
+  --l8:#3B6FD4; --l9:#0F7B6C; --code-bg:#F3F4F8;
+  --sans:"Schibsted Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#13151E; --surface:#1C1F2B; --surface-2:#232736; --line:#323748;
+    --ink:#E8EAF2; --muted:#A3A9BC; --faint:#7A8095;
+    --me:#9D92FF; --me-soft:#2A2650; --ent:#4CC3AE; --ent-soft:#163731;
+    --ask:#E3AE57; --ask-soft:#3A2E17; --bad:#F08B82; --bad-soft:#3D1E1C;
+    --work:#7EA6F5; --work-soft:#1D2A45; --person:#C4AE94;
+    --l8:#7EA6F5; --l9:#4CC3AE; --code-bg:#171A24;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#13151E; --surface:#1C1F2B; --surface-2:#232736; --line:#323748;
+  --ink:#E8EAF2; --muted:#A3A9BC; --faint:#7A8095;
+  --me:#9D92FF; --me-soft:#2A2650; --ent:#4CC3AE; --ent-soft:#163731;
+  --ask:#E3AE57; --ask-soft:#3A2E17; --bad:#F08B82; --bad-soft:#3D1E1C;
+  --work:#7EA6F5; --work-soft:#1D2A45; --person:#C4AE94;
+  --l8:#7EA6F5; --l9:#4CC3AE; --code-bg:#171A24;
+  color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--me);outline-offset:2px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+
+.app{height:100%;display:grid;grid-template-rows:auto 1fr}
+.bar{display:flex;align-items:center;gap:10px;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--line);position:relative;z-index:5}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;color:#fff;flex:none}
+.avatar.me{background:var(--me)} .avatar.ent{background:var(--ent)} .avatar.hub{background:var(--ink);color:var(--surface)}
+.avatar.peer{background:#C2410C} .avatar.peer2{background:#2563EB} .avatar.person{background:var(--person)} .avatar.off{background:var(--faint)}
+.who-name{font-weight:600;line-height:1.2}
+.who-sub{font-size:12.5px;color:var(--muted);line-height:1.2}
+.bar .spacer{flex:1}
+.top-btn{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:500}
+.top-btn[aria-pressed="true"]{border-color:var(--ink)}
+.top-btn[hidden],.respond-wrap[hidden]{display:none}
+.count{min-width:20px;height:20px;border-radius:10px;background:var(--ink);color:var(--surface);font-size:11.5px;display:grid;place-items:center;padding:0 6px}
+.count.needs{background:var(--ask);color:#fff}
+
+.layout{display:grid;grid-template-columns:1fr;min-height:0;position:relative}
+.layout.open{grid-template-columns:1fr minmax(340px,420px)}
+.chat{display:grid;grid-template-rows:1fr auto;min-height:0}
+.thread{overflow-y:auto;padding:28px 20px 12px}
+.thread-inner{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+
+.row{display:flex;gap:10px;align-items:flex-start}
+.row.user{justify-content:flex-end}
+.row .avatar{width:28px;height:28px;font-size:12.5px;margin-top:2px}
+.bubble{max-width:min(520px,86%);padding:10px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+.row.user .bubble{background:var(--me);color:#fff;border-color:transparent;border-bottom-right-radius:5px}
+.row.agent .bubble{border-top-left-radius:5px}
+.bubble p{margin:0}
+.bubble p+p{margin-top:6px}
+.stack{display:flex;flex-direction:column;gap:8px;max-width:min(540px,90%);min-width:0;flex:1}
+.stack .bubble{max-width:100%;align-self:flex-start}
+.task-label{font-size:12.5px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:-4px}
+.task-label::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--me)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;transition:box-shadow .3s}
+.card.flash{box-shadow:0 0 0 3px color-mix(in srgb,var(--ask) 45%,transparent)}
+.card h3{margin:0;font-size:15px;font-weight:600}
+.card .hint{margin:-6px 0 0;color:var(--muted);font-size:13.5px}
+.card.consent{border-color:color-mix(in srgb,var(--ask) 45%,var(--line));background:linear-gradient(var(--ask-soft),var(--ask-soft)) top/100% 4px no-repeat,var(--surface)}
+.card.done{border-color:color-mix(in srgb,var(--ent) 45%,var(--line))}
+.card[aria-disabled="true"] .choice:not(.picked),.card[aria-disabled="true"] .btn:not(.picked){opacity:.45}
+.choice{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2)}
+.choice:hover:not(:disabled){border-color:var(--me)}
+.choice.picked{border-color:var(--me);background:var(--me-soft)}
+.t{font-weight:600;display:block}
+.s{font-size:13px;color:var(--muted);display:block}
+.grow{flex:1;min-width:0}
+.tag{font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.tag.ok{background:var(--ent-soft);color:var(--ent)}
+.tag.warn{background:var(--bad-soft);color:var(--bad)}
+.tag.rec{background:var(--me-soft);color:var(--me)}
+.tag.plain{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border-radius:10px;padding:9px 16px;font-weight:600;border:1px solid var(--line);background:var(--surface-2)}
+.btn.primary{background:var(--me);color:#fff;border-color:var(--me)}
+.btn.small{padding:6px 12px;font-size:13.5px}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line));background:transparent}
+.btn:disabled{cursor:default}
+
+.toggle-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.toggle-row:first-child{border-top:0}
+.toggle-row .t{font-weight:500}
+.switch{position:relative;width:40px;height:24px;flex:none}
+.switch input{opacity:0;position:absolute;inset:0;margin:0;cursor:pointer}
+.switch span{position:absolute;inset:0;border-radius:12px;background:var(--line);transition:background .15s}
+.switch span::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch input:checked+span{background:var(--me)}
+.switch input:checked+span::after{transform:translateX(16px)}
+.switch input:disabled{cursor:not-allowed}
+.switch input:disabled+span{opacity:.6}
+.switch input:focus-visible+span{outline:2px solid var(--me);outline-offset:2px}
+
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px;background:var(--surface-2)}
+.seg button{flex:1;border:0;background:transparent;border-radius:7px;padding:7px 8px;font-size:13.5px;font-weight:500;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(20,24,40,.12)}
+.field-label{font-size:13px;font-weight:600;margin:0 0 6px}
+
+.group-head{font-size:13px;font-weight:600;color:var(--muted);margin:2px 0 -4px}
+.found{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line);opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s}
+.found.in{opacity:1;transform:none}
+.found .avatar{width:30px;height:30px;font-size:13px}
+.group .found:first-child{border-top:0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--me);color:var(--me);background:transparent;border-radius:999px;padding:6px 12px;font-size:13.5px;font-weight:500}
+.chip:hover:not(:disabled){background:var(--me-soft)}
+.chip:disabled{opacity:.4;cursor:default}
+
+.typing{display:inline-flex;gap:4px;padding:12px 14px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--faint);animation:blink 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+
+.composer{padding:10px 20px 16px;background:linear-gradient(transparent,var(--bg) 30%)}
+.composer-inner{max-width:680px;margin:0 auto;display:flex;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px 6px 6px 14px}
+.composer input{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;min-width:0}
+.composer input:focus{outline:none}
+.composer-inner:focus-within{border-color:var(--me)}
+.send{border:0;border-radius:11px;background:var(--me);color:#fff;padding:8px 14px;font-weight:600}
+.send:disabled,.composer input:disabled{opacity:.5;cursor:not-allowed}
+.footnote{max-width:680px;margin:8px auto 0;font-size:12px;color:var(--faint);text-align:center}
+
+/* Side panel with Tasks and Protocol tabs */
+.panel{display:none;border-left:1px solid var(--line);background:var(--surface);min-height:0;grid-template-rows:auto 1fr}
+.layout.open .panel{display:grid}
+.panel-head{padding:12px 14px 0;border-bottom:1px solid var(--line);display:flex;align-items:flex-end;gap:4px}
+.tab{border:0;background:transparent;padding:8px 12px 10px;font-weight:600;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.panel-head .spacer{flex:1}
+.close-panel{display:none;margin-bottom:8px}
+.pane{overflow-y:auto;padding:14px 14px 24px;display:none;flex-direction:column;gap:10px}
+.pane.on{display:flex}
+.pane-intro{margin:0 2px 2px;font-size:13px;color:var(--muted)}
+.empty{color:var(--muted);font-size:13.5px;padding:8px 4px;margin:0}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--muted);margin:0 2px}
+.legend b{font-family:var(--mono);font-weight:500}
+.legend .l8 b{color:var(--l8)} .legend .l9 b{color:var(--l9)}
+
+.task{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s,box-shadow .2s}
+.task.needs{border-color:color-mix(in srgb,var(--ask) 55%,var(--line))}
+.task.hl{box-shadow:0 0 0 3px color-mix(in srgb,var(--me) 25%,transparent)}
+.task-top{display:flex;align-items:center;gap:10px}
+.pair{display:flex;flex:none}
+.pair .avatar{width:24px;height:24px;font-size:11px;border:2px solid var(--surface)}
+.pair .avatar+.avatar{margin-left:-7px}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.working{background:var(--work-soft);color:var(--work)}
+.pill.needs{background:var(--ask);color:#fff}
+.pill.waiting{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.pill.human{background:var(--ask-soft);color:var(--ask)}
+.pill.done{background:var(--ent-soft);color:var(--ent)}
+.latest{margin:0;font-size:13.5px}
+.timeline summary{font-size:13px;color:var(--muted);cursor:pointer}
+.timeline ol{list-style:none;margin:8px 0 0;padding:0 0 0 12px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:7px}
+.timeline li{font-size:13px;position:relative}
+.timeline li::before{content:"";position:absolute;left:-17px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--line)}
+.timeline li.k-needs::before{background:var(--ask)} .timeline li.k-done::before{background:var(--ent)} .timeline li.k-human::before{background:var(--ask)}
+.timeline time{color:var(--faint);font-size:12px;margin-right:6px}
+.textlink{background:none;border:0;padding:0;color:var(--l9);font-size:13px;font-weight:500;text-decoration:underline;text-underline-offset:2px}
+
+.pm{border:1px solid var(--line);border-radius:10px;overflow:hidden;transition:border-color .2s,box-shadow .2s;flex:none}
+.pm.hl{border-color:var(--l9);box-shadow:0 0 0 3px color-mix(in srgb,var(--l9) 22%,transparent)}
+.pm-head{display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:12.5px;background:var(--surface-2);flex-wrap:wrap}
+.layer{font-family:var(--mono);font-weight:500;font-size:11.5px;padding:1px 6px;border-radius:4px;color:#fff}
+.layer.l8{background:var(--l8)} .layer.l9{background:var(--l9)} .layer.a2a{background:var(--muted)} .layer.sms{background:var(--person)}
+.perf{font-family:var(--mono);font-weight:500}
+.pm-task{color:var(--faint)}
+.dir{color:var(--muted);margin-left:auto;white-space:nowrap}
+.pm pre{margin:0;padding:10px;font:12px/1.5 var(--mono);background:var(--code-bg);overflow-x:auto;color:var(--ink)}
+.pm .note{padding:8px 10px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line)}
+
+/* Notification banner: how the agent reaches you */
+.toasts{position:fixed;top:calc(env(safe-area-inset-top,0px) + 66px);left:16px;z-index:30;display:flex;flex-direction:column;gap:8px;width:min(340px,calc(100vw - 32px))}
+.toast{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--ask);border-radius:12px;padding:10px 12px;box-shadow:0 10px 30px rgba(10,12,25,.18);display:flex;gap:10px;align-items:flex-start;animation:drop .25s ease-out}
+.toast .avatar{width:28px;height:28px;font-size:12.5px}
+.toast .via{font-size:12px;color:var(--muted)}
+.toast p{margin:2px 0 6px;font-size:13.5px}
+@keyframes drop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+
+/* Protocol tab: compact messages and L9 flow cards */
+details.pm > summary{list-style:none;cursor:pointer}
+details.pm > summary::-webkit-details-marker{display:none}
+details.pm[open] > summary{border-bottom:1px solid var(--line)}
+.flow{border:1px solid color-mix(in srgb,var(--l9) 45%,var(--line));border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:12px;flex:none}
+.flow-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.flow-name{font-weight:700;font-size:15px}
+.flow-what{color:var(--muted);font-size:13.5px}
+.flow-task{margin-left:auto;font-size:12px;color:var(--faint)}
+.flow-desc{margin:-4px 0 0;font-size:13px;color:var(--muted)}
+.flow-members{display:flex;flex-wrap:wrap;gap:6px}
+.mchip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:2px 8px 2px 2px;border-radius:999px;border:1px solid var(--line)}
+.mchip .avatar,.pt .avatar{width:20px;height:20px;font-size:10px;border:0}
+.fsec{border-top:1px solid var(--line);padding-top:10px}
+.fsec h4{margin:0 0 6px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.fsec h4::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--l9)}
+.fsec p{margin:4px 0 0;font-size:13px}
+.pt{display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0}
+.pt+.pt{border-top:1px dashed var(--line)}
+.kind{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);flex:none}
+.kind.term{color:var(--l8)} .kind.check{color:var(--ask)}
+.flag{font-size:11.5px;padding:1px 7px;border-radius:999px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line);white-space:nowrap;flex:none}
+.flag.warn{background:var(--ask-soft);color:var(--ask);border-color:transparent}
+.flag.ok{background:var(--ent-soft);color:var(--ent);border-color:transparent}
+.avs{display:flex;flex:none} .avs .avatar+.avatar{margin-left:-5px}
+.senses{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.sense{display:flex;gap:8px;align-items:flex-start;font-size:13px}
+.sense .avatar{width:20px;height:20px;font-size:10px;margin-top:1px}
+.opt{display:flex;gap:10px;font-size:13px;padding:4px 0;align-items:baseline}
+.opt b{font-family:var(--mono);font-size:12px;min-width:16px}
+.score-wrap{overflow-x:auto}
+.score{width:100%;border-collapse:collapse;font-size:13px;min-width:260px}
+.score th,.score td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.score th{font-family:var(--mono);font-weight:500;font-size:12px;color:var(--muted)}
+.score th:first-child,.score td:first-child{text-align:left;font-family:var(--sans)}
+.score td.low{color:var(--bad);font-weight:600}
+.score .pick{background:var(--me-soft)}
+.score tfoot td{font-weight:600;border-bottom:0}
+.score tr.enter td{animation:drop .25s ease-out}
+.saved{font-family:var(--mono);font-size:12px;padding:3px 8px;border-radius:6px;background:var(--ent-soft);color:var(--ent);display:inline-block;word-break:break-all;margin-top:6px}
+.result{font-weight:600}
+.flow .raw summary{font-size:12.5px;color:var(--muted);cursor:pointer}
+.flow .raw pre{margin:6px 0 0;padding:8px;font:11.5px/1.55 var(--mono);background:var(--code-bg);border-radius:6px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+
+@media (max-width: 900px){
+  .layout.open{grid-template-columns:1fr}
+  .layout.open .panel{position:fixed;inset:auto 0 0 0;height:74%;z-index:20;border-left:0;border-top:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 -10px 30px rgba(10,12,25,.25);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .close-panel{display:inline-block}
+  .bar{padding:10px 12px;gap:6px}
+  .top-btn{padding:6px 10px}
+  .thread{padding:20px 12px 8px}
+  .composer{padding:8px 12px 12px}
+  .who-sub{display:none}
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} .found{opacity:1;transform:none} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="who">
+      <div class="avatar hub" id="barAvatar" aria-hidden="true">A</div>
+      <div>
+        <div class="who-name" id="barName">Agora</div>
+        <div class="who-sub" id="barSub">No personal agent connected</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <button class="top-btn" id="tasksBtn" aria-pressed="false" hidden>Tasks <span class="count" id="taskCount">0</span></button>
+    <button class="top-btn" id="protoBtn" aria-pressed="false">Protocol <span class="count" id="protoCount">0</span></button>
+  </header>
+
+  <div class="layout" id="layout">
+    <section class="chat" aria-label="Conversation">
+      <div class="thread" id="thread"><div class="thread-inner" id="threadInner" aria-live="polite"></div></div>
+      <div class="composer">
+        <div class="composer-inner">
+          <input id="input" type="text" placeholder="Connect an agent to start" autocomplete="off" disabled aria-label="Message your agent">
+          <button class="send" id="send" disabled>Send</button>
+        </div>
+        <p class="footnote">Prototype with scripted data. People, practices, and restaurants are fictional. L9 runs as an A2A extension; Accord and Concord follow the open-source Mycelium reference flows.</p>
+      </div>
+    </section>
+
+    <aside class="panel" id="panel" aria-label="Tasks and protocol">
+      <div class="panel-head" role="tablist">
+        <button class="tab" role="tab" id="tabTasks" aria-selected="true">Tasks</button>
+        <button class="tab" role="tab" id="tabProto" aria-selected="false">Protocol</button>
+        <span class="spacer"></span>
+        <button class="btn small close-panel" id="closePanel">Close</button>
+      </div>
+      <div class="pane on" id="paneTasks">
+        <p class="pane-intro">Everything your agent is working on. Check in any time.</p>
+        <div id="taskList" style="display:flex;flex-direction:column;gap:10px"><p class="empty">No tasks yet. Ask your agent to take something on.</p></div>
+      </div>
+      <div class="pane" id="paneProto">
+        <div class="legend"><span class="l8"><b>L8</b> message and intent</span><span class="l9"><b>L9</b> shared meaning</span></div>
+        <div id="msgs" style="display:flex;flex-direction:column;gap:10px"><p class="empty">Nothing yet. Messages appear as your agent works.</p></div>
+      </div>
+    </aside>
+  </div>
+</div>
+<div class="toasts" id="toasts" aria-live="assertive"></div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const thread = $("#thread"), inner = $("#threadInner"), msgs = $("#msgs");
+  const input = $("#input"), send = $("#send");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const wait = ms => new Promise(r => setTimeout(r, reduce ? Math.min(ms,150) : ms));
+  const clock = () => new Date().toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
+
+  const AGENTS = {
+    Muse:{name:"Muse", initial:"M", card:"https://agents.muse.example/.well-known/agent-card.json"},
+    Dot:{name:"Dot", initial:"D", card:"https://agents.dot.example/.well-known/agent-card.json"},
+    Concierge:{name:"Concierge", initial:"C", prebuilt:true, blurb:"Everyday errands, bookings, and plans", card:"https://agents.agora.example/concierge/.well-known/agent-card.json", skills:["calendar.availability","contacts.read","bookings"], access:[["Calendar","Free and busy times, and adding events",true],["Contacts","To find the people and agents you mention",true],["Health profile","Insurance and visit history, for appointments",true],["Payments","To pay deposits",false]]},
+    Navigator:{name:"Health Navigator", initial:"H", prebuilt:true, blurb:"Appointments, coverage, and care questions", card:"https://agents.agora.example/health-navigator/.well-known/agent-card.json", skills:["health.scheduling","coverage.check","calendar.availability"], access:[["Calendar","Free and busy times, and adding events",true],["Contacts","To find the people and agents you mention",true],["Health profile","Insurance and visit history",true],["Payments","To pay copays",false]]},
+    Planner:{name:"Social Planner", initial:"S", prebuilt:true, blurb:"Group plans with friends and their agents", card:"https://agents.agora.example/social-planner/.well-known/agent-card.json", skills:["group.plans","dining","calendar.availability"], access:[["Calendar","Free and busy times, and adding events",true],["Contacts","To find the people and agents you mention",true],["Health profile","Dietary needs only",true],["Payments","To hold reservations",false]]}
+  };
+  // Who else is out there. The peer's agent is whichever one you did not pick.
+  const PARTIES = {
+    bright:{name:"Bright Smile Dental", initial:"B", cls:"ent"},
+    sam:{name:"Sam Chen", initial:"S", cls:"peer"},
+    lena:{name:"Lena Ortiz", initial:"L", cls:"peer2"},
+    mom:{name:"Mom", initial:"Mo", cls:"person"}
+  };
+  let me = null, peerAgent = null, protoN = 0;
+  const prefs = {channel:"app", askShare:true, askBook:true, quiet:true};
+  const tasks = {};
+
+  /* ---------- basic rendering ---------- */
+  function scroll(){ thread.scrollTo({top:thread.scrollHeight, behavior: reduce ? "auto" : "smooth"}); }
+  function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstElementChild; }
+  function av(initial, cls){ const d=document.createElement("span"); d.className="avatar "+cls; d.setAttribute("aria-hidden","true"); d.textContent=initial; return d; }
+  function myAv(){ return av(me ? me.initial : "A", me ? "me" : "hub"); }
+  function row(kind){
+    const r = document.createElement("div");
+    r.className = "row " + (kind==="user" ? "user" : "agent");
+    if(kind!=="user") r.appendChild(myAv());
+    inner.appendChild(r); return r;
+  }
+  function say(html, taskTitle){
+    const r = row("agent"), st = document.createElement("div"); st.className = "stack";
+    if(taskTitle){ const l=document.createElement("div"); l.className="task-label"; l.textContent=taskTitle; st.appendChild(l); }
+    const b = document.createElement("div"); b.className = "bubble"; b.innerHTML = html;
+    st.appendChild(b); r.appendChild(st); scroll(); return st;
+  }
+  function user(text){ const r=row("user"); const b=document.createElement("div"); b.className="bubble"; b.textContent=text; r.appendChild(b); scroll(); }
+  async function typing(ms){
+    const r = row("agent"), b = document.createElement("div");
+    b.className = "bubble typing"; b.innerHTML = "<i></i><i></i><i></i>"; b.setAttribute("aria-label","typing");
+    r.appendChild(b); scroll(); await wait(ms||800); r.remove();
+  }
+  function attach(stack, node){ stack.appendChild(node); scroll(); return node; }
+  function lockCard(card){ card.setAttribute("aria-disabled","true"); card.querySelectorAll("button,input").forEach(b=>b.disabled=true); }
+
+  /* ---------- side panel ---------- */
+  function openPanel(tab){
+    const layout = $("#layout");
+    const isOpen = layout.classList.contains("open");
+    const current = $("#tabTasks").getAttribute("aria-selected")==="true" ? "tasks" : "proto";
+    if(isOpen && current===tab && tab!==undefined && openPanel._toggle){ layout.classList.remove("open"); syncTop(); return; }
+    layout.classList.add("open");
+    selectTab(tab || current); syncTop();
+  }
+  function selectTab(tab){
+    $("#tabTasks").setAttribute("aria-selected", String(tab==="tasks"));
+    $("#tabProto").setAttribute("aria-selected", String(tab==="proto"));
+    $("#paneTasks").classList.toggle("on", tab==="tasks");
+    $("#paneProto").classList.toggle("on", tab==="proto");
+    syncTop();
+  }
+  function syncTop(){
+    const open = $("#layout").classList.contains("open");
+    const tab = $("#tabTasks").getAttribute("aria-selected")==="true" ? "tasks" : "proto";
+    $("#tasksBtn").setAttribute("aria-pressed", String(open && tab==="tasks"));
+    $("#protoBtn").setAttribute("aria-pressed", String(open && tab==="proto"));
+  }
+  function closePanel(){ $("#layout").classList.remove("open"); syncTop(); }
+  $("#tasksBtn").onclick = () => { openPanel._toggle = true; openPanel("tasks"); openPanel._toggle = false; };
+  $("#protoBtn").onclick = () => { openPanel._toggle = true; openPanel("proto"); openPanel._toggle = false; };
+  $("#tabTasks").onclick = () => selectTab("tasks");
+  $("#tabProto").onclick = () => selectTab("proto");
+  $("#closePanel").onclick = closePanel;
+  const mobile = () => window.matchMedia("(max-width: 900px)").matches;
+
+  /* ---------- protocol log ---------- */
+  function nextId(){ if(protoN===0) msgs.innerHTML = ""; protoN++; $("#protoCount").textContent = protoN; return "pm"+protoN; }
+  function proto(layer, perf, dir, obj, note, taskTitle){
+    const id = nextId();
+    const m = el(`<details class="pm" id="${id}"><summary class="pm-head"><span class="layer ${layer.toLowerCase()}">${layer}</span><span class="perf"></span>${taskTitle?`<span class="pm-task"></span>`:""}<span class="dir"></span></summary><pre></pre>${note?`<div class="note"></div>`:""}</details>`);
+    m.querySelector(".perf").textContent = perf;
+    m.querySelector(".dir").textContent = dir;
+    if(taskTitle) m.querySelector(".pm-task").textContent = taskTitle;
+    if(note) m.querySelector(".note").textContent = note;
+    m.querySelector("pre").textContent = JSON.stringify(obj, null, 2);
+    msgs.appendChild(m);
+    return id;
+  }
+  function showInProtocol(ids){
+    openPanel("proto");
+    document.querySelectorAll(".pm.hl").forEach(x=>x.classList.remove("hl"));
+    ids.forEach(i=>{ const n=document.getElementById(i); if(n){ n.classList.add("hl"); if(n.tagName==="DETAILS") n.open = true; } });
+    const first = document.getElementById(ids[0]);
+    if(first) first.scrollIntoView({block:"start", behavior: reduce?"auto":"smooth"});
+  }
+  function miniAv(m){ return av(m.initial, m.cls); }
+  // An L9 coordination flow drawn as a card in the Protocol tab
+  function flow(kind, taskTitle, members){
+    const id = nextId(), isA = kind==="accord";
+    const f = el(`<article class="flow pm" id="${id}">
+      <div class="flow-head"><span class="layer l9">L9</span><span class="flow-name">${isA?"Accord":"Concord"}</span><span class="flow-what">${isA?"Get on the same page":"Help them agree"}</span><span class="flow-task"></span></div>
+      <p class="flow-desc">${isA
+        ? "Each agent frames the task in a few labeled points. The merge runs in code: matching points fold together and keep their authors, and anything that doesn't line up is flagged, never quietly settled."
+        : "Each agent suggests an option and rates every option from 0 to 100. Code picks the option the least happy member likes best. Anyone who rates the pick below 70 gets to suggest a fix."}</p>
+      <div class="flow-members"></div>
+      <div class="flow-body" style="display:flex;flex-direction:column;gap:10px"></div>
+      <details class="raw"><summary>Raw markers on the wire</summary><pre></pre></details>
+    </article>`);
+    f.querySelector(".flow-task").textContent = taskTitle;
+    members.forEach(m=>{ const c = el(`<span class="mchip"></span>`); c.appendChild(miniAv(m)); c.append(m.label); f.querySelector(".flow-members").appendChild(c); });
+    msgs.appendChild(f);
+    const lines = [];
+    const api = {
+      id, node:f,
+      section(title){ const sec = el(`<section class="fsec"><h4></h4><div></div></section>`); sec.querySelector("h4").textContent = title; f.querySelector(".flow-body").appendChild(sec); return sec.lastElementChild; },
+      raw(line){ lines.push(line); f.querySelector(".raw pre").textContent = lines.join("\n"); }
+    };
+    return api;
+  }
+  function scoreTable(host, letters, rows, bar, pick){
+    const mins = {}; letters.forEach(L => mins[L] = Math.min(...rows.map(r => r.s[L] ?? 0)));
+    const t = el(`<div class="score-wrap"><table class="score"><thead><tr><th>Member</th>${letters.map(L=>`<th class="${L===pick?"pick":""}">${L}</th>`).join("")}</tr></thead><tbody></tbody>${rows.length && rows.every(r=>letters.every(L=>r.s[L]!=null))?`<tfoot><tr><td>Lowest</td>${letters.map(L=>`<td class="${L===pick?"pick":""}">${mins[L]}</td>`).join("")}</tr></tfoot>`:""}</table></div>`);
+    rows.forEach((r,i) => {
+      const tr = el(`<tr class="${i===rows.length-1 && r.fresh ? "enter":""}"><td></td>${letters.map(L=>{ const v=r.s[L]; return `<td class="${v!=null && v<bar?"low":""} ${L===pick?"pick":""}">${v==null?"":v}</td>`; }).join("")}</tr>`);
+      tr.firstElementChild.textContent = r.m.label; t.querySelector("tbody").appendChild(tr);
+    });
+    host.innerHTML = ""; host.appendChild(t);
+  }
+
+  /* ---------- tasks ---------- */
+  const PILL = {working:"Working", needs:"Needs you", waiting:"Waiting", human:"With a person", done:"Done"};
+  function createTask(key, title, partyKeys){
+    if(tasks[key]) return null;
+    const list = $("#taskList"); if(!Object.keys(tasks).length) list.innerHTML = "";
+    const node = el(`<article class="task" id="task-${key}">
+      <div class="task-top"><span class="pair"></span><div class="grow"><span class="t"></span><span class="s"></span></div><span class="pill working">Working</span></div>
+      <p class="latest"></p>
+      <div class="btns respond-wrap" hidden><button class="btn small primary respond">Respond</button></div>
+      <details class="timeline"><summary>Timeline</summary><ol></ol></details>
+    </article>`);
+    const pair = node.querySelector(".pair"); pair.appendChild(av(me.initial,"me"));
+    partyKeys.forEach(k => pair.appendChild(av(PARTIES[k].initial, PARTIES[k].cls)));
+    node.querySelector(".t").textContent = title;
+    node.querySelector(".s").textContent = "with " + partyKeys.map(k=>PARTIES[k].name).join(", ");
+    list.prepend(node);
+    const t = {key, title, node, status:"working", pendingCard:null, events:[]};
+    node.querySelector(".respond").onclick = () => jumpTo(t);
+    tasks[key] = t;
+    $("#tasksBtn").hidden = false;
+    refreshCounts();
+    return t;
+  }
+  function update(t, status, text, protoIds, waitingOn){
+    t.status = status;
+    const pill = t.node.querySelector(".pill");
+    pill.className = "pill " + status;
+    pill.textContent = status==="waiting" && waitingOn ? "Waiting on " + waitingOn : PILL[status];
+    t.node.classList.toggle("needs", status==="needs");
+    t.node.querySelector(".latest").textContent = text;
+    t.node.querySelector(".respond-wrap").hidden = status!=="needs";
+    const li = el(`<li class="k-${status}"><time></time><span></span></li>`);
+    li.querySelector("time").textContent = clock();
+    li.lastElementChild.textContent = text + " ";
+    if(protoIds && protoIds.length){
+      const b = el(`<button class="textlink">Messages</button>`);
+      b.onclick = () => showInProtocol(protoIds); li.appendChild(b);
+    }
+    const ol = t.node.querySelector("ol"); ol.appendChild(li);
+    t.node.querySelector("summary").textContent = `Timeline (${ol.children.length})`;
+    refreshCounts();
+  }
+  function refreshCounts(){
+    const all = Object.values(tasks), needs = all.filter(t=>t.status==="needs").length;
+    const c = $("#taskCount");
+    c.textContent = needs || all.length; c.classList.toggle("needs", needs>0);
+    c.setAttribute("aria-label", needs ? `${needs} need you` : `${all.length} tasks`);
+  }
+  function jumpTo(t){
+    if(mobile()) closePanel();
+    if(t.pendingCard){
+      t.pendingCard.scrollIntoView({block:"center", behavior: reduce?"auto":"smooth"});
+      t.pendingCard.classList.add("flash"); setTimeout(()=>t.pendingCard && t.pendingCard.classList.remove("flash"), 1600);
+    }
+  }
+  // The agent reaches you the way you asked it to
+  function notify(t, text){
+    const via = {app:"App notification", text:"Text message to (•••) •••-4417", email:"Email to priya@…"}[prefs.channel];
+    const n = el(`<div class="toast" role="status"><span class="avatar me">${me.initial}</span><div class="grow"><div class="via"></div><p></p><button class="btn small">Open</button></div></div>`);
+    n.querySelector(".via").textContent = via;
+    n.querySelector("p").textContent = `${t.title}: ${text}`;
+    n.querySelector("button").onclick = () => { n.remove(); jumpTo(t); };
+    const box = $("#toasts"); box.appendChild(n);
+    while(box.children.length > 2) box.firstElementChild.remove();
+    setTimeout(()=>n.remove(), 7000);
+  }
+  // Ask the person for a decision: status, notification, and a card in chat
+  function needYou(t, text, html, buildCard){
+    update(t, "needs", text);
+    notify(t, text);
+    const st = say(html, t.title);
+    const card = attach(st, buildCard());
+    t.pendingCard = card;
+    return card;
+  }
+  function resolved(t){ t.pendingCard = null; }
+
+  /* ---------- 0. Bring your agent ---------- */
+  function start(){
+    const st = say(`<p>Welcome to Agora. Your agent can work with the people and businesses in your life through their agents.</p><p>Bring the agent you already use, or start with one of ours.</p>`);
+    const card = attach(st, el(`<div class="card">
+      <div class="group-head">Bring your own agent</div>
+      <button class="choice" data-a="Muse"><span class="avatar me">M</span><span class="grow"><span class="t">Muse</span><span class="s">Knows your calendar, contacts, and health profile</span></span><span class="tag plain">Sign in</span></button>
+      <button class="choice" data-a="Dot"><span class="avatar me">D</span><span class="grow"><span class="t">Dot</span><span class="s">Your personal assistant and memory</span></span><span class="tag plain">Sign in</span></button>
+      <div class="group-head" style="margin-top:6px">Or start with an Agora agent</div>
+      ${["Concierge","Navigator","Planner"].map(k=>{ const a=AGENTS[k]; return `<button class="choice" data-a="${k}"><span class="avatar me">${a.initial}</span><span class="grow"><span class="t">${a.name}</span><span class="s">${a.blurb}</span></span><span class="tag ok">Ready to go</span></button>`; }).join("")}
+      <p class="hint" style="margin:0">Agora agents are prebuilt with L9 and OpenTelemetry, so there's nothing to install or sign in to.</p>
+    </div>`));
+    card.querySelectorAll(".choice").forEach(b=> b.onclick = () => { b.classList.add("picked"); lockCard(card); connect(b.dataset.a); });
+  }
+
+  async function connect(name){
+    me = AGENTS[name]; peerAgent = name==="Dot" ? AGENTS.Muse : AGENTS.Dot;
+    user(me.prebuilt ? `Start with ${me.name}` : `Connect ${name}`);
+    if(me.prebuilt) return startPrebuilt();
+    await typing(600);
+    const st = say(`<p>Sign in to ${name} to let it act for you here. You can disconnect at any time.</p>`);
+    const card = attach(st, el(`<div class="card"><div class="btns"><button class="btn primary">Sign in with ${name}</button></div></div>`));
+    card.querySelector("button").onclick = async (e) => {
+      const b = e.currentTarget; b.textContent = "Signing in…"; lockCard(card);
+      await wait(900);
+      proto("A2A","GET agent card","Agora → "+name,{url:me.card, response:{name, owner:"Priya Raman (you)",
+        skills:[{id:"calendar.availability"},{id:"contacts.read"},{id:"health.profile"},{id:"payments.wallet"}],
+        extensions:[{uri:"urn:l9:semantic-layer:v0.1", contexts:["urn:contexts:dental.scheduling:v2.1","urn:contexts:dining:v1.2","urn:contexts:travel:v2.1"]}]}},
+        "Your agent's card. The L9 extension lists the shared vocabularies it can speak.");
+      b.textContent = "Signed in";
+      $("#barAvatar").className = "avatar me"; $("#barAvatar").textContent = me.initial;
+      $("#barName").textContent = name; $("#barSub").textContent = "Your personal agent, signed in";
+      home();
+    };
+  }
+
+  /* ---------- Prebuilt Agora agent: no sign-in, just grant access ---------- */
+  async function startPrebuilt(){
+    await typing(700);
+    const id = proto("A2A","GET agent card","Agora → "+me.name,{url:me.card, response:{name:me.name, provider:"Agora (prebuilt)", owner:"Priya Raman (you)", skills:me.skills.map(x=>({id:x})),
+      extensions:[{uri:"urn:l9:semantic-layer:v0.1", built_in:true, flows:["accord","concord"], contexts:["urn:contexts:dental.scheduling:v2.1","urn:contexts:dining:v1.2","urn:contexts:travel:v2.1"]}],
+      telemetry:{opentelemetry:true, export_to:"your Agora workspace"}}},"Prebuilt agents ship with L9 and OpenTelemetry already built in, so there's nothing to wire.");
+    $("#barAvatar").className = "avatar me"; $("#barAvatar").textContent = me.initial;
+    $("#barName").textContent = me.name; $("#barSub").textContent = "Prebuilt by Agora, working for you";
+    const st = say(`<p>${me.name} is ready. Agora runs it, so there's nothing to install. To act for you, it needs access to a few things. You can change these any time.</p>`);
+    const card = el(`<div class="card"><div class="agentcard"><span class="avatar me">${me.initial}</span><span class="t">${me.name}</span><span class="s">Prebuilt by Agora. Speaks A2A, with L9 built in</span></div><div class="toggles"></div><div class="btns"><button class="btn primary">Start</button><button class="textlink" style="align-self:center">See its agent card</button></div></div>`);
+    me.access.forEach(([tt,sub,on])=>{ const n = el(`<label class="toggle-row"><span class="grow"><span class="t"></span><span class="s"></span></span><span class="switch"><input type="checkbox" role="switch"><span></span></span></label>`);
+      n.querySelector(".t").textContent=tt; n.querySelector(".s").textContent=sub; const cb=n.querySelector("input"); cb.checked=on; cb.setAttribute("aria-label",tt); card.querySelector(".toggles").appendChild(n); });
+    attach(st, card);
+    card.querySelector(".textlink").onclick = () => showInProtocol([id]);
+    const go = card.querySelector(".btn.primary");
+    go.onclick = () => { go.textContent = "Started"; go.classList.add("picked"); card.setAttribute("aria-disabled","true"); card.querySelectorAll("input,.btn").forEach(b=>b.disabled=true); home(); };
+  }
+
+  /* ---------- 3. Assign tasks ---------- */
+  const OFFERS = [
+    {k:"dental", label:"Book a dental cleaning next week"},
+    {k:"dinner", label:"Plan dinner Friday with Sam and Lena"},
+    {k:"mom", label:"Get Mom's Thanksgiving flight details"}
+  ];
+  async function home(){
+    await wait(500); await typing(800);
+    const st = say(`<p>Hi Priya, I'm ready. What should I take on? You can give me several things at once. I'll find the right agents in your contacts and the businesses you use, and you can check on everything in Tasks or by asking me.</p>`);
+    chipRow(st, true);
+    input.disabled = false; send.disabled = false; input.placeholder = `Give ${me.name} a task, or ask for an update`;
+  }
+  function chipRow(st, withAll){
+    const wrap = el(`<div class="chips"></div>`);
+    OFFERS.forEach(o => { const b = el(`<button class="chip"></button>`); b.textContent = o.label; b.disabled = !!tasks[o.k]; b.onclick = () => submit(o.label); wrap.appendChild(b); });
+    if(withAll){ const b = el(`<button class="chip">Do all three</button>`); b.onclick = () => submit("Do all three"); wrap.appendChild(b); }
+    attach(st, wrap);
+  }
+  function submit(text){
+    text = (text ?? input.value).trim(); if(!text) return;
+    input.value = ""; user(text);
+    const want = [];
+    if(/all three|all of them|everything/i.test(text)) want.push("dental","dinner","mom");
+    else {
+      if(/dent|clean|teeth|tooth/i.test(text)) want.push("dental");
+      if(/dinner|sam|lena|restaurant/i.test(text)) want.push("dinner");
+      if(/mom|flight|thanksgiving/i.test(text)) want.push("mom");
+    }
+    if(want.length) return assign(want);
+    if(/status|update|how.*going|what.*(doing|happening)|check/i.test(text)) return statusReport();
+    fallback();
+  }
+  send.onclick = () => submit();
+  input.addEventListener("keydown", e => { if(e.key==="Enter") submit(); });
+
+  async function assign(keys){
+    const fresh = keys.filter(k=>!tasks[k]);
+    await typing(600);
+    if(!fresh.length){ say(`<p>I'm already on that. You can check progress in Tasks, or ask me for an update.</p>`); return; }
+    const titles = {dental:"Dental cleaning", dinner:"Dinner on Friday", mom:"Mom's flight"};
+    const how = {app:"a notification", text:"a text", email:"an email"}[prefs.channel];
+    const st = say(`<p>On it. I've started ${fresh.length===1?"this task":fresh.length+" tasks"}: ${fresh.map(k=>titles[k]).join(", ")}. I'll keep working in the background and send you ${how} when I need you.</p>`);
+    const b = attach(st, el(`<button class="textlink" style="align-self:flex-start">Open Tasks</button>`));
+    b.onclick = () => openPanel("tasks");
+    if(!mobile()) openPanel("tasks");
+    fresh.forEach((k,i) => setTimeout(() => ({dental:runDental, dinner:runDinner, mom:runMom})[k](), i*1400));
+  }
+  async function statusReport(){
+    await typing(700);
+    const all = Object.values(tasks);
+    if(!all.length){ const st = say(`<p>Nothing in progress yet. Want me to take one of these on?</p>`); chipRow(st,false); return; }
+    const lines = all.map(t => `<li><b>${t.title}</b>: ${t.node.querySelector(".pill").textContent.toLowerCase()}. ${t.node.querySelector(".latest").textContent}</li>`).join("");
+    const st = say(`<p>Here's where things stand:</p><ul style="margin:6px 0 0;padding-left:18px">${lines}</ul>`);
+    const b = attach(st, el(`<button class="textlink" style="align-self:flex-start">Open Tasks</button>`)); b.onclick = () => openPanel("tasks");
+  }
+  async function fallback(){
+    await typing(600);
+    const st = say(`<p>This preview has three scripted tasks. Pick one, or ask me "what's the status?" at any point.</p>`);
+    chipRow(st,false);
+  }
+
+  /* ---------- Task A: dental, with an enterprise agent (Accord) ---------- */
+  async function runDental(){
+    const t = createTask("dental","Dental cleaning",["bright"]); if(!t) return;
+    const T = t.title;
+    update(t,"working","Looking for your dentist's agent");
+    await wait(1300);
+    const d0 = proto("A2A","Resolve business",me.name+" → agent directory",{source:"appointment history", match:"Bright Smile Dental", agent_card:"https://agents.brightsmile.example/.well-known/agent-card.json", platform:"Salesforce Agentforce for Health", signature:"valid"},"Found through your past appointments, then checked against the practice's signed agent card.",T);
+    update(t,"working","Found Bright Smile's verified agent from your appointment history",[d0]);
+    await wait(1100);
+    const share = {name:true, busy:true, ins:true, hist:true};
+    if(prefs.askShare){
+      await new Promise(res => {
+        needYou(t,"Approve what to share with Bright Smile",`<p>Bright Smile's agent needs a few details to book. Here's what I'd share. Change anything you like.</p>`, () => {
+          const c = el(`<div class="card consent"><div class="toggles"></div><div class="btns"><button class="btn primary">Share and continue</button></div></div>`);
+          [["name","Name and date of birth","Required to book",true],["busy","When you're free next week","Open times only, not event details"],["ins","Insurance plan and member ID","So they can confirm coverage"],["hist","Your last dental visit","Date and type of visit only"]]
+          .forEach(([k,tt,sub,lockd])=>{ const n = el(`<label class="toggle-row"><span class="grow"><span class="t"></span><span class="s"></span></span><span class="switch"><input type="checkbox" role="switch" checked><span></span></span></label>`);
+            n.querySelector(".t").textContent=tt; n.querySelector(".s").textContent=sub; const cb=n.querySelector("input"); cb.dataset.k=k; cb.disabled=!!lockd; cb.setAttribute("aria-label",tt); c.querySelector(".toggles").appendChild(n); });
+          c.querySelector(".btn").onclick = (e) => { c.querySelectorAll("input").forEach(cb=>share[cb.dataset.k]=cb.checked); e.currentTarget.textContent="Shared"; e.currentTarget.classList.add("picked"); lockCard(c); resolved(t); res(); };
+          return c;
+        });
+      });
+      update(t,"working","You approved what to share");
+    }
+    await wait(1000);
+    const hs = proto("L9","SL-HELLO / SELECT / LOCK",me.name+" ⇄ Bright Smile",{offered:["urn:contexts:dental.scheduling:v2.1","urn:contexts:health.scheduling:v1.0"], selected:"urn:contexts:dental.scheduling:v2.1", schema_signature:"valid", session:"sem-7f3a91", consent_scope:Object.keys(share).filter(k=>share[k])},"The context handshake: both agents lock a shared, signed vocabulary before working together.",T);
+    update(t,"working","Locked a shared dental scheduling vocabulary",[hs]);
+    await wait(1100);
+
+    // ACCORD: get on the same page about what this booking is
+    const ME = {label:"Priya's "+me.name, initial:me.initial, cls:"me"};
+    const BS = {label:"Bright Smile's agent", initial:"B", cls:"ent"};
+    const A = flow("accord", T, [ME, BS]);
+    update(t,"working","Getting on the same page with Bright Smile (Accord)",[A.id]);
+    const r1 = A.section("Round 1: each agent frames the booking in a few points");
+    const pts = [
+      {who:ME, kind:"constraint", text:"A weekday, before 4 PM"},
+      {who:ME, kind:"constraint", text:"No out-of-pocket cost"},
+      {who:BS, kind:"constraint", text:"Coverage is verified before booking"},
+      {who:BS, kind:"constraint", text:"Patient pays nothing out of pocket", fold:1},
+      {who:BS, kind:"check", text:"Bright Smile runs the coverage check", covers:"p2,p3"},
+      {who:ME, kind:"term", text:"cleaning: the visit Priya had in April"},
+      {who:BS, kind:"term", text:"cleaning: needs a code, D1110 (routine) or D4341 (deep)"}
+    ];
+    const rowsEl = [];
+    for(const p of pts){
+      await wait(420);
+      const r = el(`<div class="pt"><span class="kind ${p.kind}">${p.kind==="check"?"check":p.kind==="term"?"term":"constraint"}</span><span class="grow"></span><span class="avs"></span></div>`);
+      r.querySelector(".grow").textContent = p.text; r.querySelector(".avs").appendChild(miniAv(p.who));
+      r1.appendChild(r); rowsEl.push(r);
+      A.raw(`${p.who.label}: ` + (p.kind==="term" ? `term=cleaning ${p.text.split(": ")[1]}` : p.kind==="check" ? `[[mycelium: check covers=${p.covers}]] ${p.text}` : `[[mycelium: constraint]] ${p.text}`));
+    }
+    await wait(700);
+    const mg = A.section("Merge, run in code");
+    // fold point 4 into point 2
+    rowsEl[3].remove();
+    rowsEl[1].querySelector(".avs").appendChild(miniAv(BS));
+    rowsEl[1].appendChild(el(`<span class="flag ok">2 agree</span>`));
+    [0,2].forEach(i => rowsEl[i].appendChild(el(`<span class="flag">single</span>`)));
+    rowsEl[4].appendChild(el(`<span class="flag ok">covers 2 points</span>`));
+    mg.appendChild(el(`<p>Seven points became six. "No out-of-pocket cost" and "Patient pays nothing out of pocket" folded together on meaning, so that point now has two authors. Points with one author are flagged as single, not dropped.</p>`));
+    await wait(1100);
+    const wd = A.section("Words: do both agents mean the same thing?");
+    const senses = el(`<div><div class="pt"><span class="kind term">term</span><span class="grow"><b>cleaning</b></span><span class="flag warn">contested</span></div><div class="senses"></div></div>`);
+    const sb = senses.querySelector(".senses");
+    const addSense = (who, txt) => { const x = el(`<div class="sense"><span></span><span></span></div>`); x.firstElementChild.replaceWith(miniAv(who)); x.lastElementChild.textContent = txt; sb.appendChild(x); };
+    addSense(ME,"The visit Priya had in April"); addSense(BS,"A specific code: D1110 routine or D4341 deep");
+    wd.appendChild(senses);
+    await wait(1200);
+    wd.appendChild(el(`<p>The word is contested, so both agents are asked to restate it once.</p>`));
+    A.raw("conductor: tally terms → contested (cleaning) → re-ask to: contested");
+    await wait(1000);
+    sb.innerHTML = "";
+    addSense(ME,"Same as April. Her record says that was a routine cleaning");
+    addSense(BS,"April was D1110, but her chart has a new gum-health note, so a dentist may want D4341");
+    A.raw(`Priya's ${me.name}: term=cleaning same as April, routine (D1110)`);
+    A.raw(`Bright Smile's agent: term=cleaning D1110 in April; gum-health note may mean D4341`);
+    await wait(1100);
+    wd.appendChild(el(`<p>Still two senses. The merge keeps them side by side and flags them. It never picks one, so a person decides.</p>`));
+    await wait(900);
+    const lk = A.section("Lock: the shared summary is saved");
+    lk.appendChild(el(`<p>Agreed: weekday before 4 PM, no out-of-pocket cost, coverage verified first by Bright Smile. Open: what "cleaning" means.</p>`));
+    lk.appendChild(el(`<span class="saved">context/summary/dental-cleaning</span>`));
+    A.raw("conductor: lock → saved context/summary/dental-cleaning (open: term cleaning)");
+    update(t,"working",`Agreed on everything except what "cleaning" means`,[A.id]);
+    await wait(900);
+
+    const proc = await new Promise(res => {
+      needYou(t,"Which kind of cleaning?",`<p>Bright Smile and I agree on everything except one thing. Your last visit was a routine cleaning, but their chart has a new gum-health note, so they may suggest a deep cleaning. Which do you want to book?</p>`, () => {
+        const c = el(`<div class="card">
+          <button class="choice" data-c="D1110"><span class="grow"><span class="t">Routine cleaning</span><span class="s">About 45 minutes. Same as April</span></span><span class="tag rec">Matches last visit</span></button>
+          <button class="choice" data-c="D4341"><span class="grow"><span class="t">Deep cleaning</span><span class="s">About 90 minutes. Needs a dentist's review first</span></span></button></div>`);
+        c.querySelectorAll(".choice").forEach(b=>b.onclick=()=>{ b.classList.add("picked"); lockCard(c); resolved(t); user(b.querySelector(".t").textContent); res(b.dataset.c); });
+        return c;
+      });
+    });
+    const up = A.section("Update from Priya");
+    up.appendChild(el(`<p>cleaning = ${proc==="D1110"?"routine cleaning (D1110)":"deep cleaning (D4341)"}, chosen by Priya. The same summary is updated, so nothing is open.</p>`));
+    A.raw(`Priya (via ${me.name}): term=cleaning ${proc}`);
+    A.raw("conductor: lock → updated context/summary/dental-cleaning (open: none)");
+    update(t,"working", proc==="D1110" ? "You chose a routine cleaning. Summary updated" : "You chose a deep cleaning. Summary updated", [A.id]);
+    await wait(1400);
+
+    if(proc==="D4341"){
+      const h = proto("L8","INFORM","Bright Smile → "+me.name,{performative:"INFORM", status:"input-required", handoff:{to:"human", role:"Front desk", name:"Maria Alvarez", reason:"Deep cleaning needs a dentist to review recent X-rays", contact_user_via:"phone", eta:"today before 5 PM"}},"The enterprise agent hands off to a person and tells your agent how that person will follow up.",T);
+      update(t,"human","Deep cleanings need a dentist's review. Handed to Maria at Bright Smile's front desk", [h]);
+      notify(t,"Maria from Bright Smile's front desk will call you today before 5 PM.");
+      say(`<p>Bright Smile's agent can't book a deep cleaning on its own, because a dentist needs to review your X-rays first. It handed this to Maria at their front desk, and she'll call you today before 5 PM. I'll keep this task open until it's booked.</p>`, T);
+      return;
+    }
+    const p = proto("L8","PROPOSE","Bright Smile → "+me.name,{performative:"PROPOSE", grounded_in:"context/summary/dental-cleaning", options:[{slot_id:"s1", start:"2026-10-20T10:00", provider:"Dr. A. Okafor", est_patient_cost_usd:0},{slot_id:"s2", start:"2026-10-22T15:30", provider:"Dr. L. Brennan", est_patient_cost_usd:0}]},"Both options follow the locked summary: weekday, before 4 PM, $0.",T);
+    let slot;
+    if(prefs.askBook){
+      update(t,"working","Bright Smile offered two times that match the summary", [p]);
+      await wait(800);
+      slot = await new Promise(res => {
+        needYou(t,"Pick a time",`<p>Two times fit what we agreed, and both are covered in full by your plan.</p>`, () => {
+          const c = el(`<div class="card">
+            <button class="choice" data-s="Tuesday, Oct 20 at 10:00 AM"><span class="grow"><span class="t">Tuesday, Oct 20 at 10:00 AM</span><span class="s">Dr. Okafor, 45 min</span></span></button>
+            <button class="choice" data-s="Thursday, Oct 22 at 3:30 PM"><span class="grow"><span class="t">Thursday, Oct 22 at 3:30 PM</span><span class="s">Dr. Brennan, 45 min</span></span></button></div>`);
+          c.querySelectorAll(".choice").forEach(b=>b.onclick=()=>{ b.classList.add("picked"); lockCard(c); resolved(t); user(b.dataset.s); res(b.dataset.s); });
+          return c;
+        });
+      });
+    } else { slot = "Tuesday, Oct 20 at 10:00 AM"; update(t,"working","Picked Tuesday 10:00 AM, the first time that fits", [p]); }
+    update(t,"working","Booking " + slot);
+    await wait(1400);
+    const d = proto("L8","ACCEPT → INFORM",me.name+" ⇄ Bright Smile",{accept:{slot, user_approval:"confirmed in app"}, inform:{status:"completed", confirmation:"BSD-48213", calendar_invite:"ics"}},null,T);
+    update(t,"done","Booked for " + slot + ". Confirmation BSD-48213", [d]);
+    say(`<p>Your routine cleaning is booked for ${slot}, and it's on your calendar.</p>`, T);
+  }
+
+  /* ---------- Task B: group dinner across three personal agents (Concord) ---------- */
+  async function runDinner(){
+    const t = createTask("dinner","Dinner on Friday",["sam","lena"]); if(!t) return;
+    const T = t.title, P = peerAgent.name;
+    update(t,"working","Looking up Sam and Lena in your contacts");
+    await wait(1300);
+    const d0 = proto("A2A","Resolve contacts",me.name+" → agent directory",{source:"contacts", results:[{contact:"Sam Chen", agent:P, signed:true},{contact:"Lena Ortiz", agent:"Lena's personal agent", signed:true}]},"Contacts are matched to the agents they've published.",T);
+    update(t,"working",`Found Sam's agent (${P}) and Lena's agent in your contacts`,[d0]);
+    await wait(1100);
+    const hs = proto("L9","SL-LOCK (group)",me.name+" ⇄ 2 agents",{context:"urn:contexts:dining:v1.2", members:3, session:"sem-22b0c4"},null,T);
+    update(t,"working","All three agents locked a shared dining vocabulary",[hs]);
+    await wait(1000);
+
+    const ME = {label:"Priya's "+me.name, initial:me.initial, cls:"me"};
+    const SA = {label:"Sam's "+P, initial:"S", cls:"peer"};
+    const LA = {label:"Lena's agent", initial:"L", cls:"peer2"};
+    const C = flow("concord", T, [ME, SA, LA]);
+    update(t,"working","Helping three agents agree on a plan (Concord)",[C.id]);
+    const s1 = C.section("Each agent suggests one option");
+    const opts = [["A","Verde Kitchen, Friday 7:30 PM. Vegetarian-friendly, 12 minutes away"],["B","Saffron Table, Friday 8:00 PM. Indian, lots of vegetarian dishes"],["C","Harbor Grill, Friday 7:00 PM. Seafood, close to Lena"]];
+    for(const [L,txt] of opts){ await wait(450); const o = el(`<div class="opt"><b>${L}</b><span></span></div>`); o.lastElementChild.textContent = txt; s1.appendChild(o); C.raw(`option ${L}: ${txt}`); }
+    s1.appendChild(el(`<p style="color:var(--muted)">Authors are hidden while rating, so no one rates by who suggested it.</p>`));
+    await wait(800);
+    const s2 = C.section("Everyone rates every option, 0 to 100");
+    const host = document.createElement("div"); s2.appendChild(host);
+    const R = [{m:ME, s:{A:90,B:75,C:60}},{m:SA, s:{A:80,B:92,C:30}},{m:LA, s:{A:55,B:40,C:95}}];
+    const shown = [];
+    for(const r of R){ await wait(650); shown.push({...r, fresh:true}); scoreTable(host,["A","B","C"],shown,70); shown.forEach(x=>x.fresh=false);
+      C.raw(`${r.m.label}: [[mycelium: A=${r.s.A} B=${r.s.B} C=${r.s.C}]]`); }
+    s2.appendChild(el(`<p style="color:var(--muted)">${me.name} rated for you from your preferences. Sam's agent noted Sam is vegetarian. Lena's agent noted her sitter leaves at 9:30.</p>`));
+    await wait(1000);
+    const s3 = C.section("Pick: the option the least happy member likes best");
+    scoreTable(host,["A","B","C"],R,70,"A");
+    s3.appendChild(el(`<p>The lowest rating for each option is A 55, B 40, C 30. A has the highest floor, so A is the pick.</p>`));
+    C.raw("conductor: select → pick A (lowest 55, Lena's agent)");
+    await wait(1100);
+    s3.appendChild(el(`<p>Lena's agent rated A at 55, below the bar of 70, so it gets to suggest a fix to A.</p>`));
+    update(t,"working","Lena's agent is suggesting a fix to the top option",[C.id]);
+    await wait(1300);
+    const s4 = C.section("Fix, then everyone rates the fix");
+    const o = el(`<div class="opt"><b>D</b><span>Verde Kitchen, Friday 7:00 PM. Same place, earlier, so Lena is home by 9:30</span></div>`); s4.appendChild(o);
+    C.raw("Lena's agent: fix of A → option D: Verde Kitchen, Friday 7:00 PM");
+    const host2 = document.createElement("div"); s4.appendChild(host2);
+    const R2 = [{m:ME, s:{A:90,D:85}},{m:SA, s:{A:80,D:78}},{m:LA, s:{A:55,D:82}}];
+    const shown2 = [];
+    for(const r of R2){ await wait(600); shown2.push({...r, fresh:true}); scoreTable(host2,["A","D"],shown2,70); shown2.forEach(x=>x.fresh=false); C.raw(`${r.m.label}: [[mycelium: D=${r.s.D}]]`); }
+    await wait(700);
+    scoreTable(host2,["A","D"],R2,70,"D");
+    const res = C.section("Result");
+    res.appendChild(el(`<p class="result">Everyone's on board: going with D.</p>`));
+    res.appendChild(el(`<p style="color:var(--muted)">Every member rated D at 70 or above after one fix. Lena's rating went from 55 to 82.</p>`));
+    res.appendChild(el(`<span class="saved">context/decision/dinner-friday</span>`));
+    C.raw("conductor: converged on D after 1 fix → saved context/decision/dinner-friday");
+    update(t,"waiting","Agreed on Verde Kitchen, Friday 7:00 PM. Sam's and Lena's agents are checking with them",[C.id],"Sam, Lena");
+    await wait(5500);
+    update(t,"working","Sam and Lena both said yes");
+    await wait(800);
+    let ok = true;
+    if(prefs.askBook){
+      ok = await new Promise(resv => {
+        needYou(t,"Approve the booking",`<p>The three agents agreed on a plan, and Sam and Lena both said yes. It just needs your OK.</p>`, () => {
+          const c = el(`<div class="card consent"><h3>Verde Kitchen, Friday Oct 23 at 7:00 PM</h3><p class="hint" style="margin:0">Table for three. Vegetarian-friendly. Free to cancel until Friday noon.</p>
+            <div class="btns"><button class="btn primary">Book it</button><button class="btn">Not now</button></div></div>`);
+          const [y,n] = c.querySelectorAll(".btn");
+          y.onclick=()=>{ y.classList.add("picked"); lockCard(c); resolved(t); user("Book it"); resv(true); };
+          n.onclick=()=>{ n.classList.add("picked"); lockCard(c); resolved(t); user("Not now"); resv(false); };
+          return c;
+        });
+      });
+    }
+    if(!ok){ update(t,"waiting","Holding the plan. Nothing is booked yet",null,"you"); return; }
+    await wait(1200);
+    const f = proto("L8","INFORM",me.name+" → 2 agents",{performative:"INFORM", grounded_in:"context/decision/dinner-friday", content:{reservation:"confirmed", party:3, invites:"sent through each person's agent"}},null,T);
+    update(t,"done","Table for three booked, Friday 7:00 PM. Invites sent through Sam's and Lena's agents", [f]);
+    say(`<p>Dinner is booked: Verde Kitchen, Friday at 7:00 PM for three. Sam's and Lena's agents added it to their calendars.</p>`, T);
+  }
+
+  /* ---------- Task C: Mom has no agent, so reach the human ---------- */
+  async function runMom(){
+    const t = createTask("mom","Mom's flight",["mom"]); if(!t) return;
+    const T = t.title;
+    update(t,"working","Looking up Mom in your contacts");
+    await wait(1300);
+    const d0 = proto("A2A","Resolve contacts",me.name+" → agent directory",{contact:"Mom", agent_card:null, fallback:["sms","voice"]},"No agent found, so your agent falls back to a channel the person already uses.",T);
+    update(t,"working","Mom doesn't have an agent, so I'll text her directly",[d0]);
+    await wait(1400);
+    const s = proto("SMS","Text sent",me.name+" → Mom",{to:"Mom (mobile)", from:"Priya's number, labeled as sent by "+me.name, body:"Hi Mom, it's "+me.name+", Priya's assistant. What flight are you taking for Thanksgiving? Priya wants to pick you up."},null,T);
+    update(t,"waiting","Texted Mom and asked for her flight details", [s], "Mom");
+    await wait(9000);
+    const r = proto("SMS","Reply received","Mom → "+me.name,{body:"Northline 212, landing Wed Nov 25 at 3:40pm. Love you!", parsed:{carrier:"Northline", flight:"212", arrives:"2026-11-25T15:40"}},null,T);
+    update(t,"done","Mom lands Wednesday, Nov 25 at 3:40 PM on Northline 212. Added to your calendar", [r]);
+    say(`<p>Mom replied: she lands Wednesday, Nov 25 at 3:40 PM on Northline 212. I added a pickup to your calendar with a reminder to leave at 3:00.</p>`, T);
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>

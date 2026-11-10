@@ -453,6 +453,7 @@ export function StudioWorkspace({
       <div className="v2-workspace__top">
         <nav className="v2-workspace__location" aria-label="Studio navigation"><button type="button" onClick={returnToLanding}>Studio</button><span aria-hidden="true">/</span><strong>{pattern ? pattern.name : enteringWorkspace ? "Opening pattern" : "Your use case"}</strong></nav>
         <div className="v2-workspace__top-right">
+          <Link href="/v2/agora-preview" className="v2-workspace__library-trigger">Preview prototype</Link>
           {pattern ? <button type="button" className="v2-workspace__library-trigger" aria-expanded={libraryOpen} aria-controls="v2-pattern-library" onClick={toggleLibrary}>{libraryOpen ? "Close library" : "Browse patterns"}</button> : null}
           {pattern && workspace ? <details className="v2-workspace__exports" ref={exportMenuRef}><summary data-walkthrough-export-trigger>Export</summary><div><button type="button" data-walkthrough-export="markdown" onClick={downloadPatternMarkdown}>Download pattern Markdown</button><button type="button" data-walkthrough-export="svg" onClick={downloadPatternSvg}>Download diagram SVG for Figma</button><button type="button" onClick={copyPatternMarkdown}>Copy pattern Markdown</button></div></details> : null}
         </div>
