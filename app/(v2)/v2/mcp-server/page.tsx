@@ -12,23 +12,23 @@ import { MODE_LABEL, MODE_ORDER } from "@/lib/v2/modes";
 export const metadata = {
   title: "MCP server, HAX 2.0 v2",
   description:
-    "The calls an agent makes against the pattern library: discover filters on mode, level, channel and audience; instantiate operates on interactions.",
+    "The calls an agent makes against the pattern library: discover filters on mode, participant dimension, channel and audience; instantiate operates on interactions.",
 };
 
 const CALLS = [
   {
     name: "discover",
-    takes: "mode · level · channel · audience",
+    takes: "mode · participant dimension · channel · audience",
     body: "The four things a behavior spec is built from are the four things a caller can filter on. An empty result is a real answer, there is no Request pattern, and the call should say so rather than returning the nearest thing.",
   },
   {
     name: "fetch",
     takes: "pattern id",
-    body: "Returns the whole pattern: its spec sentence, its primary mode and level, and the note for every level it reaches.",
+    body: "Returns the whole pattern: its spec sentence, its primary mode and participant dimension, plus a note for each dimension it reaches.",
   },
   {
     name: "instantiate · update · get · list",
-    takes: "pattern id + the spec's level, channel and audience",
+    takes: "pattern id + the spec's participant dimension, channel and audience",
     body: "These operate on an interaction, one live occurrence of a pattern, which carries a slot for the receiver's response.",
   },
   {
@@ -89,7 +89,9 @@ export default function V2McpPage() {
         </h2>
         <p className="v2-lede mt-3">
           Four enumerations, all closed. A caller can name any combination of
-          them and get an honest empty answer when nothing matches.
+          them and get an honest empty answer when nothing matches. The API
+          retains its existing <code>level</code> key for the participant
+          dimension.
         </p>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
@@ -98,7 +100,7 @@ export default function V2McpPage() {
             values={MODE_ORDER.map((id) => `${id}, ${MODE_LABEL[id]}`)}
           />
           <Vocab
-            name="level"
+            name="participant dimension"
             values={LEVEL_ORDER.map((id) => `${id}, ${LEVEL_LABEL[id]}`)}
           />
           <Vocab

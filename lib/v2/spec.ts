@@ -42,7 +42,7 @@ export const SPEC_SLOT_LABEL: Record<SpecSlot, string> = {
   trigger: "Trigger",
   mode: "Mode",
   audience: "Audience",
-  level: "Level",
+  level: "Dimension",
   channel: "Channel",
   responses: "Responses",
 };
@@ -51,7 +51,7 @@ export const SPEC_SLOT_MEANING: Record<SpecSlot, string> = {
   trigger: "The moment that sets it off.",
   mode: "What kind of opening it is.",
   audience: "Who receives it.",
-  level: "Who is in the exchange.",
+  level: "The participant dimension for the exchange.",
   channel: "Chat, settings, shared UI, or a message between agents.",
   responses: "What the receiver can do back.",
 };
@@ -101,7 +101,7 @@ export function specFromPattern(pattern: Pattern): SpecDraft {
 }
 
 /**
- * Filling a slot narrows the others. Picking a level filters audiences and
+ * Filling a slot narrows the others. Picking a participant dimension filters audiences and
  * channels; picking a mode sets the valid responses. This returns the draft
  * with anything now invalid cleared, rather than silently leaving a stale pick.
  */
@@ -183,7 +183,7 @@ function lowerFirst(text: string): string {
 }
 
 /**
- * Patterns whose primary mode and level match the draft. A partial draft
+ * Patterns whose primary mode and participant dimension match the draft. A partial draft
  * matches on whatever is filled, so the list narrows as the sentence is built.
  */
 export function matchingPatterns(

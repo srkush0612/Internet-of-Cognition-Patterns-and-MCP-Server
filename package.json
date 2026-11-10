@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "lsof -ti:3000,3001,3002,3006,3007 2>/dev/null | xargs kill -9 2>/dev/null; pkill -f 'next dev' 2>/dev/null; next dev",
+    "dev:studio": "HAX_DEV_DIST_DIR=.next-studio next dev -H 127.0.0.1 -p 3000",
     "dev:clean": "rm -rf .next && next dev",
     "dev:restart": "for port in 3000 3001 3002 3006 3007; do pids=$(lsof -ti:$port 2>/dev/null); [ -n \"$pids\" ] && kill -9 $pids 2>/dev/null; done; pkill -f 'next dev' 2>/dev/null; rm -rf .next && next dev",
     "build": "next build",
     "build:reviewa": "node scripts/build-reviewa.mjs",
+    "build:reviewa:v3": "node scripts/build-reviewa-v3.mjs",
     "deploy:reviewa": "node scripts/build-reviewa.mjs && curl -fsSL https://reviewa.work/cli.mjs -o /tmp/reviewa.mjs && node /tmp/reviewa.mjs update epbhm84q .next-reviewa",
     "start": "next start",
     "lint": "next lint",

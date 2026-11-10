@@ -196,7 +196,9 @@ export function PatternCard({ pattern }: { pattern: Pattern }) {
     <>
       <div className="flex items-start justify-between gap-2">
         <p className="v2-pcard__name">{pattern.name}</p>
-        {pattern.contentReady ? (
+        {pattern.id === "details-dashboard" || pattern.id === "certainty-boundary" ? (
+          <span className="v2-tag v2-tag--review">Review pending</span>
+        ) : pattern.contentReady ? (
           <span className="v2-tag v2-tag--ready">Ready</span>
         ) : (
           <span className="v2-tag v2-tag--soon">Coming soon</span>

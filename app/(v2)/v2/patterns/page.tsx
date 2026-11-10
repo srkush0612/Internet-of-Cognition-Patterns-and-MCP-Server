@@ -27,8 +27,9 @@ export default function CatalogPage() {
       </header>
 
       <div className="osh-container pb-16">
-        {/* The browser reads the mode/level query string the homepage links
-            carry, which a statically rendered page has to suspend on. */}
+        {/* The browser reads the mode and participant-dimension query strings
+            the homepage links carry, which a statically rendered page has to
+            suspend on. */}
         <Suspense fallback={<p className="pt-8 text-sm text-muted">Loading…</p>}>
           <CatalogBrowser />
         </Suspense>

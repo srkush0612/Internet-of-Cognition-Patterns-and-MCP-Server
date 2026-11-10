@@ -128,24 +128,26 @@ export function Steps() {
 
       <Step
         n="04"
-        title="Record the exchange"
-        body="Use a structured record to capture who initiated the exchange, who responded, and what happened."
+        title="Show the behavior in context"
+        body="HAX brings the selected pattern into an interface for the use case, making the agent’s intent and the person’s next choices clear."
       >
-        <div className="v2-artifact v2-artifact--code">
-          {"{"}
-          {"\n"}  <span className="k">&quot;pattern&quot;</span>:{" "}
-          <span className="s">&quot;pre-action-handshake&quot;</span>,
-          {"\n"}  <span className="k">&quot;initiator&quot;</span>:{" "}
-          <span className="s">&quot;@triage&quot;</span>,
-          {"\n"}  <span className="k">&quot;channel&quot;</span>:{" "}
-          <span className="s">&quot;chat_ui&quot;</span>,
-          {"\n"}  <span className="k">&quot;response&quot;</span>: {"{"}
-          {"\n"}    <span className="k">&quot;value&quot;</span>:{" "}
-          <span className="s">&quot;consent&quot;</span>,
-          {"\n"}    <span className="k">&quot;by&quot;</span>:{" "}
-          <span className="s">&quot;operator&quot;</span>
-          {"\n"}  {"}"}
-          {"\n"}{"}"}
+        <div className="v2-artifact v2-usecase" aria-label="Example interaction interface">
+          <div className="v2-usecase__top">
+            <span>PRE-ACTION CHECK</span>
+            <span className="v2-usecase__status">Needs your input</span>
+          </div>
+          <h4>Restart payments service?</h4>
+          <p>
+            <b>@triage</b> saw checkout p99 reach 2.4s and wants to restart
+            payments-svc.
+          </p>
+          <div className="v2-usecase__choices" aria-label="Available responses">
+            {replies.map((reply) => (
+              <span key={reply} data-tone={TONE[reply]}>
+                {reply}
+              </span>
+            ))}
+          </div>
         </div>
       </Step>
     </ol>

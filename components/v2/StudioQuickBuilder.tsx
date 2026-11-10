@@ -60,7 +60,7 @@ const OPENING: Record<Mode, string> = {
 };
 
 const DETAIL_LABEL: Record<Detail, string> = {
-  trigger: "When", audience: "Receiver", level: "People",
+  trigger: "When", audience: "Receiver", level: "Dimensions",
   channel: "Surface", responses: "Actions",
 };
 

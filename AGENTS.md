@@ -38,10 +38,10 @@ completed example of this structure, not as a source of content for other patter
   mode in terms of this pattern. Account for a secondary mode where one exists.
 - **When it happens:** In the behavior-spec facts, name specific trigger moments,
   including meaningful changes after initialization.
-- **Who is involved:** Consider all four v2 levels. Show a checkmark only where
+- **Who is involved:** Consider all four v2 participant dimensions. Show a checkmark only where
   the pattern applies and explain what changes at each one. Choose the simplest
-  level where the pattern works as primary. Use the same full-width, four-row
-  comparison for every pattern, with the level label and description in aligned
+  dimension where the pattern works as primary. Use the same full-width, four-row
+  comparison for every pattern, with the dimension label and description in aligned
   columns. Name the relevant person, agent, or team in each applicable row;
   do not add a separate audience footer.
 - **What the receiver can do:** In the behavior-spec facts, name concrete
@@ -67,7 +67,7 @@ completed example of this structure, not as a source of content for other patter
   example appears elsewhere in Studio, it must instantiate the authored behavior
   spec and agree with the preview's names, states, and permissions.
 Use a consistent page spine: hero, jump navigation, what it solves, interaction,
-levels, behavior spec, preview. Short prose stands on its own;
+dimensions, behavior spec, preview. Short prose stands on its own;
 cards contain structured comparisons, previews, or code. Omit a section when
 the pattern lacks distinct content for it. Do not leave a single card stranded
 in one column of a two-column grid.

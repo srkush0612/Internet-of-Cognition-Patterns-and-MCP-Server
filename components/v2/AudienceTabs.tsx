@@ -94,21 +94,53 @@ export function AudienceTabs() {
           <div className="v2-exchange">
             <p className="v2-exlabel">Example question</p>
             <p className="v2-ask">{audience.prompt}</p>
-            <p className="v2-exlabel">HAX returns</p>
-            {audience.answer.map((entry) => {
-              const pattern = getV2Pattern(entry.patternId);
-              if (!pattern) return null;
-              return (
-                <Link
-                  key={entry.patternId}
-                  href={`/v2/patterns/${pattern.id}`}
-                  className="v2-result"
-                >
-                  <p className="v2-result__name">{pattern.name}</p>
-                  <p className="v2-result__why">{entry.why}</p>
-                </Link>
-              );
-            })}
+            <div className="v2-audreturn">
+              <div className="v2-audreturn__head">
+                <div>
+                  <p className="v2-exlabel">HAX returns</p>
+                  <h4>
+                    {audience.answer.length} relevant pattern
+                    {audience.answer.length === 1 ? "" : "s"}
+                  </h4>
+                </div>
+                <span className="v2-audreturn__count">
+                  {String(audience.answer.length).padStart(2, "0")}
+                </span>
+              </div>
+              <div className="v2-audreturn__list">
+                {audience.answer.map((entry, index) => {
+                  const pattern = getV2Pattern(entry.patternId);
+                  if (!pattern) return null;
+                  return (
+                    <Link
+                      key={entry.patternId}
+                      href={`/v2/patterns/${pattern.id}`}
+                      className="v2-audreturn__item"
+                    >
+                      <div className="v2-audreturn__item-head">
+                        <span>{String(index + 1).padStart(2, "0")}</span>
+                        <span>Pattern match</span>
+                      </div>
+                      <p className="v2-audreturn__name">{pattern.name}</p>
+                      <p className="v2-audreturn__why">{entry.why}</p>
+                      {pattern.responses?.length ? (
+                        <div className="v2-audreturn__responses">
+                          <span>Replies</span>
+                          <div>
+                            {pattern.responses.map((response) => (
+                              <span key={response}>{response}</span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      <span className="v2-audreturn__link">
+                        Explore pattern <span aria-hidden="true">→</span>
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       ) : (

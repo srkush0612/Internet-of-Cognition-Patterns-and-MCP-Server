@@ -17,6 +17,11 @@ import { ActivityRecordPreview } from "@/components/v2/ActivityRecordPreview";
 import { DeferredDetailPreview } from "@/components/v2/DeferredDetailPreview";
 import { DisclosureGradientPreview } from "@/components/v2/DisclosureGradientPreview";
 import { LineageViewPreview } from "@/components/v2/LineageViewPreview";
+import { CoEditingSurfacePreview } from "@/components/v2/CoEditingSurfacePreview";
+import { StructuredFindingPreview } from "@/components/v2/StructuredFindingPreview";
+import { CertaintyBoundaryPreview, certaintyBoundarySignal } from "@/components/v2/CertaintyBoundaryPreview";
+import { PreActionHandshakePreview } from "@/components/v2/PreActionHandshakePreview";
+import { ReviewDialoguePreview } from "@/components/v2/ReviewDialoguePreview";
 import { SDK_SAMPLES } from "@/lib/v2/sdk-samples";
 import type { CapabilityManifestData } from "@/vendor/hax/artifacts/capability-manifest/types";
 import { getPattern as getResearchEntry } from "@/lib/patterns";
@@ -37,6 +42,19 @@ const MANIFEST_NOTES = {
     { title: "Agent-readable", text: "A peer agent receives structured capability and status fields." },
     { title: "Same boundaries", text: "The signal preserves enabled, pending, and restricted states." },
     { title: "Changes over time", text: "Alerts and connection status can update as conditions change." },
+  ],
+} as const;
+
+const CERTAINTY_NOTES = {
+  settings_panel: [
+    { title: "Method per step", text: "The path distinguishes a fixed API call, an agent-selected path, and generated content." },
+    { title: "Inspect the transition", text: "Select a step to see its input, output, and how it produces the result." },
+    { title: "Review before use", text: "The generated reply waits for operator review before sending; this preview only shows the gate." },
+  ],
+  state_signal: [
+    { title: "Same path", text: "The structured signal preserves the execution type for every workflow step." },
+    { title: "Step contracts", text: "Inputs, outputs, and review points remain attached to their steps." },
+    { title: "Current gate", text: "Downstream work is waiting for operator review of the draft." },
   ],
 } as const;
 
@@ -117,11 +135,36 @@ const DISCLOSURE_GRADIENT_NOTES = {
 
 const LINEAGE_VIEW_NOTES = {
   shared_ui: [
-    { title: "Root output", text: "The disputed RCA is identified with its author and last verified time." },
-    { title: "Agent contributions", text: "Each decision and artifact names its producing agent; arrows show whether it cites the RCA or follows the remediation plan." },
-    { title: "Shared impact", text: "The incident view summarizes affected teams and decisions for review." },
+    { title: "Reason for dispute", text: "The reported 120 units sit beside the warehouse recount of 12; the stock count is the only warning-highlighted item." },
+    { title: "All affected work", text: "Decisions and the draft stay visible together, with each agent and its direct or indirect reliance named." },
+    { title: "Trace one path", text: "Select any item to see its path back to the stock count and the review needed before acting." },
   ],
 } as const;
+
+const CO_EDITING_NOTES = {
+  chat_ui: [
+    { title: "Inside the conversation", text: "Incident agent attaches an editable document to its reply, so the operator can contribute without leaving the thread." },
+    { title: "Edit or comment", text: "Change the proposed action or leave a comment on a named document part." },
+    { title: "Continue together", text: "Reliability agent adds an impact assessment to the document, with edits and comments preserved." },
+  ],
+  shared_ui: [
+    { title: "One document", text: "The operator, Incident agent, and Reliability agent work from the restart plan inside its incident workspace." },
+    { title: "Comments stay attached", text: "Leave a comment under the specific part it concerns, without changing the text." },
+    { title: "Continue together", text: "Ask Reliability agent to add an impact assessment. The document keeps both the comments and revision history." },
+  ],
+} as const;
+
+const STRUCTURED_FINDING_NOTES = [
+  { title: "Conclusion first", text: "The agent presents its finding in the incident conversation where the operator is reviewing the analysis." },
+  { title: "Variant-specific evidence", text: "Switch variants to inspect cited sources, ranked confidence, or decision criteria." },
+  { title: "Human verification", text: "Evidence or decision criteria stay alongside the claim for the operator to assess." },
+] as const;
+
+const REVIEW_DIALOGUE_NOTES = [
+  { title: "Recommendation and owner", text: "Research recommends a quick-setup message; Marketing owns the draft. The operator decides whether that positioning fits the campaign before it can be scheduled or sent." },
+  { title: "Feedback has a reason", text: "Declining opens a focused clarification about the new trial-user audience." },
+  { title: "A fresh review", text: "The returned version marks its changes and needs its own decision; this preview does not send it." },
+] as const;
 
 /**
  * One tab per channel the pattern travels through.
@@ -188,6 +231,14 @@ export function ChannelPreview({ pattern, compact = false }: { pattern: Pattern;
       ? AUTHORITY_NOTES[active as keyof typeof AUTHORITY_NOTES]
     : pattern.id === "lineage-view"
       ? LINEAGE_VIEW_NOTES[active as keyof typeof LINEAGE_VIEW_NOTES]
+    : pattern.id === "co-editing-surface"
+      ? CO_EDITING_NOTES[active as keyof typeof CO_EDITING_NOTES]
+    : pattern.id === "structured-finding"
+      ? STRUCTURED_FINDING_NOTES
+    : pattern.id === "certainty-boundary"
+      ? CERTAINTY_NOTES[active as keyof typeof CERTAINTY_NOTES]
+    : pattern.id === "review-as-dialogue"
+      ? REVIEW_DIALOGUE_NOTES
       : undefined;
   // Named by the entry it was drawn as, which for a renamed or merged
   // pattern is not the name at the top of this page.
@@ -195,15 +246,16 @@ export function ChannelPreview({ pattern, compact = false }: { pattern: Pattern;
     design && design.slug !== pattern.id
       ? getResearchEntry(design.slug)?.title
       : null;
+  const usesPreviewTabs = Boolean(previewNotes) || compact || pattern.id === "pre-action-handshake";
 
   return (
     <div>
-      <div className={previewNotes || compact ? "v2-preview-tabs" : "flex flex-wrap gap-2"}>
+      <div className={usesPreviewTabs ? "v2-preview-tabs" : "flex flex-wrap gap-2"}>
         {pattern.channels.map((channel) => (
           <button
             key={channel}
             type="button"
-            className={previewNotes || compact ? "v2-preview-tab" : "v2-resp"}
+            className={usesPreviewTabs ? "v2-preview-tab" : "v2-resp"}
             data-tone={channel === active ? "primary" : undefined}
             aria-pressed={channel === active}
             onClick={() => setActive(channel)}
@@ -236,7 +288,15 @@ export function ChannelPreview({ pattern, compact = false }: { pattern: Pattern;
       ) : null}
 
       <div className={`v2-preview mt-4${previewNotes || (compact && pattern.id === "capability-manifest") ? " v2-preview--manifest" : ""}`}>
-        {pattern.id === "lineage-view" ? (
+        {pattern.id === "structured-finding" ? (
+          <div className="v2-preview__frame v2-preview__frame--finding"><StructuredFindingPreview variant={variantId} /></div>
+        ) : pattern.id === "certainty-boundary" && active === "settings_panel" ? (
+          <div className="v2-preview__frame v2-preview__frame--certainty"><CertaintyBoundaryPreview /></div>
+        ) : pattern.id === "certainty-boundary" && active === "state_signal" ? (
+          <pre className="v2-code"><code>{certaintyBoundarySignal()}</code></pre>
+        ) : pattern.id === "co-editing-surface" ? (
+          <div className="v2-preview__frame v2-preview__frame--coedit"><CoEditingSurfacePreview surface={active as "chat_ui" | "shared_ui"} /></div>
+        ) : pattern.id === "lineage-view" ? (
           <div className="v2-preview__frame v2-preview__frame--lineage"><LineageViewPreview /></div>
         ) : pattern.id === "disclosure-gradient" ? (
           <div className="v2-preview__frame v2-preview__frame--disclosure"><DisclosureGradientPreview key={active} surface={active as "chat_ui" | "shared_ui"} /></div>
@@ -248,6 +308,10 @@ export function ChannelPreview({ pattern, compact = false }: { pattern: Pattern;
           </div>
         ) : pattern.id === "presence-boundary" ? (
           <div className="v2-preview__frame v2-preview__frame--presence"><PresenceBoundaryPreview surface={active} /></div>
+        ) : pattern.id === "pre-action-handshake" ? (
+          <div className="v2-preview__frame v2-preview__frame--handshake"><PreActionHandshakePreview /></div>
+        ) : pattern.id === "review-as-dialogue" ? (
+          <div className="v2-preview__frame v2-preview__frame--review-dialogue"><ReviewDialoguePreview /></div>
         ) : showManifest ? (
           <div className="v2-preview__frame v2-preview__frame--manifest">
             <CapabilityManifestPreview key={active} surface={active} />
@@ -380,7 +444,7 @@ export function ChannelPreview({ pattern, compact = false }: { pattern: Pattern;
           </p>
         ) : null}
 
-        {compact || design || showSdk || showManifest || showManifestSignal || pattern.id === "presence-boundary" || pattern.id === "deferred-detail" || pattern.id === "disclosure-gradient" ? null : (
+        {compact || design || showSdk || showManifest || showManifestSignal || pattern.id === "certainty-boundary" || pattern.id === "structured-finding" || pattern.id === "presence-boundary" || pattern.id === "pre-action-handshake" || pattern.id === "review-as-dialogue" || pattern.id === "deferred-detail" || pattern.id === "disclosure-gradient" || pattern.id === "co-editing-surface" ? null : (
           <p className="mt-3 text-xs leading-relaxed text-faint">
             No design has been drawn for{" "}
             {variant ? `the ${variant.label.toLowerCase()} variant` : "this pattern"}{" "}

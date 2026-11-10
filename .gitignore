@@ -11,11 +11,18 @@
 # next.js
 /.next/
 /.next-reviewa/
+/.next-reviewa-v3/
+/.next-studio/
+/.next-v3/
 /.next.broken-localhost/
 /out/
 
 # production
 /build
+
+# generated slide-deck artifacts (not part of the app; regenerated as needed)
+/.presentation-build/
+/presentations/
 
 # misc
 .DS_Store

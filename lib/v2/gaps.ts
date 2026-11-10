@@ -56,13 +56,13 @@ export const MISSING_PATTERNS: Array<{
   },
 ];
 
-/** The threshold under which a level counts as thin. Three of four levels sit at 3. */
+/** The threshold under which a participant dimension counts as thin. */
 const THIN_LEVEL_MAX = 3;
 
 export type ThinLevel = { level: Level; count: number; note: string };
 
 const THIN_LEVEL_NOTE: Partial<Record<Level, string>> = {
-  L2: "Almost nothing for agents explaining to each other. Only Source Attribution, and only as provenance.",
+  L2: "No pattern is primarily designed for peer-agent coordination without a person. Credential Boundary and Convergence Point include this as a secondary setting.",
   L4: "Only Workshop Card communicates to a group. Nothing tailors what different people see by role.",
 };
 
@@ -83,7 +83,7 @@ export function thinLevels(): ThinLevel[] {
  * in the UI because it is the argument for the new thesis rather than a count.
  */
 export const GAP_SUMMARY =
-  "Most gaps sit on the engaging side, and at the agents-only level. That is the core of the new thesis: agents communicating with each other is the part we have least of.";
+  "Most gaps sit on the engaging side and within the dimension with many agents and no person. That is the core of the new thesis: agents communicating with each other is the part we have least of.";
 
 /** Section 9: decided by synthesis, not research. */
 export const JUDGMENT_CALLS: Array<{
@@ -107,7 +107,7 @@ export const JUDGMENT_CALLS: Array<{
   {
     id: "authority-gradient-level",
     question:
-      "Is Authority Gradient native to one person in the loop, or to agents only? An autonomy ceiling binds the agent whether or not anyone is watching.",
+      "Is Authority Gradient native to one person in the loop, or to many agents with no person? An autonomy ceiling binds the agent whether or not anyone is watching.",
     patterns: ["authority-gradient"],
   },
   {
@@ -119,7 +119,7 @@ export const JUDGMENT_CALLS: Array<{
   {
     id: "triggers-and-level-notes",
     question:
-      "Every trigger and every level note was written from a pattern description, not observed. All 23 need validating.",
+      "Every trigger and participant-dimension note was written from a pattern description, not observed. All 23 need validating.",
     patterns: [],
   },
   {
@@ -145,15 +145,7 @@ export const JUDGMENT_CALLS: Array<{
  */
 export const NO_DESIGN_YET: Array<{ id: string; note: string }> = [
   {
-    id: "certainty-boundary",
-    note: "A research pattern with no reference design.",
-  },
-  {
     id: "disclosure-gradient",
-    note: "A research pattern with no reference design.",
-  },
-  {
-    id: "review-as-dialogue",
     note: "A research pattern with no reference design.",
   },
   {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { getV2Pattern } from "@/lib/v2/catalog";
 import {
@@ -52,7 +53,6 @@ function Row({
   picked: string | null;
   onPick: (label: string) => void;
 }) {
-  const pattern = line.patternId ? getV2Pattern(line.patternId) : null;
   const outcome = CHIP_OUTCOMES.find((chip) => chip.label === picked);
   const isPerson = line.actor === "operator";
 
@@ -62,14 +62,6 @@ function Row({
         {line.actor}
       </span>
       <span>{line.action}</span>
-
-      {pattern ? (
-        <Link href={`/v2/patterns/${pattern.id}`} className="v2-patlink">
-          {pattern.name}
-        </Link>
-      ) : (
-        <span className="v2-note">{line.aside ?? ""}</span>
-      )}
 
       {replies ? (
         <>
@@ -135,28 +127,66 @@ export function SceneSwitch() {
       </div>
 
       <div>
-        <div className="v2-log" data-state={key} aria-live="polite">
-          <div className="v2-log__head">
-            <span className="v2-log__live">{SCENE_HEADER.incident}</span>
-            <span>{SCENE_HEADER.subject}</span>
-          </div>
+        <div
+          className="v2-scene-stage"
+          style={{ "--scene-row-count": rows.length } as CSSProperties}
+        >
+          <div className="v2-log" data-state={key} aria-live="polite">
+            <div className="v2-log__head">
+              <span className="v2-log__live">{SCENE_HEADER.incident}</span>
+              <span>{SCENE_HEADER.subject}</span>
+            </div>
 
-          <div className="v2-log__body">
-            {rows.map((line) => (
-              <Row
-                key={line.actor}
-                line={line}
-                replies={key === "with" && line.patternId === "pre-action-handshake"}
-                picked={picked}
-                onPick={setPicked}
-              />
-            ))}
+            <div className="v2-log__body">
+              {rows.map((line) => (
+                <Row
+                  key={line.actor}
+                  line={line}
+                  replies={key === "with" && line.patternId === "pre-action-handshake"}
+                  picked={picked}
+                  onPick={setPicked}
+                />
+              ))}
+            </div>
           </div>
+          <aside
+            className="v2-scene-annotations"
+            aria-label="Context for each exchange"
+          >
+            {rows.map((line) => {
+              const pattern = line.patternId ? getV2Pattern(line.patternId) : null;
+              if (!pattern && !line.aside) {
+                return (
+                  <div
+                    className="v2-scene-annotation--empty"
+                    key={line.actor}
+                    aria-hidden="true"
+                  />
+                );
+              }
 
-          <p className="v2-log__foot">
-            {key === "with" ? HAX_FOOTER : PROBLEM_FOOTER}
-          </p>
+              return (
+                <div
+                  className={`v2-scene-annotation${pattern ? " v2-scene-annotation--pattern" : " v2-scene-annotation--note"}`}
+                  key={line.actor}
+                >
+                  <span className="v2-scene-annotation__arrow" aria-hidden="true" />
+                  <span className="v2-scene-annotation__target">{line.actor}</span>
+                  {pattern ? (
+                    <Link href={`/v2/patterns/${pattern.id}`}>
+                      {pattern.name}
+                    </Link>
+                  ) : (
+                    <span>{line.aside}</span>
+                  )}
+                </div>
+              );
+            })}
+          </aside>
         </div>
+        <p className="v2-scene-takeaway" data-state={key}>
+          {key === "with" ? HAX_FOOTER : PROBLEM_FOOTER}
+        </p>
         <p className="v2-caption">
           {key === "with"
             ? "Example scenario. HAX patterns describe expected replies. The connected agent determines what happens next."

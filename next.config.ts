@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const isReviewaExport = process.env.REVIEWA_BUILD === "1";
+// Keep the Studio preview separate from other local Next.js servers in this checkout.
+const localDevDistDir = process.env.HAX_DEV_DIST_DIR;
 
 const nextConfig: NextConfig = {
   ...(isReviewaExport
@@ -14,7 +16,9 @@ const nextConfig: NextConfig = {
         // hard-to-reproduce "Cannot find module for page" export errors.
         distDir: ".next-reviewa",
       }
-    : {}),
+    : localDevDistDir
+      ? { distDir: localDevDistDir }
+      : {}),
   outputFileTracingRoot: path.join(__dirname),
   webpack: (config) => {
     config.module.rules.push({
