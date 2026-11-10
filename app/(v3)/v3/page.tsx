@@ -15,6 +15,7 @@ import {
 import { HeroParticles } from "@/components/v2/HeroParticles";
 import { V3Comparison } from "@/components/v3/V3Comparison";
 import { V3Audience } from "@/components/v3/V3Audience";
+import { V3Footer } from "@/components/v3/V3Footer";
 
 export const metadata: Metadata = {
   title: "HAX — human–agent interaction",
@@ -192,24 +193,9 @@ export default function V3Homepage() {
           </div>
         </section>
 
-        <section className="v3-close" aria-labelledby="v3-close-title">
-          <div className="v3-container v3-close-inner">
-            <div>
-              <p className="v3-eyebrow">Start with the interaction</p>
-              <h2 id="v3-close-title">Make the behavior usable.</h2>
-              <p>Find a pattern, shape its behavior in Studio, and inspect an available component in context.</p>
-            </div>
-            <div className="v3-actions">
-              <Link href="/v3/patterns" className="v3-action v3-action-primary">Explore patterns</Link>
-              <Link href="/v2/studio" className="v3-action v3-action-secondary">Open Studio</Link>
-            </div>
-          </div>
-        </section>
       </main>
 
-      <footer className="v3-footer">
-        <div className="v3-container"><span>HAX by Outshift Design</span><span>Human–agent interaction patterns</span></div>
-      </footer>
+      <V3Footer />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { V3Header } from "@/components/v3/V3Header";
+import { V3Footer } from "@/components/v3/V3Footer";
 import { HAX_PRINCIPLES } from "@/lib/v2/principles";
 import { getPatternsForPrinciple } from "@/lib/v3/principle-catalog";
 
@@ -93,7 +94,7 @@ export default async function PrinciplePage({ params }: { params: Promise<{ id: 
           </div>
         </nav>
       </main>
-      <footer className="v3-footer"><div className="v3-container"><span>HAX by Outshift Design</span><span>Human–agent interaction patterns</span></div></footer>
+      <V3Footer />
     </div>
   );
 }

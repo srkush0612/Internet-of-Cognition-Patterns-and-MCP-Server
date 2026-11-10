@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { V3Header } from "@/components/v3/V3Header";
+import { V3Footer } from "@/components/v3/V3Footer";
 import { V3PatternBrowser } from "@/components/v3/V3PatternBrowser";
 import { getV3Patterns } from "@/lib/v3/catalog";
 
@@ -31,6 +32,7 @@ export default function V3PatternsPage() {
         </section>
         <V3PatternBrowser patterns={patterns} />
       </main>
+      <V3Footer />
     </div>
   );
 }

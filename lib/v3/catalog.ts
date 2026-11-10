@@ -380,7 +380,7 @@ export function getV3Patterns(): V3PatternCard[] {
       level: pattern.level.primary,
       channels: pattern.channels,
       contentReady: pattern.contentReady,
-      href: `/v2/patterns/${pattern.id}`,
+      href: `/v3/patterns/${pattern.id}`,
     };
   });
 
@@ -388,6 +388,7 @@ export function getV3Patterns(): V3PatternCard[] {
     ...entry,
     category: "agentic" as const,
     nucleuxStage: NUCLEUX_CLUSTER_STAGE[entry.nucleuxCluster],
+    href: `/v3/patterns/${entry.id}`,
   }));
 
   const fromGeneral: V3PatternCard[] = GENERAL_ENTRIES.map((entry) => ({

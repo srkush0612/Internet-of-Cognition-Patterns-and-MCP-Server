@@ -127,10 +127,8 @@ Status note: Current server: local stdio connection. V2 catalog alignment is sti
 
 Action: Open MCP setup guide
 
-## Closing
+## Footer
 
-Heading: Make the behavior usable.
+Links: Patterns · What agents do · Studio · MCP server · How we built this
 
-Copy: Find a pattern, shape its behavior in Studio, and inspect an available component in context.
-
-Actions: Explore patterns · Open Studio
+Credit: HAX, by Outshift
