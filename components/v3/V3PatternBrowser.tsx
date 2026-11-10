@@ -72,15 +72,15 @@ export function V3PatternBrowser({ patterns }: { patterns: V3PatternCard[] }) {
           {view === "all" && <label className="v3-pattern-need">Design need<select value={need} onChange={(event) => setNeed(event.target.value as "all" | DesignNeed)}><option value="all">Every need</option>{DESIGN_NEEDS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>}
         </div>
         <div className="v3-pattern-results-heading"><p aria-live="polite">Showing {filtered.length} {view === "agentic" ? "agentic patterns" : `of ${patterns.length} patterns`}</p>{(search || need !== "all" || dimension !== "all") && <button type="button" onClick={() => { setSearch(""); setNeed("all"); setDimension("all"); }}>Clear filters</button>}</div>
-        {filtered.length ? <div className="v3-patterns-grid">{filtered.map((pattern) => <PatternCard key={pattern.id} pattern={pattern} />)}</div> : <p className="v3-patterns-empty">No patterns match these filters. Try another search or clear the filters.</p>}
+        {filtered.length ? <div className="v3-patterns-grid">{filtered.map((pattern) => <PatternCard key={pattern.id} pattern={pattern} showAgenticChip={view === "all"} />)}</div> : <p className="v3-patterns-empty">No patterns match these filters. Try another search or clear the filters.</p>}
       </div>
     </section>
   );
 }
 
-function PatternCard({ pattern }: { pattern: V3PatternCard }) {
+function PatternCard({ pattern, showAgenticChip }: { pattern: V3PatternCard; showAgenticChip: boolean }) {
   return <Link href={pattern.href ?? "/v3/patterns"} className="v3-pattern-card v3-pattern-card--linked">
-    <div className="v3-pattern-card__head"><span className="v3-pattern-card__cluster">{NUCLEUX_CLUSTER_LABEL[pattern.nucleuxCluster]}</span></div>
+    <div className="v3-pattern-card__head"><span className="v3-pattern-card__cluster">{NUCLEUX_CLUSTER_LABEL[pattern.nucleuxCluster]}</span>{showAgenticChip && pattern.category === "agentic" && <span className="v3-pattern-card__badge">Agentic</span>}</div>
     <h3>{pattern.name}</h3>
     <p>{pattern.summary}</p>
     <div className="v3-pattern-card__meta"><span>{pattern.channels?.length ? pattern.channels.map((channel) => CHANNEL_LABEL[channel]).slice(0, 2).join(" · ") : ""}</span><span className="v3-pattern-card__link">Open pattern ↗</span></div>

@@ -975,12 +975,14 @@
   font-weight: 600;
 }
 .v3-pattern-card__badge {
+  flex: none;
   padding: .2rem .55rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--v3-accent) 14%, var(--color-bg));
   color: var(--color-accent-hover);
   font-size: .68rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 .v3-pattern-card h3 {
   margin: 0 0 .5rem;
