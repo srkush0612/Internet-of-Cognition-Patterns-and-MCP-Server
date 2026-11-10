@@ -59,7 +59,7 @@ function PrinciplesCallout({ patternId }: { patternId: string }) {
           <div className="v2-pattern-principles__row" key={id}>
             <span>{index === 0 ? "Primary" : "Also supports"}</span>
             <div>
-              <Link href={`/v3#principle-${id}`}>{getHaxPrinciple(id).name} <span aria-hidden="true">↗</span></Link>
+              <Link href={`/v3/principles/${id}`}>{getHaxPrinciple(id).name} <span aria-hidden="true">↗</span></Link>
               <p>{why}</p>
             </div>
           </div>

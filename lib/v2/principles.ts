@@ -1,10 +1,35 @@
-/** Outshift's five guiding principles, with short descriptions for HAX V3. */
+/** Outshift's five guiding principles, described for the HAX pattern catalog. */
 export const HAX_PRINCIPLES = [
-  { id: "control", name: "Control", description: "Let people set an agent's scope and decide when it may act.", examplePatternId: "pre-action-handshake" },
-  { id: "clarity", name: "Clarity", description: "Make an agent's reasoning, context, and uncertainty legible.", examplePatternId: "inline-rationale" },
-  { id: "recovery", name: "Recovery", description: "Give people a clear way to correct mistakes and guide the next attempt.", examplePatternId: "review-as-dialogue" },
-  { id: "collaboration", name: "Collaboration", description: "Show shared work, contributions, and who owns the next decision.", examplePatternId: "convergence-point" },
-  { id: "traceability", name: "Traceability", description: "Keep agent actions and decisions attributable and open to review.", examplePatternId: "activity-record" },
+  {
+    id: "control", name: "Control",
+    description: "People set an agent's boundaries, preferences, and goals; the agent adapts its autonomy to that direction.",
+    meaning: "People define the scope, preferences, and intent that guide an agent. The agent follows those choices and adjusts when they change.",
+    whyItMatters: "Visible permissions and controls help people understand how decisions are made and shape what happens next.",
+  },
+  {
+    id: "clarity", name: "Clarity",
+    description: "Agents make their reasoning, context, and confidence visible so people can assess decisions.",
+    meaning: "Agents explain why they reached a conclusion and show the context and confidence behind it. People can question or adjust the result.",
+    whyItMatters: "Clear explanations help people spot errors, judge reliability, and decide when to step in.",
+  },
+  {
+    id: "recovery", name: "Recovery",
+    description: "People can undo agent actions, correct errors, and guide a safer next attempt.",
+    meaning: "Mistakes should be easy to fix. People need clear ways to reverse an action, correct an output, and guide what the agent does next.",
+    whyItMatters: "Easy-to-find recovery keeps small errors from stopping the work or eroding trust.",
+  },
+  {
+    id: "collaboration", name: "Collaboration",
+    description: "People and agents share context, exchange input, and shape work together.",
+    meaning: "An agent contributes ideas and responds to human direction in a shared flow. Both sides can refine the work in progress.",
+    whyItMatters: "Shared context and back-and-forth input help people stay engaged and improve the outcome.",
+  },
+  {
+    id: "traceability", name: "Traceability",
+    description: "Agent decisions and actions stay visible, searchable, and open to review.",
+    meaning: "Teams can follow what an agent did and why across sessions, people, and workflows. Records connect decisions to their context and outcomes.",
+    whyItMatters: "Reviewable histories support debugging, accountability, and improvements to the workflow.",
+  },
 ] as const;
 
 export type HaxPrincipleId = (typeof HAX_PRINCIPLES)[number]["id"];

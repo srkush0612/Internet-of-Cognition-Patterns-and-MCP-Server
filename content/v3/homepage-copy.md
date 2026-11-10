@@ -24,15 +24,33 @@ Motion: A quiet field of connected agent and person particles drifts behind the 
 
 ## With and without HAX
 
-Heading: One clear decision when agents coordinate.
+Heading: The same recovery moment, with and without HAX.
 
-Intro: See how separate requests become one recovery plan with a clear choice.
+Intro: Compare what the agents do and what the person can decide in each view.
 
 The fixed comparison stage switches between two views with a short opacity fade. Its size and position remain stable. The recovery example comes from slide 4 of the [V3 presentation](https://ru2s6zn8.reviewa.work/); the heading and takeaway use plain language for homepage readers.
 
 Without HAX 2.0 · Separate actions & requests: Triage agent runs diagnostics autonomously. Planner agent asks, “Approve rollback?” Monitor agent asks, “Restart the service?” Agents act and ask for input. The person still has to reconcile the requests, their context, and their consequences.
 
 With HAX 2.0 · One recovery plan, with context: Review proposed recovery. Diagnostics link the errors to the release. Rollback is proposed; restart is held to avoid conflicting actions. Active sessions may be interrupted. Example response options: Approve rollback, Ask for details, Defer. Agents know when to act or wait. The person sees why rollback is proposed and can approve it, ask for details, or defer.
+
+## Guiding principles
+
+Heading: Five principles guide HAX.
+
+Intro: They set the standard for trustworthy agent experiences. Each pattern shows which principle its behavior puts into practice.
+
+- **Control:** People set an agent's boundaries, preferences, and goals; the agent adapts its autonomy to that direction.
+- **Clarity:** Agents make their reasoning, context, and confidence visible so people can assess decisions.
+- **Recovery:** People can undo agent actions, correct errors, and guide a safer next attempt.
+- **Collaboration:** People and agents share context, exchange input, and shape work together.
+- **Traceability:** Agent decisions and actions stay visible, searchable, and open to review.
+
+Each principle links to its own page. That page explains the principle and lists every catalog pattern assigned to it, including patterns that also support it as a secondary principle. Pattern names link to their individual pages.
+
+Source action: Read the guiding principles at Outshift Design.
+
+Each pattern page has a compact "Principles at work" callout below "What it solves." It names a primary principle, any supported secondary principle, and the specific behavior that demonstrates each connection.
 
 ## How it works
 
@@ -60,22 +78,6 @@ Intro: Choose the simplest setup that fits the exchange. As more agents and peop
 
 Each dimension links to matching patterns.
 
-## Guiding principles
-
-Heading: Five principles guide HAX.
-
-Intro: They set the standard for trustworthy agent experiences. Each pattern shows which principle its behavior puts into practice.
-
-- **Control:** Let people set an agent's scope and decide when it may act. Example: Pre-Action Handshake.
-- **Clarity:** Make an agent's reasoning, context, and uncertainty legible. Example: Inline Rationale.
-- **Recovery:** Give people a clear way to correct mistakes and guide the next attempt. Example: Review as Dialogue.
-- **Collaboration:** Show shared work, contributions, and who owns the next decision. Example: Convergence Point.
-- **Traceability:** Keep agent actions and decisions attributable and open to review. Example: Activity Record.
-
-Source action: Read the guiding principles at Outshift Design.
-
-Each pattern page has a compact "Principles at work" callout below "What it solves." It names a primary principle, any supported secondary principle, and the specific behavior that demonstrates each connection.
-
 ## Explore
 
 Heading: Start with a real exchange.
@@ -102,14 +104,16 @@ Actions: See the pattern · Open component preview
 
 ## Target audience
 
-Heading: One pattern library, four ways to use it.
+Heading: Who can use HAX and how.
 
-Intro: Find the view that fits your work: designing an interaction, setting permissions, building an integration, or using patterns in an agent workflow.
+Intro: The same patterns guide design, product decisions, implementation, and agent behavior.
 
-- **Designers:** Identify exchanges in a product flow and choose a pattern for each one.
-- **PMs:** Set where an agent can proceed, where it needs approval, and what people decide.
-- **Engineers:** See the responses an interaction supports and the information its structured record can carry.
-- **Agents:** Look up a relevant pattern during a task and use its expected replies to guide the exchange.
+- **For designers:** Find the moments when an agent should explain, ask, or hand off, then shape the exchange.
+- **For product managers:** Decide where an agent can act and where a person needs a say.
+- **For engineers:** Use each pattern's states and responses to build the interaction in the product.
+- **For agents:** Look up a fitting pattern during a task and follow its expected exchange.
+
+The section uses a centered headline, dotted field, and open two-column layout. The heading and roles rise into view in a short stagger as the reader scrolls. Nearby dots respond subtly to pointer movement. It stacks the four roles on narrow screens and remains readable without motion or scripting. It has no actions.
 
 ## MCP server
 

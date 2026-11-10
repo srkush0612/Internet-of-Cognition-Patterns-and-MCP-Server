@@ -12,6 +12,8 @@
  *                               enumerate. /studio itself is exported and works:
  *                               it falls back to holding the scenario in the
  *                               browser when the store is not reachable.
+ *   .next-studio/types           generated Studio types can still reference the
+ *                               excluded dynamic route during type checking.
  *
  * Both are moved aside and put back in a finally, so a failed build leaves the
  * tree as it found it.
@@ -33,6 +35,11 @@ const EXCLUDED = [
     label: "app/(site)/studio/[scenarioId]",
     from: path.join(root, "app", "(site)", "studio", "[scenarioId]"),
     to: path.join(root, ".reviewa-studio-backup"),
+  },
+  {
+    label: ".next-studio/types",
+    from: path.join(root, ".next-studio", "types"),
+    to: path.join(root, ".reviewa-studio-types-backup"),
   },
 ];
 
