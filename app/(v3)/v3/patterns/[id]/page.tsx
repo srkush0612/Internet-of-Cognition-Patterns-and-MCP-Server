@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { V3Header } from "@/components/v3/V3Header";
 import { V3Footer } from "@/components/v3/V3Footer";
 import { V3PatternDetail } from "@/components/v3/V3PatternDetail";
 import { V3AuthoredPatternPreview } from "@/components/v3/V3AuthoredPatternPreview";
+import { V3SourcePatternDetail, V3SourcePatternSections } from "@/components/v3/V3SourcePatternDetail";
 import { V2PatternContent } from "@/components/v2/V2PatternContent";
 import { getV2Pattern } from "@/lib/v2/catalog";
 import { getV3Patterns } from "@/lib/v3/catalog";
-import { DESIGN_NEEDS, getPatternNeeds } from "@/lib/v3/filter-taxonomy";
+import { getSourcePatternForV3Id } from "@/lib/v3/source-patterns";
 import {
   getV3PatternDetail,
   getV3PatternPrinciples,
 } from "@/lib/v3/pattern-detail";
 import "@/app/v2.css";
 import "./authored-pattern.css";
+import "./source-pattern.css";
 
 type Params = { id: string };
 
@@ -30,10 +31,11 @@ export async function generateMetadata({
   const { id } = await params;
   const detail = getV3PatternDetail(id);
   const card = getV3Patterns().find((pattern) => pattern.id === id);
+  const source = getSourcePatternForV3Id(id);
   if (!detail && !card) return { title: "Pattern — HAX" };
   return {
-    title: `${detail?.name ?? card?.name} — HAX`,
-    description: detail?.summary ?? card?.summary,
+    title: `${detail?.name ?? source?.name ?? card?.name} — HAX`,
+    description: detail?.summary ?? source?.oneline ?? card?.summary,
   };
 }
 
@@ -48,25 +50,12 @@ export default async function V3PatternDetailPage({
   if (!card) notFound();
 
   if (!detail) {
+    const source = getSourcePatternForV3Id(id);
+    if (!source) notFound();
     return (
       <div className="v3">
         <V3Header />
-        <main className="v3-pattern-reference">
-          <div className="v3-container">
-            <nav aria-label="Breadcrumb"><Link href="/v3/patterns">Patterns</Link><span aria-hidden="true"> / </span>{card.name}</nav>
-            <p className="v3-eyebrow">Pattern</p>
-            <h1>{card.name}</h1>
-            <p className="v3-pattern-reference__summary">{card.summary}</p>
-            <div className="v3-pattern-reference__needs">
-              <h2>Design needs</h2>
-              <div>{getPatternNeeds(card).map((need) => {
-                const label = DESIGN_NEEDS.find((item) => item.id === need)?.label;
-                return <Link key={need} href={`/v3/patterns?need=${need}`}>{label} ↗</Link>;
-              })}</div>
-            </div>
-            <Link className="v3-action v3-action-secondary" href="/v3/patterns">Back to all patterns</Link>
-          </div>
-        </main>
+        <V3SourcePatternDetail pattern={source} />
         <V3Footer />
       </div>
     );
@@ -93,6 +82,7 @@ export default async function V3PatternDetailPage({
   }
 
   const principles = getV3PatternPrinciples(id);
+  const source = getSourcePatternForV3Id(id);
 
   return (
     <div className="v3">
@@ -104,6 +94,17 @@ export default async function V3PatternDetailPage({
           cluster={card.nucleuxCluster}
           principles={principles}
         />
+        {source && (
+          <section className="v3-source-detail__supplement" aria-labelledby="v3-source-supplement-title">
+            <div className="v3-container v3-source-detail__body">
+              <div className="v3-source-detail__supplement-head">
+                <p className="v3-eyebrow">More ways to use this pattern</p>
+                <h2 id="v3-source-supplement-title">Examples and guidance.</h2>
+              </div>
+              <V3SourcePatternSections pattern={source} />
+            </div>
+          </section>
+        )}
       </main>
       <V3Footer />
     </div>

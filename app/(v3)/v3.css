@@ -826,24 +826,24 @@
 
 /* ---------------------------------------------- /v3/patterns browser */
 .v3-section--patterns-head {
-  padding-block: clamp(3rem, 6vw, 5.5rem) 0;
+  padding-block: clamp(2.75rem, 4.2vw, 4.5rem) clamp(2.5rem, 3.5vw, 3.5rem);
   background:
     radial-gradient(ellipse 53% 92% at 92% 4%, var(--v3-glow-cyan), transparent 76%),
     radial-gradient(ellipse 43% 80% at 4% 88%, var(--v3-glow-peach), transparent 78%),
     var(--color-bg);
 }
 .v3-section--patterns-body {
-  padding-block: clamp(2.5rem, 4vw, 4rem) clamp(4.5rem, 7vw, 7.5rem);
+  padding-block: clamp(1.5rem, 2.5vw, 2.25rem) clamp(4.5rem, 7vw, 7.5rem);
 }
 .v3-patterns-title {
-  max-width: 24ch;
-  margin: .9rem 0 0;
-  font-size: clamp(2.6rem, 4.5vw, 4.5rem);
+  max-width: 20ch;
+  margin: .8rem 0 0;
+  font-size: clamp(2.8rem, 5vw, 5rem);
   font-weight: 500;
-  line-height: 1.08;
+  line-height: 1.03;
   letter-spacing: -.055em;
 }
-.v3-patterns-intro { max-width: 45rem; margin: 1.2rem 0 0; color: var(--color-text-subtle); font-size: 1.07rem; line-height: 1.6; }
+.v3-patterns-intro { max-width: 47rem; margin: 1.1rem 0 0; color: var(--color-text-subtle); font-size: clamp(1rem, 1.3vw, 1.15rem); line-height: 1.55; }
 .v3-pattern-filters { margin-bottom: 1.5rem; padding: clamp(1rem, 2vw, 1.5rem); border: 1px solid var(--color-border-medium); border-radius: 16px; background: var(--color-bg); }
 .v3-pattern-search { display: block; max-width: 37rem; }
 .v3-pattern-search > span, .v3-pattern-filter-row label { display: block; color: var(--color-text-muted); font-size: .77rem; font-weight: 650; }

@@ -14,10 +14,9 @@ import { NEW_AGENTIC_DETAILS } from "./new-agentic-details";
  *             Memory, and the four Task patterns) are declared inline.
  *             Agentic entries carry the HAX behavior spec and 4 dimensions of
  *             participation, which the Agentic view's filters use.
- *   general   The rest of the Nucleux map: non-agentic AI-UX patterns kept as
- *             reference entries so the library documents the whole surface.
- *             They carry only the lighter schema: name, summary, stage, and
- *             cluster. No behavior spec, no dimension.
+ *   general   The rest of the broader AI-UX map. The index keeps a lighter
+ *             card schema; detail pages resolve authored descriptions, usage
+ *             guidance, code, and examples from the source catalog.
  *
  * Nothing here changes any v2 file.
  */
