@@ -69,7 +69,7 @@ export default async function PrinciplePage({ params }: { params: Promise<{ id: 
                       <span>{relation}</span>
                       {!pattern.contentReady && <span>Coming soon</span>}
                     </div>
-                    <h3><Link href={`/v2/patterns/${pattern.id}`}>{pattern.name} <span aria-hidden="true">↗</span></Link></h3>
+                    <h3><Link href={`/v3/patterns/${pattern.id}`}>{pattern.name} <span aria-hidden="true">↗</span></Link></h3>
                     <p>{pattern.summary}</p>
                   </div>
                   <div className="v3-principle-pattern-connection">
@@ -90,7 +90,6 @@ export default async function PrinciplePage({ params }: { params: Promise<{ id: 
                 <Link href={`/v3/principles/${entry.id}`} key={entry.id}>{entry.name} <span aria-hidden="true">↗</span></Link>
               ))}
             </div>
-            <a href="https://outshift.design/hax">Read the foundational principles at Outshift Design <span aria-hidden="true">↗</span></a>
           </div>
         </nav>
       </main>

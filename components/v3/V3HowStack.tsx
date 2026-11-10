@@ -1,80 +1,98 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-const RESPONSES = ["consent", "correct", "decline", "defer"] as const;
-type Response = (typeof RESPONSES)[number];
-
-const OUTCOMES: Record<Response, string> = {
-  consent: "Restart approved. The agent can proceed and records why.",
-  correct: "The operator narrows the restart to one pod. The agent updates its plan.",
-  decline: "The agent holds the restart and records the decision.",
-  defer: "The agent waits and asks again at the next error spike.",
+const INITIAL = {
+  trigger: "Checkout latency rose after the release.",
+  action: "Restart payments service",
+  choices: "Approve, Ask for details, Defer",
 };
 
-function TileHead({ title, body }: { title: string; body: string }) {
-  return <div className="v3-how-tile__copy"><h3>{title}</h3><p>{body}</p></div>;
+function TileHead({ number, title, body }: { number: string; title: string; body: string }) {
+  return <div className="v3-how-tile__copy">
+    <span className="v3-how-tile__number">{number} / 04</span>
+    <h3>{title}</h3>
+    <p>{body}</p>
+  </div>;
 }
 
 export function V3HowStack() {
-  const [response, setResponse] = useState<Response | null>(null);
-  const [lookupVisible, setLookupVisible] = useState(false);
+  const [behavior, setBehavior] = useState(INITIAL);
+  const [response, setResponse] = useState<string | null>(null);
+  const choices = useMemo(() => behavior.choices.split(",").map((choice) => choice.trim()).filter(Boolean).slice(0, 4), [behavior.choices]);
 
-  return (
-    <div className="v3-how-stack">
-      <article className="v3-how-tile v3-how-tile--sky">
-        <TileHead title="Find the pattern" body="Describe what the agent needs to do and who is involved. Studio suggests a pattern that fits." />
-        <div className="v3-how-stage" aria-label="Illustrative Studio pattern match">
-          <div className="v3-how-stage__top"><span className="v3-how-stage__brand">HAX / Studio</span><span className="v3-how-stage__tag">New behavior</span></div>
-          <div className="v3-how-studio">
-            <div className="v3-how-studio__prompt"><span>THE MOMENT</span><p>Before restarting a service, the agent needs a person to review its plan.</p></div>
-            <div className="v3-how-studio__fields"><div><small>Agent needs to</small><strong>Propose an action</strong></div><div><small>Who is involved</small><strong>Many agents + one person</strong></div></div>
-            <div className="v3-how-studio__match"><span className="v3-how-studio__spark">✳</span><div><small>STUDIO SUGGESTS</small><strong>Pre-Action Handshake</strong><p>State the signal, propose the action, then wait for a reply.</p></div><Link href="/v2/patterns/pre-action-handshake" aria-label="Open Pre-Action Handshake pattern">↗</Link></div>
+  function update(field: keyof typeof INITIAL, value: string) {
+    setBehavior((current) => ({ ...current, [field]: value }));
+    setResponse(null);
+  }
+
+  const outcome = response === "Approve"
+    ? "Approved. The agent can proceed and records the decision."
+    : response === "Ask for details"
+      ? "The agent shows its evidence before anything changes."
+      : response === "Defer"
+        ? "The agent waits. The proposed action stays on hold."
+        : response ? `Decision recorded: ${response}.` : "Choose a response to see what happens next.";
+
+  return <div className="v3-how-stack">
+    <article className="v3-how-tile" id="studio">
+      <TileHead number="01" title="Find a pattern with a prompt" body="Tell your agent what you are trying to build. Ask it which HAX patterns fit your task." />
+      <figure className="v3-how-stage v3-how-image" role="img" aria-label="A person asks their agent to find HAX patterns for a service restart approval. The agent looks up matching patterns through HAX MCP.">
+        <div className="v3-how-stage__top"><span className="v3-how-stage__brand">Your agent <span>· New chat</span></span><span className="v3-how-stage__tag v3-how-stage__tag--connected"><i /> HAX MCP connected</span></div>
+        <div className="v3-how-prompt-image">
+          <p className="v3-how-prompt-image__question">What should we build today?</p>
+          <div className="v3-how-prompt-image__request">Find HAX patterns for an agent that proposes a service restart and asks an operator to decide.</div>
+          <div className="v3-how-prompt-image__reply"><span className="v3-how-prompt-image__avatar">A</span><div><strong>I’ll find the right HAX patterns.</strong><small><i /> Finding patterns · HAX MCP</small></div></div>
+        </div>
+        <div className="v3-how-prompt-image__composer"><span>+</span><p>Ask your agent…</p><span>↵</span></div>
+      </figure>
+    </article>
+
+    <article className="v3-how-tile">
+      <TileHead number="02" title="HAX finds the right building blocks" body="Your agent gets patterns that fit the task, plus the interface parts needed to show them." />
+      <figure className="v3-how-stage v3-how-image" role="img" aria-label="A request flows through HAX MCP to two matched patterns, Pre-Action Handshake and Inline Rationale, and two interface parts, a context card and decision actions.">
+        <div className="v3-how-stage__top"><span className="v3-how-stage__brand">Pattern match</span><span className="v3-how-stage__tag">HAX MCP</span></div>
+        <div className="v3-how-map">
+          <div className="v3-how-map__request"><small>YOUR REQUEST</small><strong>Review a proposed service restart</strong></div>
+          <span className="v3-how-map__arrow" aria-hidden="true">→</span>
+          <div className="v3-how-map__hub"><strong>HAX</strong><small>patterns + guidance</small></div>
+          <span className="v3-how-map__arrow" aria-hidden="true">→</span>
+          <div className="v3-how-map__matches">
+            <div><small>PATTERN</small><strong>Pre-Action Handshake</strong><span>✓</span></div>
+            <div><small>PATTERN</small><strong>Inline Rationale</strong><span>✓</span></div>
+            <div><small>INTERFACE PART</small><strong>Context card</strong><span>✓</span></div>
+            <div><small>INTERFACE PART</small><strong>Decision actions</strong><span>✓</span></div>
           </div>
         </div>
-      </article>
+      </figure>
+    </article>
 
-      <article className="v3-how-tile v3-how-tile--peach">
-        <TileHead title="Shape the behavior" body="Preview the interaction in its intended channel and check the replies people or agents can send." />
-        <div className="v3-how-stage" aria-label="Illustrative conversation preview">
-          <div className="v3-how-stage__top"><span className="v3-how-stage__brand">Interaction preview</span><span className="v3-how-stage__tag">Chat</span></div>
-          <div className="v3-how-chat">
-            <div className="v3-how-chat__context">INC-2231 <span>·</span> checkout latency</div>
-            <div className="v3-how-chat__message"><span className="v3-how-chat__avatar">T</span><div><strong>@triage</strong><p>Checkout p99 hit 2.4s. That points to payments-svc. I’d like to restart it.</p><small>Waiting for an operator reply</small></div></div>
-            <div className="v3-how-chat__replies"><span>EXPECTED REPLIES</span><div>{RESPONSES.map(item => <span key={item}>{item}</span>)}</div></div>
-            <div className="v3-how-chat__note">The pattern defines the exchange. The preview shows its words and states in context.</div>
-          </div>
+    <article className="v3-how-tile">
+      <TileHead number="03" title="Create a behavior you can edit" body="Review when the agent acts, what it proposes, and how a person can respond. Change the draft to fit your workflow." />
+      <div className="v3-how-stage v3-how-editor" aria-label="Editable behavior draft">
+        <div className="v3-how-stage__top"><span className="v3-how-stage__brand">Behavior draft</span><span className="v3-how-stage__tag">Editable</span></div>
+        <div className="v3-how-editor__body">
+          <div className="v3-how-editor__intro"><span>Pre-Action Handshake</span><strong>Service restart review</strong><p>Edit this example. The next step updates as you type.</p></div>
+          <label>When this happens<input value={behavior.trigger} onChange={(event) => update("trigger", event.target.value)} /></label>
+          <label>The agent proposes<input value={behavior.action} onChange={(event) => update("action", event.target.value)} /></label>
+          <label>A person can choose<input value={behavior.choices} onChange={(event) => update("choices", event.target.value)} /></label>
         </div>
-      </article>
+      </div>
+    </article>
 
-      <article className="v3-how-tile v3-how-tile--lilac">
-        <TileHead title="Connect your agents" body="Connect the local HAX server through MCP so agents can look up patterns during a task." />
-        <div className="v3-how-stage" aria-label="MCP lookup preview">
-          <div className="v3-how-stage__top"><span className="v3-how-stage__brand">HAX / MCP server</span><span className="v3-how-stage__tag">Local connection</span></div>
-          <div className="v3-how-mcp">
-            <div className="v3-how-mcp__query"><span>AGENT LOOKUP</span><code>discover_patterns({"{"}<br />&nbsp;&nbsp;query: &quot;before an irreversible step&quot;<br />{"}"})</code></div>
-            <button type="button" onClick={() => setLookupVisible(!lookupVisible)} aria-expanded={lookupVisible} className="v3-how-mcp__run">{lookupVisible ? "Hide preview result" : "Preview lookup result"} <span aria-hidden="true">→</span></button>
-            {lookupVisible && <div className="v3-how-mcp__result"><small>PATTERN MATCH</small><strong>Pre-Action Handshake</strong><span>Expected replies: consent · correct · decline · defer</span></div>}
-            <p>This is an illustrative preview. The local server currently searches the existing registry.</p>
-          </div>
+    <article className="v3-how-tile">
+      <TileHead number="04" title="Show the behavior in your workflow" body="Place the behavior where the work happens, with the agent’s context and the person’s choices together." />
+      <div className="v3-how-stage" aria-label="Interactive incident workspace example">
+        <div className="v3-how-stage__top"><span className="v3-how-stage__brand">Incident workspace</span><span className="v3-how-stage__tag">INC-2231</span></div>
+        <div className="v3-how-product">
+          <div className="v3-how-product__crumb">Payments API <span>/</span> Response</div>
+          <div className="v3-how-product__alert"><span>PRE-ACTION CHECK</span><strong>{response ? "Decision recorded" : "Needs your input"}</strong></div>
+          <h4>{behavior.action.trim() || "Proposed action"}{behavior.action.trim().endsWith("?") ? "" : "?"}</h4>
+          <p><b>@triage</b> reports: {behavior.trigger.trim() || "A change needs review."}</p>
+          <div className="v3-how-product__choices" aria-label="Choose an operator response">{choices.map((choice) => <button type="button" key={choice} aria-pressed={response === choice} onClick={() => setResponse(choice)}>{choice}</button>)}</div>
+          <div className="v3-how-product__outcome" aria-live="polite">{outcome}</div>
         </div>
-      </article>
-
-      <article className="v3-how-tile v3-how-tile--lime">
-        <TileHead title="Show the behavior in context" body="HAX brings the selected pattern into an interface for the use case, making the agent’s intent and the person’s next choices clear." />
-        <div className="v3-how-stage" aria-label="Interactive incident workspace example">
-          <div className="v3-how-stage__top"><span className="v3-how-stage__brand">Incident workspace</span><span className="v3-how-stage__tag">INC-2231</span></div>
-          <div className="v3-how-product">
-            <div className="v3-how-product__crumb">Payments API <span>/</span> Response</div>
-            <div className="v3-how-product__alert"><span>PRE-ACTION CHECK</span><strong>{response ? "Decision recorded" : "Needs your input"}</strong></div>
-            <h4>Restart payments service?</h4>
-            <p><b>@triage</b> saw checkout p99 reach 2.4s and proposes restarting payments-svc.</p>
-            <div className="v3-how-product__choices" aria-label="Choose an operator response">{RESPONSES.map(item => <button type="button" key={item} aria-pressed={response === item} onClick={() => setResponse(item)}>{item}</button>)}</div>
-            <div className="v3-how-product__outcome" aria-live="polite">{response ? OUTCOMES[response] : "Choose a reply to see what the agent does next."}</div>
-          </div>
-        </div>
-      </article>
-    </div>
-  );
+      </div>
+    </article>
+  </div>;
 }

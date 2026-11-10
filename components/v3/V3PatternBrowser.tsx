@@ -1,18 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import {
-  NUCLEUX_CLUSTER_LABEL,
-  NUCLEUX_STAGE_LABEL,
-  NUCLEUX_STAGE_ORDER,
-  NUCLEUX_STAGE_SUMMARY,
-  type NucleuxCluster,
-  type NucleuxStage,
-  type PatternCategory,
-  type V3PatternCard,
-} from "@/lib/v3/catalog";
-import { LEVEL_LABEL } from "@/lib/v2/levels";
+import { useEffect, useMemo, useState } from "react";
+import { NUCLEUX_CLUSTER_LABEL, type V3PatternCard } from "@/lib/v3/catalog";
+import { DESIGN_NEEDS, getPatternNeeds, type DesignNeed } from "@/lib/v3/filter-taxonomy";
+import { CHANNEL_LABEL, LEVEL_LABEL } from "@/lib/v2/levels";
 import type { Level } from "@/lib/v2/types";
 
 type View = "agentic" | "all";
@@ -30,231 +22,67 @@ const DIMENSION_SHORT: Record<DimensionFilter, string> = {
 export function V3PatternBrowser({ patterns }: { patterns: V3PatternCard[] }) {
   const [view, setView] = useState<View>("agentic");
   const [dimension, setDimension] = useState<DimensionFilter>("all");
+  const [search, setSearch] = useState("");
+  const [need, setNeed] = useState<"all" | DesignNeed>("all");
 
-  const agentic = useMemo(
-    () => patterns.filter((pattern) => pattern.category === "agentic"),
-    [patterns],
-  );
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedDimension = params.get("dimension");
+    const requestedNeed = params.get("need");
+    const requestedSearch = params.get("search");
+    if (DIMENSIONS.some((item) => item === requestedDimension)) setDimension(requestedDimension as DimensionFilter);
+    if (DESIGN_NEEDS.some((item) => item.id === requestedNeed)) setNeed(requestedNeed as DesignNeed);
+    if (requestedSearch) setSearch(requestedSearch);
+    if (requestedSearch || requestedNeed) setView("all");
+  }, []);
 
-  const filteredAgentic = useMemo(
-    () =>
-      agentic.filter((pattern) => dimension === "all" || pattern.level === dimension),
-    [agentic, dimension],
-  );
+  const agenticCount = useMemo(() => patterns.filter((pattern) => pattern.category === "agentic").length, [patterns]);
+  const filtered = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase();
+    return patterns.filter((pattern) => {
+      if (view === "agentic" && pattern.category !== "agentic") return false;
+      if (view === "agentic" && dimension !== "all" && !pattern.dimensions?.includes(dimension)) return false;
+      if (view === "all" && need !== "all" && !getPatternNeeds(pattern).includes(need)) return false;
+      if (query && !`${pattern.name} ${pattern.summary} ${NUCLEUX_CLUSTER_LABEL[pattern.nucleuxCluster]}`.toLocaleLowerCase().includes(query)) return false;
+      return true;
+    });
+  }, [patterns, view, dimension, need, search]);
 
-  const counts = useMemo(() => {
-    const byStage: Record<NucleuxStage, V3PatternCard[]> = {
-      onboarding: [],
-      initially: [],
-      "during-interaction": [],
-      "over-time": [],
-    };
-    for (const pattern of patterns) byStage[pattern.nucleuxStage].push(pattern);
-    const byCategory: Record<PatternCategory, number> = {
-      agentic: patterns.filter((pattern) => pattern.category === "agentic").length,
-      general: patterns.filter((pattern) => pattern.category === "general").length,
-    };
-    return { byStage, byCategory };
-  }, [patterns]);
+  function changeView(next: View) {
+    setView(next);
+    setSearch("");
+    setNeed("all");
+    setDimension("all");
+  }
 
   return (
-    <section className="v3-section v3-section--patterns-body">
+    <section className="v3-section v3-section--patterns-body" aria-label="Browse patterns">
       <div className="v3-container">
-        <div className="v3-patterns-toolbar" role="group" aria-label="Pattern view">
-          <div className="v3-patterns-switch" role="tablist" aria-label="Which patterns">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === "agentic"}
-              onClick={() => setView("agentic")}
-            >
-              Agentic
-              <span className="v3-patterns-switch__count">{counts.byCategory.agentic}</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === "all"}
-              onClick={() => setView("all")}
-            >
-              All patterns
-              <span className="v3-patterns-switch__count">
-                {counts.byCategory.agentic + counts.byCategory.general}
-              </span>
-            </button>
+        <div className="v3-patterns-toolbar">
+          <div className="v3-patterns-switch" role="tablist" aria-label="Pattern view">
+            <button type="button" role="tab" aria-selected={view === "agentic"} onClick={() => changeView("agentic")}>Agentic <span className="v3-patterns-switch__count">{agenticCount}</span></button>
+            <button type="button" role="tab" aria-selected={view === "all"} onClick={() => changeView("all")}>All patterns <span className="v3-patterns-switch__count">{patterns.length}</span></button>
           </div>
-          {view === "agentic" && (
-            <div className="v3-patterns-dimension" role="radiogroup" aria-label="Who is involved">
-              {DIMENSIONS.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  role="radio"
-                  aria-checked={dimension === item}
-                  onClick={() => setDimension(item)}
-                >
-                  {DIMENSION_SHORT[item]}
-                </button>
-              ))}
-            </div>
-          )}
+          {view === "agentic" && <div className="v3-patterns-dimension" role="radiogroup" aria-label="Who is involved">
+            {DIMENSIONS.map((item) => <button key={item} type="button" role="radio" aria-checked={dimension === item} onClick={() => setDimension(item)}>{DIMENSION_SHORT[item]}</button>)}
+          </div>}
         </div>
-
-        {view === "agentic" ? (
-          <AgenticGrid patterns={filteredAgentic} />
-        ) : (
-          <StagedLibrary patterns={patterns} />
-        )}
+        <div className="v3-patterns-search-row">
+          <label className="v3-pattern-search"><span>Search {view === "agentic" ? "agentic patterns" : "all patterns"}</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by name or what you need" /></label>
+          {view === "all" && <label className="v3-pattern-need">Design need<select value={need} onChange={(event) => setNeed(event.target.value as "all" | DesignNeed)}><option value="all">Every need</option>{DESIGN_NEEDS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>}
+        </div>
+        <div className="v3-pattern-results-heading"><p aria-live="polite">Showing {filtered.length} {view === "agentic" ? "agentic patterns" : `of ${patterns.length} patterns`}</p>{(search || need !== "all" || dimension !== "all") && <button type="button" onClick={() => { setSearch(""); setNeed("all"); setDimension("all"); }}>Clear filters</button>}</div>
+        {filtered.length ? <div className="v3-patterns-grid">{filtered.map((pattern) => <PatternCard key={pattern.id} pattern={pattern} />)}</div> : <p className="v3-patterns-empty">No patterns match these filters. Try another search or clear the filters.</p>}
       </div>
     </section>
   );
 }
 
-function AgenticGrid({ patterns }: { patterns: V3PatternCard[] }) {
-  if (patterns.length === 0) {
-    return (
-      <p className="v3-patterns-empty">
-        No agentic patterns match this filter yet.
-      </p>
-    );
-  }
-  return (
-    <div className="v3-patterns-grid">
-      {patterns.map((pattern) => (
-        <AgenticCard key={pattern.id} pattern={pattern} />
-      ))}
-    </div>
-  );
-}
-
-function AgenticCard({ pattern }: { pattern: V3PatternCard }) {
-  const dimension = pattern.level ? LEVEL_LABEL[pattern.level] : null;
-  const body = (
-    <>
-      <div className="v3-pattern-card__head">
-        <span className="v3-pattern-card__cluster">
-          {NUCLEUX_CLUSTER_LABEL[pattern.nucleuxCluster]}
-        </span>
-        <span className="v3-pattern-card__badge">Agentic</span>
-      </div>
-      <h3>{pattern.name}</h3>
-      <p>{pattern.summary}</p>
-      <div className="v3-pattern-card__meta">
-        {dimension && <span>{dimension}</span>}
-        {pattern.href && <span className="v3-pattern-card__link">Open pattern ↗</span>}
-      </div>
-    </>
-  );
-  if (pattern.href) {
-    return (
-      <Link
-        href={pattern.href}
-        className="v3-pattern-card v3-pattern-card--agentic v3-pattern-card--linked"
-      >
-        {body}
-      </Link>
-    );
-  }
-  return (
-    <article className="v3-pattern-card v3-pattern-card--agentic">
-      {body}
-      <p className="v3-pattern-card__note">
-        Full pattern page coming next. Behavior spec and 4 dimensions in the works.
-      </p>
-    </article>
-  );
-}
-
-function StagedLibrary({ patterns }: { patterns: V3PatternCard[] }) {
-  return (
-    <div className="v3-patterns-stages">
-      {NUCLEUX_STAGE_ORDER.map((stage) => {
-        const stagePatterns = patterns.filter(
-          (pattern) => pattern.nucleuxStage === stage,
-        );
-        if (stagePatterns.length === 0) return null;
-        return (
-          <StageBlock
-            key={stage}
-            stage={stage}
-            patterns={stagePatterns}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-function StageBlock({
-  stage,
-  patterns,
-}: {
-  stage: NucleuxStage;
-  patterns: V3PatternCard[];
-}) {
-  const byCluster = useMemo(() => {
-    const map = new Map<NucleuxCluster, V3PatternCard[]>();
-    for (const pattern of patterns) {
-      const list = map.get(pattern.nucleuxCluster) ?? [];
-      list.push(pattern);
-      map.set(pattern.nucleuxCluster, list);
-    }
-    return Array.from(map.entries());
-  }, [patterns]);
-
-  return (
-    <section
-      className="v3-pattern-stage"
-      id={`stage-${stage}`}
-      aria-labelledby={`stage-${stage}-title`}
-    >
-      <header>
-        <p className="v3-eyebrow">Stage</p>
-        <h2 id={`stage-${stage}-title`}>{NUCLEUX_STAGE_LABEL[stage]}</h2>
-        <p>{NUCLEUX_STAGE_SUMMARY[stage]}</p>
-        <span className="v3-pattern-stage__count">{patterns.length} patterns</span>
-      </header>
-      <div className="v3-pattern-stage__clusters">
-        {byCluster.map(([cluster, clusterPatterns]) => (
-          <div key={cluster} className="v3-pattern-cluster">
-            <h3>{NUCLEUX_CLUSTER_LABEL[cluster]}</h3>
-            <div className="v3-pattern-cluster__list">
-              {clusterPatterns.map((pattern) => (
-                <PatternChip key={pattern.id} pattern={pattern} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function PatternChip({ pattern }: { pattern: V3PatternCard }) {
-  const isAgentic = pattern.category === "agentic";
-  const body = (
-    <>
-      <div className="v3-pattern-chip__row">
-        <strong>{pattern.name}</strong>
-        <span
-          className={
-            isAgentic
-              ? "v3-pattern-chip__tag v3-pattern-chip__tag--agentic"
-              : "v3-pattern-chip__tag"
-          }
-        >
-          {isAgentic ? "Agentic" : "Reference"}
-        </span>
-      </div>
-      <p>{pattern.summary}</p>
-    </>
-  );
-  if (pattern.href) {
-    return (
-      <Link className="v3-pattern-chip v3-pattern-chip--linked" href={pattern.href}>
-        {body}
-      </Link>
-    );
-  }
-  return <article className="v3-pattern-chip">{body}</article>;
+function PatternCard({ pattern }: { pattern: V3PatternCard }) {
+  return <Link href={pattern.href ?? "/v3/patterns"} className="v3-pattern-card v3-pattern-card--linked">
+    <div className="v3-pattern-card__head"><span className="v3-pattern-card__cluster">{NUCLEUX_CLUSTER_LABEL[pattern.nucleuxCluster]}</span></div>
+    <h3>{pattern.name}</h3>
+    <p>{pattern.summary}</p>
+    <div className="v3-pattern-card__meta"><span>{pattern.channels?.length ? pattern.channels.map((channel) => CHANNEL_LABEL[channel]).slice(0, 2).join(" · ") : ""}</span><span className="v3-pattern-card__link">Open pattern ↗</span></div>
+  </Link>;
 }

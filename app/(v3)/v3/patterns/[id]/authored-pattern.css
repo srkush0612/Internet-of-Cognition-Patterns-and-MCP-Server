@@ -1,0 +1,50 @@
+.v3-v2-detail {
+  flex: 1;
+  min-width: 0;
+}
+
+.v3-v2-detail .v2-pattern-jump {
+  top: 4.75rem;
+}
+
+.v3-v2-detail .v2-pattern-page > section[id] {
+  scroll-margin-top: 9.25rem;
+}
+
+.v3-authored-preview {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.v3-authored-preview > .v3-theme-toggle {
+  margin-bottom: .15rem;
+}
+
+/* The authored layout and interactions stay intact; only preview tokens change. */
+.v3-authored-preview[data-theme="material"] {
+  --sh-background: #fef7ff;
+  --sh-foreground: #1d1b20;
+  --sh-card: #fff;
+  --sh-card-foreground: #1d1b20;
+  --sh-popover: #fff;
+  --sh-popover-foreground: #1d1b20;
+  --sh-primary: #6750a4;
+  --sh-primary-foreground: #fff;
+  --sh-secondary: #e7e0ec;
+  --sh-secondary-foreground: #1d1b20;
+  --sh-muted-foreground: #49454f;
+  --sh-accent-foreground: #1d1b20;
+  --sh-destructive: #b3261e;
+  --sh-success: #006d3a;
+  --sh-warning: #8a5200;
+  --sh-border: #cac4d0;
+  --sh-input: #79747e;
+  --sh-ring: #6750a4;
+}
+
+.v3-authored-preview[data-theme="material"] .v2-preview__frame,
+.v3-authored-preview[data-theme="material"] .v2-presence {
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgb(29 27 32 / 12%);
+}

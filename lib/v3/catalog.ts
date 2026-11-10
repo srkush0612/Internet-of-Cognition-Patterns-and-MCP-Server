@@ -1,5 +1,6 @@
 import { patterns as v2Patterns } from "@/lib/v2/catalog";
 import type { Channel, Level, Mode, Pattern } from "@/lib/v2/types";
+import { NEW_AGENTIC_DETAILS } from "./new-agentic-details";
 
 /**
  * The v3 catalog mirrors the broader AI-UX pattern map from Nucleux so we do
@@ -131,6 +132,8 @@ export type V3PatternCard = {
   /** Agentic only. For v2-backed entries this reads through to the v2 pattern. */
   mode?: Mode;
   level?: Level;
+  /** Every participant dimension for which an authored pattern has a note. */
+  dimensions?: Level[];
   channels?: Channel[];
   contentReady?: boolean;
   /** Where the card links. Agentic v2-backed entries link to their v2 page. */
@@ -378,6 +381,7 @@ export function getV3Patterns(): V3PatternCard[] {
       nucleuxCluster: cluster,
       mode: pattern.mode.primary,
       level: pattern.level.primary,
+      dimensions: Object.keys(pattern.level.notes) as Level[],
       channels: pattern.channels,
       contentReady: pattern.contentReady,
       href: `/v3/patterns/${pattern.id}`,
@@ -388,6 +392,7 @@ export function getV3Patterns(): V3PatternCard[] {
     ...entry,
     category: "agentic" as const,
     nucleuxStage: NUCLEUX_CLUSTER_STAGE[entry.nucleuxCluster],
+    dimensions: Object.keys(NEW_AGENTIC_DETAILS.find((pattern) => pattern.id === entry.id)?.level.notes ?? {}) as Level[],
     href: `/v3/patterns/${entry.id}`,
   }));
 
@@ -398,6 +403,7 @@ export function getV3Patterns(): V3PatternCard[] {
     category: "general" as const,
     nucleuxStage: NUCLEUX_CLUSTER_STAGE[entry.nucleuxCluster],
     nucleuxCluster: entry.nucleuxCluster,
+    href: `/v3/patterns/${entry.id}`,
   }));
 
   return [...fromV2, ...fromNewAgentic, ...fromGeneral];

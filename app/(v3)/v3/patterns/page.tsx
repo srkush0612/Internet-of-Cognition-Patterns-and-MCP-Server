@@ -6,8 +6,7 @@ import { getV3Patterns } from "@/lib/v3/catalog";
 
 export const metadata: Metadata = {
   title: "The pattern library — HAX",
-  description:
-    "Browse HAX's agent-coordination patterns and the broader AI-UX pattern map together.",
+  description: "Explore agentic patterns by participant dimension, or browse the full HAX pattern library.",
 };
 
 export default function V3PatternsPage() {
@@ -19,15 +18,8 @@ export default function V3PatternsPage() {
         <section className="v3-section v3-section--patterns-head">
           <div className="v3-container">
             <p className="v3-eyebrow">The pattern library</p>
-            <h1 className="v3-patterns-title">
-              Patterns for agentic systems, and the AI-UX map around them.
-            </h1>
-            <p className="v3-patterns-lede">
-              HAX authors the patterns for how agents ask, coordinate, and
-              involve people. The broader map carries the rest of the AI-UX
-              surface, so a team working in both can find each one in the
-              same place.
-            </p>
+            <h1 className="v3-patterns-title">Find the right pattern for the experience you are designing.</h1>
+            <p className="v3-patterns-intro">Explore agentic patterns by who is involved, or switch to all patterns to search the wider library.</p>
           </div>
         </section>
         <V3PatternBrowser patterns={patterns} />

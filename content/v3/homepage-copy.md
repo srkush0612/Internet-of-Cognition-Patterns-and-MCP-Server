@@ -14,9 +14,11 @@ Action: Connect MCP
 
 Eyebrow: Human–agent interaction
 
-Headline: Make collaboration between people and agents work at scale.
+Headline: One pattern library for people and agents working together at scale.
 
-Supporting copy: Design how agents ask, hand off work, and involve people in decisions. HAX brings those interaction patterns into the interface.
+Headline emphasis: Only “working together at scale.” is blue.
+
+Supporting copy: Explore patterns for what agents do and how people experience it—from first interaction to decisions, handoffs, and ongoing work.
 
 Actions: Explore patterns · Open Studio
 
@@ -24,15 +26,17 @@ Motion: A quiet field of connected agent and person particles drifts behind the 
 
 ## With and without HAX
 
-Heading: The same recovery moment, with and without HAX.
+Heading: See how HAX elevates the AI experience
 
-Intro: Compare what the agents do and what the person can decide in each view.
+Intro: Define when agents act, ask, defer, and hand off work—and how they involve the person in context.
 
-The fixed comparison stage switches between two views with a short opacity fade. Its size and position remain stable. The recovery example comes from slide 4 of the [V3 presentation](https://ru2s6zn8.reviewa.work/); the heading and takeaway use plain language for homepage readers.
+Two interface panels load side by side. The separate agent actions resolve first, then the coordinated recovery proposal appears with its decision controls and takeaway. Replay restarts the sequence. The content remains visible without animation when reduced motion is requested. The recovery example follows slide 4 of the [V3 presentation](https://ru2s6zn8.reviewa.work/).
 
-Without HAX 2.0 · Separate actions & requests: Triage agent runs diagnostics autonomously. Planner agent asks, “Approve rollback?” Monitor agent asks, “Restart the service?” Agents act and ask for input. The person still has to reconcile the requests, their context, and their consequences.
+Above the panels, the comparison names each view. The HAX side links the patterns illustrated by this recovery moment: Convergence Point, Pre-Action Handshake, and Inline Rationale. The replay control sits beside those links.
 
-With HAX 2.0 · One recovery plan, with context: Review proposed recovery. Diagnostics link the errors to the release. Rollback is proposed; restart is held to avoid conflicting actions. Active sessions may be interrupted. Example response options: Approve rollback, Ask for details, Defer. Agents know when to act or wait. The person sees why rollback is proposed and can approve it, ask for details, or defer.
+Without HAX · Separate actions & requests: Triage agent runs diagnostics autonomously. Planner agent asks, “Approve rollback?” Monitor agent asks, “Restart the service?” Agents act and ask for input. The person still has to reconcile the requests, their context, and their consequences.
+
+With HAX · Behavior + human context: Review proposed recovery. Diagnostics link the errors to the release. Rollback is proposed; restart is held to avoid conflicting actions. Active sessions may be interrupted. Response options: Approve rollback, Ask for details, Defer. Agents know when to proceed, pause, or involve a person. The person sees the context and can choose what happens next.
 
 ## Guiding principles
 
@@ -54,16 +58,16 @@ Each pattern page has a compact "Principles at work" callout below "What it solv
 
 ## How it works
 
-Heading: From an interaction to a pattern your agents can use
+Heading: From a prompt to behavior in your product.
 
-Intro: Describe what needs to happen, shape the exchange, connect your agents to the pattern library, and show the behavior in context.
+Intro: Describe what you need. HAX helps your agent find the right building blocks, shape an editable behavior, and show it in your workflow.
 
-The four stages appear as large cards that stack while the reader scrolls. The third card has an illustrative lookup reveal; the fourth lets a reader choose a reply and see its outcome.
+Four illustrated interface scenes stack while the reader scrolls. The first echoes an agent prompt, the second maps pattern and interface matches, the third is an editable draft, and the fourth shows the draft in a working incident screen.
 
-1. **Find the right pattern.** Describe what the agent needs to do and who is involved. Studio suggests a fitting pattern.
-2. **Shape the exchange.** Preview the agent's message in its channel and make the supported replies explicit.
-3. **Connect your agents.** Let an agent look up a pattern through the local MCP server when the task calls for one.
-4. **Show it in the product.** Give the person a clear choice at the moment the agent needs a decision.
+1. **Find a pattern with a prompt.** Tell your agent what you are trying to build and ask which HAX patterns fit.
+2. **HAX finds the right building blocks.** The agent gets fitting patterns and the interface parts needed to show them.
+3. **Create a behavior you can edit.** Review and change the trigger, proposed action, and response choices.
+4. **Show the behavior in your workflow.** Place the draft in the incident workspace; edits to the draft update the example, and a person can choose a response.
 
 ## Four dimensions of participation
 
